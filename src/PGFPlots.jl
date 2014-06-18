@@ -30,10 +30,10 @@ end
 
 type Linear <: Plot
   data::AbstractArray{Real,2}
-  mark::String
-  style::String
-  Linear(data::AbstractArray{Real,2}; mark="", style="") = new(data, mark, style)
-  Linear{T<:Real}(x::AbstractArray{T,1}, y::AbstractArray{T,1}; mark="", style="") = new([x y]', mark, style)
+  mark
+  style
+  Linear(data::AbstractArray{Real,2}; mark=nothing, style=nothing) = new(data, mark, style)
+  Linear{A<:Real, B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}; mark=nothing, style=nothing) = new([x y]', mark, style)
 end
 
 type Image <: Plot
@@ -45,6 +45,18 @@ type Image <: Plot
 end
 
 end # end plot module
+
+histogramMap = [
+  :bins => "bins",
+  :density => "density",
+  :cumulative => "cumulative"
+  ]
+
+linearMap = [
+  :mark => "mark",
+  :style => ""
+  ]
+
 
 using .Plots
 
@@ -96,26 +108,34 @@ function Base.push!(g::GroupPlot, p::Plot)
   push!(g, Axis(p))
 end
 
-function optionString(o::IOBuffer, axis::Axis)
-  t = ""
+function optionHelper(o::IOBuffer, m, object; brackets=false)
   first = true
-  for (sym, str) in axisMap
-    if axis.(sym) != nothing
+  for (sym, str) in m
+    if object.(sym) != nothing
       if first
         first = false
+        if brackets
+          print(o, "[")
+        end
       else
-        t *= ", "
+        print(o, ", ")
       end
-      t *= "$str = $(axis.(sym))"
+      if length(str) > 0
+        print(o, "$str = $(object.(sym))")
+      else
+        print(o, "$(object.(sym))")
+      end
     end
   end
-  if length(t) > 0
-    print(o, "[$t]")
+  if !first && brackets
+    print(o, "]")
   end
 end
 
 function plotHelper(o::IOBuffer, p::Histogram)
-  println(o, "\\addplot+ [mark=none, $(p.style), hist={bins=$(p.bins),density=$(p.density),cumulative=$(p.cumulative)}] table [row sep=\\\\, y index = 0] {")
+  print(o, "\\addplot+ [mark=none, $(p.style), hist={")
+  optionHelper(o, histogramMap, p)
+  print(o, "}] table [row sep=\\\\, y index = 0] {")
   println(o, "data\\\\")
   for d in p.data
     print(o, "$d \\\\ ")
@@ -123,13 +143,9 @@ function plotHelper(o::IOBuffer, p::Histogram)
   println(o, "};")
 end
 
-
-
 function plotHelper(o::IOBuffer, p::Linear)
   print(o, "\\addplot+ ")
-  if !empty(p.mark) || !empty(p.style)
-    print(o, "[$(p.style), mark=$(p.mark)] ")
-  end
+  optionHelper(o, linearMap, p, brackets=true)
   println(o, "coordinates {")
   for i = 1:size(p.data,2)
     println(o, "($(p.data[1,i]), $(p.data[2,i]))")
@@ -143,7 +159,7 @@ end
 
 # plot option string and contents; no \begin{axis} or \nextgroupplot
 function plotHelper(o::IOBuffer, axis::Axis)
-  optionString(o, axis)
+  optionHelper(o, axisMap, axis, brackets=true)
   for p in axis.plots
       plotHelper(o, p)
   end
@@ -173,11 +189,12 @@ function Plots.Image(f::Function, xrange::(Real,Real), yrange::(Real,Real); file
   x = linspace(xrange[1], xrange[2])
   y = linspace(yrange[1], yrange[2])
   (X, Y) = meshgrid(x, y)
-  A = map(f, Y, X)
+  A = map(f, X, Y)
   # normalize A
   A = A .- minimum(A)
   A = A ./ maximum(A)
-  imwrite(grayim(fliplr(A)), filename)
+  A = rotr90(A)
+  imwrite(grayim(A), filename)
   Image(filename, xrange[1], xrange[2], yrange[1], yrange[2])
 end
 
@@ -185,7 +202,7 @@ plot(p::Plot) = plot(Axis(p))
 
 plot(p::Image) = plot(Axis(p, enlargelimits=false, axisOnTop=true))
 
-plot{T<:Real}(x::AbstractArray{T,1}, y::AbstractArray{T,1}) = plot(Linear(x, y))
+plot{A<:Real,B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}) = plot(Linear(x, y))
 
 function plot(f::Function, range::(Real,Real))
   x = linspace(range[1], range[2])
