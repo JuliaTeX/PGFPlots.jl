@@ -2,7 +2,9 @@
 
 This library uses the LaTeX package [pgfplots](http://ctan.org/pkg/pgfplots) to produce plots. It integrates with IJulia, outputting SVG images to the notebook.
 
-In order to use this package, you need to install TikzPictures by running `Pkg.clone("https://github.com/sisl/TikzPictures.jl)`. You also need to have the pgfplots package (version 1.10 or later) installed.
+In order to use this package, you need the following:
+* TikzPictures. Obtain by running `Pkg.clone("https://github.com/sisl/TikzPictures.jl)`. TikzPictures requires pdf2svg. On Ubuntu, you can get this by running `sudo apt-get install pdf2svg`. On Windows, you can download the binaries from http://www.cityinthesky.co.uk/opensource/pdf2svg/. Be sure to add pdf2svg to your path (and restart).
+* Pgfplots (version 1.10 or later). Install using your latex package manager.
 
 ## Examples
 
@@ -14,7 +16,7 @@ b = [1, 3, 2]
 plot(a, b)
 ```
 
-### Group plots
+### Group plots (with histograms)
 ```julia
 using PGFPlots
 using Distributions
@@ -36,4 +38,11 @@ g
 ```julia
 using PGFPlots
 plot(sin,(0,10))
+```
+
+### 2D image plots
+
+```julia
+using PGFPlots
+Plots.Image((x,y)->sin(x)*y, (0,10), (0,10))
 ```

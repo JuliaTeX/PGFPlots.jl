@@ -2,9 +2,9 @@ module PGFPlots
 
 export plot, Axis, GroupPlot, Plots
 
-# include("ndgrid.jl")
+include("ndgrid.jl")
 
-# import Images: grayim, imwrite
+import Images: grayim, imwrite
 
 preamble = """
 \\usepackage{pgfplots}
@@ -15,7 +15,7 @@ using TikzPictures
 
 module Plots
 
-export Plot, Histogram, Linear
+export Plot, Histogram, Linear, Image
 
 abstract Plot
 
@@ -36,13 +36,13 @@ type Linear <: Plot
   Linear{T<:Real}(x::AbstractArray{T,1}, y::AbstractArray{T,1}; mark="", style="") = new([x y]', mark, style)
 end
 
-# type Image <: Plot
-#   filename::String
-#   xmin::Real
-#   xmax::Real
-#   ymin::Real
-#   ymax::Real
-# end
+type Image <: Plot
+  filename::String
+  xmin::Real
+  xmax::Real
+  ymin::Real
+  ymax::Real
+end
 
 end # end plot module
 
@@ -50,15 +50,30 @@ using .Plots
 
 type Axis
   plots::AbstractArray{Plot,1}
-  title::String
-  xlabel::String
-  ylabel::String
-  xmin::Real
-  ymin::Real
-  Axis(plot::Plot;title="", xlabel="", ylabel="", xmin=NaN, ymin=NaN) = new([plot],
-  title, xlabel, ylabel, xmin, ymin
+  title
+  xlabel
+  ylabel
+  xmin
+  xmax
+  ymin
+  ymax
+  enlargelimits
+  axisOnTop
+  Axis(plot::Plot;title=nothing, xlabel=nothing, ylabel=nothing, xmin=nothing, xmax=nothing,
+       ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing) =
+    new([plot], title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop
   )
 end
+
+axisMap = [
+  :title => "title",
+  :xlabel => "xlabel",
+  :ylabel => "ylabel",
+  :xmin => "xmin",
+  :ymin => "ymin",
+  :enlargelimits => "enlargelimits",
+  :axisOnTop => "axis on top"
+  ]
 
 type GroupPlot
   axes::AbstractArray{Axis,1}
@@ -81,20 +96,17 @@ function Base.push!(g::GroupPlot, p::Plot)
   push!(g, Axis(p))
 end
 
-empty(a::Real) = isnan(a)
-empty(a::String) = length(a) == 0
-
 function optionString(o::IOBuffer, axis::Axis)
   t = ""
   first = true
-  for n in names(Axis)
-    if n != :plots && !empty(axis.(n))
+  for (sym, str) in axisMap
+    if axis.(sym) != nothing
       if first
         first = false
       else
         t *= ", "
       end
-      t *= "$(string(n)) = $(axis.(n))"
+      t *= "$str = $(axis.(sym))"
     end
   end
   if length(t) > 0
@@ -157,19 +169,21 @@ function plot(p::GroupPlot)
   TikzPicture(takebuf_string(o), options="scale=1", preamble=mypreamble)
 end
 
-# function Plots.Image(f::Function, xrange::(Real,Real), yrange::(Real,Real); filename="tmp.png")
-#   x = linspace(xrange[1], xrange[2])
-#   y = linspace(yrange[1], yrange[2])
-#   (X, Y) = meshgrid(x, y)
-#   A = map(f, Y, X)
-#   # normalize A
-#   A = A .- minimum(A)
-#   A = A ./ maximum(A)
-#   imwrite(grayim(fliplr(A)), filename)
-#   Image(filename, xrange[1], xrange[2], yrange[1], yrange[2])
-# end
+function Plots.Image(f::Function, xrange::(Real,Real), yrange::(Real,Real); filename="tmp.png")
+  x = linspace(xrange[1], xrange[2])
+  y = linspace(yrange[1], yrange[2])
+  (X, Y) = meshgrid(x, y)
+  A = map(f, Y, X)
+  # normalize A
+  A = A .- minimum(A)
+  A = A ./ maximum(A)
+  imwrite(grayim(fliplr(A)), filename)
+  Image(filename, xrange[1], xrange[2], yrange[1], yrange[2])
+end
 
 plot(p::Plot) = plot(Axis(p))
+
+plot(p::Image) = plot(Axis(p, enlargelimits=false, axisOnTop=true))
 
 plot{T<:Real}(x::AbstractArray{T,1}, y::AbstractArray{T,1}) = plot(Linear(x, y))
 
