@@ -100,7 +100,7 @@ end
 function Base.push!(g::GroupPlot, a::Axis)
   push!(g.axes, a)
   if length(g.axes) > prod(g.dimensions)
-    g.dimensions = (length(g.plots), 1)
+    g.dimensions = (length(g.axes), 1)
   end
 end
 
@@ -204,11 +204,13 @@ plot(p::Image) = plot(Axis(p, enlargelimits=false, axisOnTop=true))
 
 plot{A<:Real,B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}) = plot(Linear(x, y))
 
-function plot(f::Function, range::(Real,Real))
+function Plots.Linear(f::Function, range::(Real,Real))
   x = linspace(range[1], range[2])
   y = map(f, x)
-  plot(Linear(x, y, mark="none"))
+  Linear(x, y, mark="none")
 end
+
+plot(f::Function, range::(Real,Real)) = plot(Linear(f, range))
 
 Base.mimewritable(::MIME"image/svg+xml", p::Plot) = true
 Base.writemime(f::IO, a::MIME"image/svg+xml", p::Plot) = Base.writemime(f, a, plot(p))
