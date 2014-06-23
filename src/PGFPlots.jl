@@ -1,6 +1,6 @@
 module PGFPlots
 
-export plot, Axis, GroupPlot, Plots
+export plot, Axis, GroupPlot, Plots, save
 
 include("plots.jl")
 
@@ -203,6 +203,8 @@ function plot(p::GroupPlot)
   TikzPicture(takebuf_string(o), options="scale=1", preamble=mypreamble)
 end
 
+typealias Plottable Union(Plot,GroupPlot,Axis)
+
 plot(p::Plot) = plot(Axis(p))
 
 plot(p::Image) = plot(Axis(p, enlargelimits=false, axisOnTop=true))
@@ -217,14 +219,23 @@ end
 
 plot(f::Function, range::(Real,Real)) = plot(Linear(f, range))
 
-Base.mimewritable(::MIME"image/svg+xml", p::Plot) = true
-Base.writemime(f::IO, a::MIME"image/svg+xml", p::Plot) = Base.writemime(f, a, plot(p))
+Base.mimewritable(::MIME"image/svg+xml", p::Plottable) = true
+Base.writemime(f::IO, a::MIME"image/svg+xml", p::Plottable) = Base.writemime(f, a, plot(p))
 
-Base.mimewritable(::MIME"image/svg+xml", p::GroupPlot) = true
-Base.writemime(f::IO, a::MIME"image/svg+xml", p::GroupPlot) = Base.writemime(f, a, plot(p))
-
-Base.mimewritable(::MIME"image/svg+xml", p::Axis) = true
-Base.writemime(f::IO, a::MIME"image/svg+xml", p::Axis) = Base.writemime(f, a, plot(p))
-
+function save(filename::String, o::Plottable)
+  _, ext = splitext(filename)
+  ext = lowercase(ext)
+  if ext == ".pdf"
+    save(PDF(filename), plot(o))
+  elseif ext == ".svg"
+    save(SVG(filename), plot(o))
+  elseif ext == ".tex"
+    save(TEX(filename), plot(o))
+  elseif ext == "." || ext == ""
+    error("You must specify a file extension.")
+  else
+    error("Unsupported file extensions: $ext")
+  end
+end
 
 end # module
