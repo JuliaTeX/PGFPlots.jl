@@ -2,49 +2,14 @@ module PGFPlots
 
 export plot, Axis, GroupPlot, Plots
 
-include("ndgrid.jl")
+include("plots.jl")
 
-import Images: grayim, imwrite
+import TikzPictures: TikzPicture, PDF, TEX, SVG, save
 
 preamble = """
 \\usepackage{pgfplots}
 \\pgfplotsset{compat=newest}
 """
-
-using TikzPictures
-
-module Plots
-
-export Plot, Histogram, Linear, Image
-
-abstract Plot
-
-type Histogram <: Plot
-  data::AbstractArray{Real,1}
-  bins::Integer
-  density::Bool
-  cumulative::Bool
-  style::String
-  Histogram(data; bins=20, density=false, cumulative=false, style="fill=blue!10") = new(data, bins, density, cumulative, style)
-end
-
-type Linear <: Plot
-  data::AbstractArray{Real,2}
-  mark
-  style
-  Linear(data::AbstractArray{Real,2}; mark=nothing, style=nothing) = new(data, mark, style)
-  Linear{A<:Real, B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}; mark=nothing, style=nothing) = new([x y]', mark, style)
-end
-
-type Image <: Plot
-  filename::String
-  xmin::Real
-  xmax::Real
-  ymin::Real
-  ymax::Real
-end
-
-end # end plot module
 
 histogramMap = [
   :bins => "bins",
@@ -56,6 +21,12 @@ linearMap = [
   :mark => "mark",
   :style => ""
   ]
+
+contourMap = [
+  :number => "number",
+  :levels => "levels",
+  :style => ""
+]
 
 
 using .Plots
@@ -71,9 +42,11 @@ type Axis
   ymax
   enlargelimits
   axisOnTop
+  view
+
   Axis(plot::Plot;title=nothing, xlabel=nothing, ylabel=nothing, xmin=nothing, xmax=nothing,
-       ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing) =
-    new([plot], title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop
+       ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing, view="{0}{90}") =
+    new([plot], title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop, view
   )
 end
 
@@ -84,7 +57,8 @@ axisMap = [
   :xmin => "xmin",
   :ymin => "ymin",
   :enlargelimits => "enlargelimits",
-  :axisOnTop => "axis on top"
+  :axisOnTop => "axis on top",
+  :view => "view"
   ]
 
 type GroupPlot
@@ -108,6 +82,34 @@ function Base.push!(g::GroupPlot, p::Plot)
   push!(g, Axis(p))
 end
 
+function printList{T}(o::IOBuffer, a::AbstractArray{T,1}; brackets=false)
+  first = true
+  for elem in a
+    if first
+      first = false
+      if brackets
+        print(o, "{")
+      end
+      print(o, "$elem")
+    else
+      print(o, ", $elem")
+    end
+  end
+  if !first && brackets
+    print(o, "}")
+  end
+end
+
+
+function printObject(o::IOBuffer, object)
+  print(o, "$(object)")
+end
+
+function printObject{T}(o::IOBuffer, object::AbstractArray{T,1})
+  printList(o, object, brackets = true)
+end
+
+
 function optionHelper(o::IOBuffer, m, object; brackets=false)
   first = true
   for (sym, str) in m
@@ -121,10 +123,9 @@ function optionHelper(o::IOBuffer, m, object; brackets=false)
         print(o, ", ")
       end
       if length(str) > 0
-        print(o, "$str = $(object.(sym))")
-      else
-        print(o, "$(object.(sym))")
+        print(o, "$str = ")
       end
+      printObject(o, object.(sym))
     end
   end
   if !first && brackets
@@ -152,6 +153,23 @@ function plotHelper(o::IOBuffer, p::Linear)
   end
   println(o, "};")
 end
+
+
+function plotHelper(o::IOBuffer, p::Contour)
+  try
+    success(`gnuplot --version`)
+  catch
+    error("You must have gnuplot installed and on your path to do contour plots.")
+  end
+  print(o, "\\addplot3[contour gnuplot={")
+  optionHelper(o, contourMap, p)
+  println(o, "}, mesh/cols=$(p.cols), mesh/rows=$(p.rows)] coordinates {")
+  for i = 1:size(p.data,2)
+    println(o, "($(p.data[1,i]), $(p.data[2,i]), $(p.data[3,i]))")
+  end
+  println(o, "};")
+end
+
 
 function plotHelper(o::IOBuffer, p::Image)
   println(o, "\\addplot graphics [xmin=$(p.xmin), xmax=$(p.xmax), ymin=$(p.ymin), ymax=$(p.ymax)] {$(p.filename)};")
@@ -183,19 +201,6 @@ function plot(p::GroupPlot)
   println(o, "\\end{groupplot}")
   mypreamble = preamble * "\\usepgfplotslibrary{groupplots}"
   TikzPicture(takebuf_string(o), options="scale=1", preamble=mypreamble)
-end
-
-function Plots.Image(f::Function, xrange::(Real,Real), yrange::(Real,Real); filename="tmp.png")
-  x = linspace(xrange[1], xrange[2])
-  y = linspace(yrange[1], yrange[2])
-  (X, Y) = meshgrid(x, y)
-  A = map(f, X, Y)
-  # normalize A
-  A = A .- minimum(A)
-  A = A ./ maximum(A)
-  A = rotr90(A)
-  imwrite(grayim(A), filename)
-  Image(filename, xrange[1], xrange[2], yrange[1], yrange[2])
 end
 
 plot(p::Plot) = plot(Axis(p))
