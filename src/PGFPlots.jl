@@ -9,6 +9,11 @@ import TikzPictures: TikzPicture, PDF, TEX, SVG, save
 preamble = """
 \\usepackage{pgfplots}
 \\pgfplotsset{compat=newest}
+\\pgfplotsset{every axis legend/.append style={%
+cells={anchor=west}}
+}
+\\usetikzlibrary{arrows}
+\\tikzset{>=stealth'}
 """
 
 histogramMap = [
@@ -32,7 +37,7 @@ contourMap = [
 using .Plots
 
 type Axis
-  plots::AbstractArray{Plot,1}
+  plots::Vector{Plot}
   title
   xlabel
   ylabel
@@ -48,6 +53,12 @@ type Axis
        ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing, view="{0}{90}") =
     new([plot], title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop, view
   )
+
+  Axis(plots::Vector{Plot};title=nothing, xlabel=nothing, ylabel=nothing, xmin=nothing, xmax=nothing,
+       ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing, view="{0}{90}") =
+    new(plots, title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop, view
+  )
+
 end
 
 axisMap = [
@@ -152,6 +163,9 @@ function plotHelper(o::IOBuffer, p::Linear)
     println(o, "($(p.data[1,i]), $(p.data[2,i]))")
   end
   println(o, "};")
+  if p.legendentry != nothing
+    println(o, "\\addlegendentry{$(p.legendentry)}")
+  end
 end
 
 
@@ -211,10 +225,10 @@ plot(p::Image) = plot(Axis(p, enlargelimits=false, axisOnTop=true))
 
 plot{A<:Real,B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}) = plot(Linear(x, y))
 
-function Plots.Linear(f::Function, range::(Real,Real))
+function Plots.Linear(f::Function, range::(Real,Real); mark="none", style=nothing, legendentry=nothing)
   x = linspace(range[1], range[2])
   y = map(f, x)
-  Linear(x, y, mark="none")
+  Linear(x, y, mark=mark, style=style, legendentry=legendentry)
 end
 
 plot(f::Function, range::(Real,Real)) = plot(Linear(f, range))
