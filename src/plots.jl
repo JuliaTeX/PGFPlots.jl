@@ -43,6 +43,9 @@ type Linear <: Plot
   Linear{A<:Real, B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}; mark=nothing, style=nothing, legendentry=nothing) = new([x y]', mark, style, legendentry)
 end
 
+Linear{A<:Real}(data::AbstractArray{A,1}; mark=nothing, style=nothing, legendentry=nothing) = Linear([1:length(data)], data, mark=mark, style=style, legendentry=legendentry)
+
+
 type Image <: Plot
   filename::String
   xmin::Real
