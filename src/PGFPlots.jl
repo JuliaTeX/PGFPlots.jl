@@ -24,8 +24,10 @@ histogramMap = [
 
 linearMap = [
   :mark => "mark",
-  :style => ""
+  :style => "",
+  :onlyMarks => "only marks"
   ]
+
 
 contourMap = [
   :number => "number",
@@ -53,7 +55,6 @@ type Axis
        ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing, view="{0}{90}") =
     new([plot], title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop, view
   )
-
   Axis(plots::Vector{Plot};title=nothing, xlabel=nothing, ylabel=nothing, xmin=nothing, xmax=nothing,
        ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing, view="{0}{90}") =
     new(plots, title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop, view
@@ -170,7 +171,6 @@ function plotHelper(o::IOBuffer, p::Linear)
   end
 end
 
-
 function plotHelper(o::IOBuffer, p::Contour)
   try
     success(`gnuplot --version`)
@@ -236,7 +236,20 @@ end
 plot(f::Function, range::(Real,Real)) = plot(Linear(f, range))
 
 Base.mimewritable(::MIME"image/svg+xml", p::Plottable) = true
-Base.writemime(f::IO, a::MIME"image/svg+xml", p::Plottable) = Base.writemime(f, a, plot(p))
+
+cleanup(p::Axis) = map(cleanup, p.plots)
+
+cleanup(p::GroupPlot) = map(cleanup, p.axes)
+
+cleanup(p::Plot) = nothing
+
+cleanup(p::Image) = rm(p.filename)
+
+function Base.writemime(f::IO, a::MIME"image/svg+xml", p::Plottable)
+  r = Base.writemime(f, a, plot(p))
+  cleanup(p)
+  r
+end
 
 function save(filename::String, o::Plottable)
   _, ext = splitext(filename)

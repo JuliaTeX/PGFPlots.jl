@@ -1,6 +1,6 @@
 module Plots
 
-export Plot, Histogram, Linear, Image, Contour
+export Plot, Histogram, Linear, Image, Contour, Scatter
 import Images: grayim, imwrite
 
 include("ndgrid.jl")
@@ -39,12 +39,20 @@ type Linear <: Plot
   mark
   style
   legendentry
-  Linear(data::AbstractArray{Real,2}; mark=nothing, style=nothing, legendentry=nothing) = new(data, mark, style)
-  Linear{A<:Real, B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}; mark=nothing, style=nothing, legendentry=nothing) = new([x y]', mark, style, legendentry)
+  onlyMarks
+  Linear(data::AbstractArray{Real,2}; mark=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = new(data, mark, style, legendentry, onlyMarks)
 end
 
-Linear{A<:Real}(data::AbstractArray{A,1}; mark=nothing, style=nothing, legendentry=nothing) = Linear([1:length(data)], data, mark=mark, style=style, legendentry=legendentry)
+Linear{A<:Real, B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}; mark=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = Linear([x y]', mark=mark, style=style, legendentry=legendentry, onlyMarks=onlyMarks)
+Linear{A<:Real}(data::AbstractArray{A,1}; mark=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = Linear([1:length(data)], data, mark=mark, style=style, legendentry=legendentry, onlyMarks=onlyMarks)
+Linear{T<:Real}(data::AbstractArray{T,2}; mark=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = Linear(data, mark=mark, style=style, legendentry=legendentry, onlyMarks=onlyMarks)
+Linear{A<:Real, B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}; mark=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = Linear([x y]', mark=mark, style=style, legendentry=legendentry, onlyMarks=onlyMarks)
 
+Scatter{T<:Real}(data::AbstractArray{T,2}; mark=nothing, style=nothing, legendentry=nothing) = Linear(data, mark=mark, style=style, onlyMarks = true, legendentry=nothing)
+Scatter{A<:Real, B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}; mark=nothing, style=nothing, legendentry=nothing) = Scatter([x y]', mark=mark, style=style, legendentry=nothing)
+Scatter{A<:Real, B<:Real}(x::A, y::B; mark=nothing, style=nothing, legendentry=nothing) = Scatter([x y]', mark=mark, style=style, legendentry=nothing)
+
+global _imgid = 1
 
 type Image <: Plot
   filename::String
@@ -52,17 +60,24 @@ type Image <: Plot
   xmax::Real
   ymin::Real
   ymax::Real
-  function Image(f::Function, xrange::(Real,Real), yrange::(Real,Real); filename="tmp.png")
+  function Image(A::Matrix{Float64}, xrange::(Real,Real), yrange::(Real,Real); filename=nothing)
+    global _imgid
+    if filename == nothing
+      filename = "tmp_$(_imgid).png"
+      _imgid += 1
+    end
+    A = A .- minimum(A)
+    A = A ./ maximum(A)
+    imwrite(grayim(A), filename)
+    new(filename, xrange[1], xrange[2], yrange[1], yrange[2])
+  end
+  function Image(f::Function, xrange::(Real,Real), yrange::(Real,Real); filename=nothing)
     x = linspace(xrange[1], xrange[2])
     y = linspace(yrange[1], yrange[2])
     (X, Y) = meshgrid(x, y)
     A = map(f, X, Y)
-    # normalize A
-    A = A .- minimum(A)
-    A = A ./ maximum(A)
     A = rotr90(A)
-    imwrite(grayim(A), filename)
-    new(filename, xrange[1], xrange[2], yrange[1], yrange[2])
+    Image(A, xrange[1], xrange[2], yrange[1], yrange[2], filename=filename)
   end
 
 end
