@@ -6,15 +6,7 @@ include("plots.jl")
 
 import TikzPictures: TikzPicture, PDF, TEX, SVG, save
 
-preamble = """
-\\usepackage{pgfplots}
-\\pgfplotsset{compat=newest}
-\\pgfplotsset{every axis legend/.append style={%
-cells={anchor=west}}
-}
-\\usetikzlibrary{arrows}
-\\tikzset{>=stealth'}
-"""
+preamble = readall(joinpath(Pkg.dir("PGFPlots"), "src", "preamble.tex"))
 
 histogramMap = [
   :bins => "bins",
