@@ -1,10 +1,27 @@
 module PGFPlots
 
-export plot, Axis, GroupPlot, Plots, save
+export LaTeXString, @L_str, @L_mstr
+export plot, Axis, GroupPlot, Plots, save, pushPGFPlotsOptions, popPGFPlotsOptions
 
 include("plots.jl")
 
-import TikzPictures: TikzPicture, PDF, TEX, SVG, save
+import TikzPictures: TikzPicture, PDF, TEX, SVG, save, LaTeXString, @L_str, @L_mstr
+
+_pgfplotsoptions = [""]
+
+pushPGFPlotsOptions(options::String) = push!(_pgfplotsoptions, options)
+function popPGFPlotsOptions()
+  if length(_pgfplotsoptions) > 1
+    pop!(_pgfplotsoptions)
+  end
+end
+
+pgfplotsoptions() = _pgfplotsoptions[end]
+
+function pgfplotsoptions(options::String)
+  global _pgfplotsoptions
+  _pgfplotsoptions = options
+end
 
 preamble = readall(joinpath(Pkg.dir("PGFPlots"), "src", "preamble.tex"))
 
@@ -47,7 +64,7 @@ type Axis
        ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing, view="{0}{90}") =
     new([plot], title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop, view
   )
-  Axis(plots::Vector{Plot};title=nothing, xlabel=nothing, ylabel=nothing, xmin=nothing, xmax=nothing,
+  Axis{P <: Plot}(plots::Vector{P};title=nothing, xlabel=nothing, ylabel=nothing, xmin=nothing, xmax=nothing,
        ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing, view="{0}{90}") =
     new(plots, title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop, view
   )
@@ -196,7 +213,7 @@ function plot(axis::Axis)
   print(o, "\\begin{axis}")
   plotHelper(o, axis)
   println(o, "\\end{axis}")
-  TikzPicture(takebuf_string(o), options="scale=1", preamble=preamble)
+  TikzPicture(takebuf_string(o), options=pgfplotsoptions(), preamble=preamble)
 end
 
 function plot(p::GroupPlot)
@@ -208,7 +225,7 @@ function plot(p::GroupPlot)
   end
   println(o, "\\end{groupplot}")
   mypreamble = preamble * "\\usepgfplotslibrary{groupplots}"
-  TikzPicture(takebuf_string(o), options="scale=1", preamble=mypreamble)
+  TikzPicture(takebuf_string(o), options=pgfplotsoptions(), preamble=mypreamble)
 end
 
 typealias Plottable Union(Plot,GroupPlot,Axis)

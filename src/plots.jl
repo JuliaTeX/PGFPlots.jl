@@ -76,7 +76,7 @@ type Image <: Plot
     (X, Y) = meshgrid(x, y)
     A = map(f, X, Y)
     A = rotr90(A)
-    Image(A, xrange[1], xrange[2], yrange[1], yrange[2], filename=filename)
+    Image(A, xrange, yrange, filename=filename)
   end
 
 end
