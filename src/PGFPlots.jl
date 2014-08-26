@@ -1,7 +1,7 @@
 module PGFPlots
 
 export LaTeXString, @L_str, @L_mstr
-export plot, Axis, GroupPlot, Plots, save, pushPGFPlotsOptions, popPGFPlotsOptions
+export plot, Axis, GroupPlot, Plots, save, pushPGFPlots, popPGFPlots
 
 include("plots.jl")
 
@@ -9,8 +9,8 @@ import TikzPictures: TikzPicture, PDF, TEX, SVG, save, LaTeXString, @L_str, @L_m
 
 _pgfplotsoptions = [""]
 
-pushPGFPlotsOptions(options::String) = push!(_pgfplotsoptions, options)
-function popPGFPlotsOptions()
+pushPGFPlots(options::String) = push!(_pgfplotsoptions, options)
+function popPGFPlots()
   if length(_pgfplotsoptions) > 1
     pop!(_pgfplotsoptions)
   end
@@ -59,14 +59,16 @@ type Axis
   enlargelimits
   axisOnTop
   view
+  width
+  height
 
   Axis(plot::Plot;title=nothing, xlabel=nothing, ylabel=nothing, xmin=nothing, xmax=nothing,
-       ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing, view="{0}{90}") =
-    new([plot], title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop, view
+       ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing, view="{0}{90}", width=nothing, height=nothing) =
+    new([plot], title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop, view, width, height
   )
   Axis{P <: Plot}(plots::Vector{P};title=nothing, xlabel=nothing, ylabel=nothing, xmin=nothing, xmax=nothing,
-       ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing, view="{0}{90}") =
-    new(plots, title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop, view
+       ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing, view="{0}{90}", width=nothing, height=nothing) =
+    new(plots, title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop, view, width, height
   )
 
 end
@@ -81,7 +83,9 @@ axisMap = [
   :ymax => "ymax",
   :enlargelimits => "enlargelimits",
   :axisOnTop => "axis on top",
-  :view => "view"
+  :view => "view",
+  :width => "width",
+  :height => "height"
   ]
 
 type GroupPlot
