@@ -61,14 +61,15 @@ type Axis
   view
   width
   height
+  style
 
   Axis(plot::Plot;title=nothing, xlabel=nothing, ylabel=nothing, xmin=nothing, xmax=nothing,
-       ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing, view="{0}{90}", width=nothing, height=nothing) =
-    new([plot], title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop, view, width, height
+       ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing, view="{0}{90}", width=nothing, height=nothing, style=nothing) =
+    new([plot], title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop, view, width, height, style
   )
   Axis{P <: Plot}(plots::Vector{P};title=nothing, xlabel=nothing, ylabel=nothing, xmin=nothing, xmax=nothing,
-       ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing, view="{0}{90}", width=nothing, height=nothing) =
-    new(plots, title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop, view, width, height
+       ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing, view="{0}{90}", width=nothing, height=nothing, style=nothing) =
+    new(plots, title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop, view, width, height, style
   )
 
 end
@@ -85,7 +86,8 @@ axisMap = [
   :axisOnTop => "axis on top",
   :view => "view",
   :width => "width",
-  :height => "height"
+  :height => "height",
+  :style => ""
   ]
 
 type GroupPlot
@@ -166,7 +168,7 @@ function plotHelper(o::IOBuffer, p::Histogram)
   print(o, "}] table [row sep=\\\\, y index = 0] {")
   println(o, "data\\\\")
   for d in p.data
-    print(o, "$d \\\\ ")
+    println(o, "$d \\\\ ")
   end
   println(o, "};")
 end
