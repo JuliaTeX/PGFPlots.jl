@@ -1,6 +1,6 @@
 module Plots
 
-export Plot, Histogram, Linear, Image, Contour, Scatter
+export Plot, Histogram, Linear, Image, Contour, Scatter, Quiver
 import Images: grayim, imwrite
 
 include("ndgrid.jl")
@@ -42,6 +42,34 @@ type Linear <: Plot
   onlyMarks
   Linear{T<:Real}(data::AbstractArray{T,2}; mark=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = new(data, mark, style, legendentry, onlyMarks)
 end
+
+type Quiver <: Plot
+  data::Matrix{Real}
+  style
+  legendentry
+  Quiver{T<:Real}(data::Matrix{T}; style=nothing, legendentry=nothing) = new(data, style, legendentry)
+end
+
+function Quiver(f::Function, xrange::(Real,Real), yrange::(Real,Real); style=nothing, legendentry=nothing, samples=15, normalize=true)
+  x = linspace(xrange[1], xrange[2], samples)
+  y = linspace(yrange[1], yrange[2], samples)
+  (X, Y) = meshgrid(x, y)
+  n = length(X)
+  U = zeros(n)
+  V = zeros(n)
+  for i = 1:n
+    (U[i], V[i]) = f(X[i], Y[i])
+  end
+  if normalize
+    r = max(maximum(U),maximum(V))
+    r /= min(minimum(diff(x)),minimum(diff(y)))
+    U /= r
+    V /= r
+  end
+  Quiver(X[:], Y[:], U, V, style=style, legendentry=legendentry)
+end
+
+Quiver{A<:Real,B<:Real,C<:Real,D<:Real}(x::Vector{A}, y::Vector{B}, u::Vector{C}, v::Vector{D}; style=nothing, legendentry=nothing) = Quiver([x y u v]', style=style, legendentry=legendentry)
 
 Linear{A<:Real, B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}; mark=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = Linear([x y]', mark=mark, style=style, legendentry=legendentry, onlyMarks=onlyMarks)
 Linear{A<:Real}(data::AbstractArray{A,1}; mark=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = Linear([1:length(data)], data, mark=mark, style=style, legendentry=legendentry, onlyMarks=onlyMarks)

@@ -37,6 +37,10 @@ linearMap = [
   :onlyMarks => "only marks"
   ]
 
+quiverMap = [
+  :style => ""
+  ]
+
 
 contourMap = [
   :number => "number",
@@ -139,7 +143,7 @@ function printObject{T}(o::IOBuffer, object::AbstractArray{T,1})
 end
 
 
-function optionHelper(o::IOBuffer, m, object; brackets=false)
+function optionHelper(o::IOBuffer, m, object; brackets=false, otherOptions=Dict{String,String}[])
   first = true
   for (sym, str) in m
     if object.(sym) != nothing
@@ -156,6 +160,17 @@ function optionHelper(o::IOBuffer, m, object; brackets=false)
       end
       printObject(o, object.(sym))
     end
+  end
+  for (k, v) in otherOptions
+    if first
+      first = false
+      if brackets
+        print(o, "[")
+      end
+    else
+      print(o, ", ")
+    end
+    print(o, "$k = $v")
   end
   if !first && brackets
     print(o, "]")
@@ -179,6 +194,20 @@ function plotHelper(o::IOBuffer, p::Linear)
   println(o, "coordinates {")
   for i = 1:size(p.data,2)
     println(o, "($(p.data[1,i]), $(p.data[2,i]))")
+  end
+  println(o, "};")
+  if p.legendentry != nothing
+    println(o, "\\addlegendentry{$(p.legendentry)}")
+  end
+end
+
+function plotHelper(o::IOBuffer, p::Quiver)
+  print(o, "\\addplot+ ")
+  optionHelper(o, quiverMap, p, brackets=true, otherOptions=["quiver"=>"{u=\\thisrow{u},v=\\thisrow{v}}"])
+  println(o, "table {")
+  println(o, "x y u v")
+  for i = 1:size(p.data,2)
+    println(o, "$(p.data[1,i]) $(p.data[2,i]) $(p.data[3,i]) $(p.data[4,i])")
   end
   println(o, "};")
   if p.legendentry != nothing
