@@ -1,6 +1,6 @@
 module Plots
 
-export Plot, Histogram, Linear, Image, Contour, Scatter
+export Plot, Histogram, Linear, ErrorBars, Image, Contour, Scatter, Quiver
 import Images: grayim, imwrite
 
 include("ndgrid.jl")
@@ -43,9 +43,48 @@ type Linear <: Plot
   Linear{T<:Real}(data::AbstractArray{T,2}; mark=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = new(data, mark, style, legendentry, onlyMarks)
 end
 
+type ErrorBars <: Plot
+  data::AbstractArray{Real,2}
+  legendentry
+  ErrorBars{T<:Real}(data::AbstractArray{T,2}; legendentry=nothing) = new(data, legendentry)
+end
+
+type Quiver <: Plot
+  data::Matrix{Real}
+  style
+  legendentry
+  Quiver{T<:Real}(data::Matrix{T}; style=nothing, legendentry=nothing) = new(data, style, legendentry)
+end
+
+function Quiver(f::Function, xrange::(Real,Real), yrange::(Real,Real); style=nothing, legendentry=nothing, samples=15, normalize=true)
+  x = linspace(xrange[1], xrange[2], samples)
+  y = linspace(yrange[1], yrange[2], samples)
+  (X, Y) = meshgrid(x, y)
+  n = length(X)
+  U = zeros(n)
+  V = zeros(n)
+  for i = 1:n
+    (U[i], V[i]) = f(X[i], Y[i])
+  end
+  if normalize
+    r = max(maximum(U),maximum(V))
+    r /= min(minimum(diff(x)),minimum(diff(y)))
+    U /= r
+    V /= r
+  end
+  Quiver(X[:], Y[:], U, V, style=style, legendentry=legendentry)
+end
+
+Quiver{A<:Real,B<:Real,C<:Real,D<:Real}(x::Vector{A}, y::Vector{B}, u::Vector{C}, v::Vector{D}; style=nothing, legendentry=nothing) = Quiver([x y u v]', style=style, legendentry=legendentry)
+
 Linear{A<:Real, B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}; mark=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = Linear([x y]', mark=mark, style=style, legendentry=legendentry, onlyMarks=onlyMarks)
 Linear{A<:Real}(data::AbstractArray{A,1}; mark=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = Linear([1:length(data)], data, mark=mark, style=style, legendentry=legendentry, onlyMarks=onlyMarks)
 Linear{A<:Real, B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}; mark=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = Linear([x y]', mark=mark, style=style, legendentry=legendentry, onlyMarks=onlyMarks)
+
+ErrorBars{A<:Real, B<:Real, C<:Real, D<:Real, E<:Real, F<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}, xplus::AbstractArray{C,1}, yplus::AbstractArray{D,1},
+                            xminus::AbstractArray{E,1}, yminus::AbstractArray{F,1}; legendentry=nothing) = ErrorBars([x y xplus yplus xminus yminus]',legendentry=legendentry)
+ErrorBars{A<:Real, B<:Real, C<:Real, D<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}, yplus::AbstractArray{C,1},yminus::AbstractArray{D,1}; legendentry=nothing, onlyMarks=nothing) = ErrorBars([x y zeros(length(x)) yplus zeros(length(x)) yminus]',legendentry=legendentry)
+ErrorBars{A<:Real, B<:Real, C<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}, yplusminus::AbstractArray{C,1}; legendentry=nothing, onlyMarks=nothing) = ErrorBars([x y zeros(length(x)) yplusminus zeros(length(x)) yplusminus]',legendentry=legendentry)
 
 Scatter{T<:Real}(data::AbstractArray{T,2}; mark=nothing, style=nothing, legendentry=nothing) = Linear(data, mark=mark, style=style, onlyMarks = true, legendentry=nothing)
 Scatter{A<:Real, B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}; mark=nothing, style=nothing, legendentry=nothing) = Scatter([x y]', mark=mark, style=style, legendentry=nothing)
@@ -62,7 +101,8 @@ type Image <: Plot
   function Image(A::Matrix{Float64}, xrange::(Real,Real), yrange::(Real,Real); filename=nothing)
     global _imgid
     if filename == nothing
-      filename = "tmp_$(_imgid).png"
+      id=myid()*10000000000000+_imgid
+      filename = "tmp_$(id).png"
       _imgid += 1
     end
     A = A .- minimum(A)
