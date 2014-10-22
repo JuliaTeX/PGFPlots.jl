@@ -45,8 +45,10 @@ end
 
 type ErrorBars <: Plot
   data::AbstractArray{Real,2}
+  mark
+  style
   legendentry
-  ErrorBars{T<:Real}(data::AbstractArray{T,2}; legendentry=nothing) = new(data, legendentry)
+  ErrorBars{T<:Real}(data::AbstractArray{T,2}; mark=nothing, style=nothing, legendentry=nothing) = new(data, mark, style, legendentry)
 end
 
 type Quiver <: Plot
@@ -82,9 +84,9 @@ Linear{A<:Real}(data::AbstractArray{A,1}; mark=nothing, style=nothing, legendent
 Linear{A<:Real, B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}; mark=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = Linear([x y]', mark=mark, style=style, legendentry=legendentry, onlyMarks=onlyMarks)
 
 ErrorBars{A<:Real, B<:Real, C<:Real, D<:Real, E<:Real, F<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}, xplus::AbstractArray{C,1}, yplus::AbstractArray{D,1},
-                            xminus::AbstractArray{E,1}, yminus::AbstractArray{F,1}; legendentry=nothing) = ErrorBars([x y xplus yplus xminus yminus]',legendentry=legendentry)
-ErrorBars{A<:Real, B<:Real, C<:Real, D<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}, yplus::AbstractArray{C,1},yminus::AbstractArray{D,1}; legendentry=nothing, onlyMarks=nothing) = ErrorBars([x y zeros(length(x)) yplus zeros(length(x)) yminus]',legendentry=legendentry)
-ErrorBars{A<:Real, B<:Real, C<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}, yplusminus::AbstractArray{C,1}; legendentry=nothing, onlyMarks=nothing) = ErrorBars([x y zeros(length(x)) yplusminus zeros(length(x)) yplusminus]',legendentry=legendentry)
+                            xminus::AbstractArray{E,1}, yminus::AbstractArray{F,1}; mark=nothing, style=nothing, legendentry=nothing) = ErrorBars([x y xplus yplus xminus yminus]',mark=mark, style=style, legendentry=legendentry)
+ErrorBars{A<:Real, B<:Real, C<:Real, D<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}, yplus::AbstractArray{C,1},yminus::AbstractArray{D,1}; mark=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = ErrorBars([x y zeros(length(x)) yplus zeros(length(x)) yminus]', mark=mark, style=style, legendentry=legendentry)
+ErrorBars{A<:Real, B<:Real, C<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}, yplusminus::AbstractArray{C,1}; mark=nothing, style=nothing, legendentry=nothing) = ErrorBars([x y zeros(length(x)) yplusminus zeros(length(x)) yplusminus]', mark=mark, style=style, legendentry=legendentry)
 
 Scatter{T<:Real}(data::AbstractArray{T,2}; mark=nothing, style=nothing, legendentry=nothing) = Linear(data, mark=mark, style=style, onlyMarks = true, legendentry=nothing)
 Scatter{A<:Real, B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}; mark=nothing, style=nothing, legendentry=nothing) = Scatter([x y]', mark=mark, style=style, legendentry=nothing)

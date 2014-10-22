@@ -38,6 +38,8 @@ linearMap = [
   ]
 
 errorbarsMap = [
+  :mark => "mark",
+  :style => ""
   ]
 
 quiverMap = [
@@ -205,8 +207,9 @@ function plotHelper(o::IOBuffer, p::Linear)
 end
 
 function plotHelper(o::IOBuffer, p::ErrorBars)
-  print(o, "\\addplot+[ error bars/.cd, x dir=both, x explicit, y dir=both, y explicit,")
+  print(o, "\\addplot+ [")
   optionHelper(o, errorbarsMap, p)
+  print(o, ",error bars/.cd, x dir=both, x explicit, y dir=both, y explicit")
   println(o,"]")
   println(o, "coordinates {")
   for i = 1:size(p.data,2)
