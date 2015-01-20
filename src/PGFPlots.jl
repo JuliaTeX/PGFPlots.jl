@@ -252,7 +252,7 @@ end
 
 
 function plotHelper(o::IOBuffer, p::Image)
-  println(o, "\\addplot graphics [xmin=$(p.xmin), xmax=$(p.xmax), ymin=$(p.ymin), ymax=$(p.ymax)] {$(p.filename)};")
+  println(o, "\\addplot [point meta min=$(p.zmin), point meta max=$(p.zmax)] graphics [xmin=$(p.xmin), xmax=$(p.xmax), ymin=$(p.ymin), ymax=$(p.ymax)] {$(p.filename)};")
 end
 
 # plot option string and contents; no \begin{axis} or \nextgroupplot
@@ -287,7 +287,7 @@ typealias Plottable Union(Plot,GroupPlot,Axis)
 
 plot(p::Plot) = plot(Axis(p))
 
-plot(p::Image) = plot(Axis(p, enlargelimits=false, axisOnTop=true))
+plot(p::Image) = plot(Axis(p, enlargelimits=false, axisOnTop=true, style="colormap/blackwhite,colorbar"))
 
 plot{A<:Real,B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}) = plot(Linear(x, y))
 

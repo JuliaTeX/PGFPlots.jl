@@ -100,6 +100,8 @@ type Image <: Plot
   xmax::Real
   ymin::Real
   ymax::Real
+  zmin::Real
+  zmax::Real
   function Image(A::Matrix{Float64}, xrange::(Real,Real), yrange::(Real,Real); filename=nothing)
     global _imgid
     if filename == nothing
@@ -107,10 +109,12 @@ type Image <: Plot
       filename = "tmp_$(id).png"
       _imgid += 1
     end
-    A = A .- minimum(A)
-    A = A ./ maximum(A)
+    zmin = minimum(A)
+    zmax = maximum(A)
+    A = A .- zmin
+    A = A ./ zmax
     imwrite(grayim(A), filename)
-    new(filename, xrange[1], xrange[2], yrange[1], yrange[2])
+    new(filename, xrange[1], xrange[2], yrange[1], yrange[2], zmin, zmax)
   end
   function Image(f::Function, xrange::(Real,Real), yrange::(Real,Real); filename=nothing)
     x = linspace(xrange[1], xrange[2])
