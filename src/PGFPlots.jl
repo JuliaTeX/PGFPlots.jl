@@ -148,7 +148,7 @@ function printObject{T}(o::IOBuffer, object::AbstractArray{T,1})
 end
 
 
-function optionHelper(o::IOBuffer, m, object; brackets=false, otherOptions=Dict{String,String}[])
+function optionHelper(o::IOBuffer, m, object; brackets=false, otherOptions=Dict{String,String}[], otherText=nothing)
   first = true
   for (sym, str) in m
     if object.(sym) != nothing
@@ -176,6 +176,21 @@ function optionHelper(o::IOBuffer, m, object; brackets=false, otherOptions=Dict{
       print(o, ", ")
     end
     print(o, "$k = $v")
+  end
+  if otherText != nothing
+    for t in otherText
+      if t != nothing
+        if first
+          first = false
+          if brackets
+            print(o, "[")
+          end
+        else
+          print(o, ", ")
+        end
+        print(o, "$t")
+      end
+    end
   end
   if !first && brackets
     print(o, "]")
@@ -205,6 +220,15 @@ function plotHelper(o::IOBuffer, p::Linear)
     println(o, "\\addlegendentry{$(p.legendentry)}")
   end
 end
+
+function plotHelper(o::IOBuffer, p::Node)
+  if p.style != nothing
+    println(o, "\\node at (axis cs:$(p.x), $(p.y)) [$(p.style)] {$(p.data)};")
+  else
+    println(o, "\\node at (axis cs:$(p.x), $(p.y)) {$(p.data)};")
+  end
+end
+
 
 function plotHelper(o::IOBuffer, p::ErrorBars)
   print(o, "\\addplot+ [")
@@ -257,7 +281,7 @@ end
 
 # plot option string and contents; no \begin{axis} or \nextgroupplot
 function plotHelper(o::IOBuffer, axis::Axis)
-  optionHelper(o, axisMap, axis, brackets=true)
+  optionHelper(o, axisMap, axis, brackets=true, otherText=[axisOptions(p) for p in axis.plots])
   for p in axis.plots
       plotHelper(o, p)
   end
@@ -287,8 +311,6 @@ typealias Plottable Union(Plot,GroupPlot,Axis)
 
 plot(p::Plot) = plot(Axis(p))
 
-plot(p::Image) = plot(Axis(p, enlargelimits=false, axisOnTop=true, style="colormap/blackwhite,colorbar"))
-
 plot{A<:Real,B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}) = plot(Linear(x, y))
 
 function Plots.Linear(f::Function, range::(Real,Real); mark="none", style=nothing, legendentry=nothing)
@@ -308,6 +330,16 @@ cleanup(p::GroupPlot) = map(cleanup, p.axes)
 cleanup(p::Plot) = nothing
 
 cleanup(p::Image) = rm(p.filename)
+
+axisOptions(p::Plot) = nothing
+
+function axisOptions(p::Image)
+  if p.colorbar
+    return "enlargelimits = false, axis on top, colormap/blackwhite, colorbar"
+  else
+    return "enlargelimits = false, axis on top"
+  end
+end
 
 function Base.writemime(f::IO, a::MIME"image/svg+xml", p::Plottable)
   r = Base.writemime(f, a, plot(p))

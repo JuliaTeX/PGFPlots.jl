@@ -1,6 +1,6 @@
 module Plots
 
-export Plot, Histogram, Linear, ErrorBars, Image, Contour, Scatter, Quiver
+export Plot, Histogram, Linear, ErrorBars, Image, Contour, Scatter, Quiver, Node
 import Images: grayim, imwrite
 
 include("ndgrid.jl")
@@ -58,6 +58,14 @@ type Quiver <: Plot
   Quiver{T<:Real}(data::Matrix{T}; style=nothing, legendentry=nothing) = new(data, style, legendentry)
 end
 
+type Node <: Plot
+  data
+  style
+  x
+  y
+  Node(data, x, y; style=nothing) = new(data, style, x, y)
+end
+
 function Quiver(f::Function, xrange::(Real,Real), yrange::(Real,Real); style=nothing, legendentry=nothing, samples=15, normalize=true)
   x = linspace(xrange[1], xrange[2], samples)
   y = linspace(yrange[1], yrange[2], samples)
@@ -102,7 +110,8 @@ type Image <: Plot
   ymax::Real
   zmin::Real
   zmax::Real
-  function Image(A::Matrix{Float64}, xrange::(Real,Real), yrange::(Real,Real); filename=nothing)
+  colorbar::Bool
+  function Image(A::Matrix{Float64}, xrange::(Real,Real), yrange::(Real,Real); filename=nothing, colorbar=true)
     global _imgid
     if filename == nothing
       id=myid()*10000000000000+_imgid
@@ -112,17 +121,17 @@ type Image <: Plot
     zmin = minimum(A)
     zmax = maximum(A)
     A = A .- zmin
-    A = A ./ zmax
+    A = A ./ (zmax - zmin)
     imwrite(grayim(A), filename)
-    new(filename, xrange[1], xrange[2], yrange[1], yrange[2], zmin, zmax)
+    new(filename, xrange[1], xrange[2], yrange[1], yrange[2], zmin, zmax, colorbar)
   end
-  function Image(f::Function, xrange::(Real,Real), yrange::(Real,Real); filename=nothing)
+  function Image(f::Function, xrange::(Real,Real), yrange::(Real,Real); filename=nothing, colorbar=true)
     x = linspace(xrange[1], xrange[2])
     y = linspace(yrange[1], yrange[2])
     (X, Y) = meshgrid(x, y)
     A = map(f, X, Y)
     A = rotr90(A)
-    Image(A, xrange, yrange, filename=filename)
+    Image(A, xrange, yrange, filename=filename, colorbar=colorbar)
   end
 
 end
