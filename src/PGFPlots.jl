@@ -71,14 +71,15 @@ type Axis
   width
   height
   style
+  legendPos
 
   Axis(plot::Plot;title=nothing, xlabel=nothing, ylabel=nothing, xmin=nothing, xmax=nothing,
-       ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing, view="{0}{90}", width=nothing, height=nothing, style=nothing) =
-    new([plot], title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop, view, width, height, style
+       ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing, view="{0}{90}", width=nothing, height=nothing, style=nothing, legendPos=nothing) =
+    new([plot], title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop, view, width, height, style, legendPos
   )
   Axis{P <: Plot}(plots::Vector{P};title=nothing, xlabel=nothing, ylabel=nothing, xmin=nothing, xmax=nothing,
-       ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing, view="{0}{90}", width=nothing, height=nothing, style=nothing) =
-    new(plots, title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop, view, width, height, style
+       ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing, view="{0}{90}", width=nothing, height=nothing, style=nothing, legendPos=nothing) =
+    new(plots, title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop, view, width, height, style, legendPos
   )
 
 end
@@ -96,7 +97,8 @@ axisMap = [
   :view => "view",
   :width => "width",
   :height => "height",
-  :style => ""
+  :style => "",
+  :legendPos => "legend pos"
   ]
 
 type GroupPlot
