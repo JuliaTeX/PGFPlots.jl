@@ -2,6 +2,7 @@ module PGFPlots
 
 export LaTeXString, @L_str, @L_mstr
 export plot, Axis, GroupPlot, Plots, save, pushPGFPlots, popPGFPlots
+export PolarAxis
 
 include("plots.jl")
 
@@ -84,6 +85,14 @@ type Axis
 
 end
 
+type PolarAxis
+  plots::Vector{Plot}
+  title
+
+  PolarAxis(plot::Plot;title=nothing) = new([plot], title)
+  PolarAxis{P <: Plot}(plots::Vector{P};title=nothing) = new(plots, title)
+end
+
 axisMap = [
   :title => "title",
   :xlabel => "xlabel",
@@ -99,6 +108,10 @@ axisMap = [
   :height => "height",
   :style => "",
   :legendPos => "legend pos"
+  ]
+
+polarAxisMap = [
+  :title => "title"
   ]
 
 type GroupPlot
@@ -289,11 +302,29 @@ function plotHelper(o::IOBuffer, axis::Axis)
   end
 end
 
+# edit Louis Dressel 2/7
+# plot option string and contents; no \begin{axis} or \nextgroupplot
+function plotHelper(o::IOBuffer, axis::PolarAxis)
+  optionHelper(o, polarAxisMap, axis, brackets=true, otherText=[axisOptions(p) for p in axis.plots])
+  for p in axis.plots
+      plotHelper(o, p)
+  end
+end
+
 function plot(axis::Axis)
   o = IOBuffer()
   print(o, "\\begin{axis}")
   plotHelper(o, axis)
   println(o, "\\end{axis}")
+  TikzPicture(takebuf_string(o), options=pgfplotsoptions(), preamble=preamble)
+end
+
+# edit Louis Dressel 2/7
+function plot(axis::PolarAxis)
+  o = IOBuffer()
+  print(o, "\\begin{polaraxis}")
+  plotHelper(o, axis)
+  println(o, "\\end{polaraxis}")
   TikzPicture(takebuf_string(o), options=pgfplotsoptions(), preamble=preamble)
 end
 
@@ -309,7 +340,7 @@ function plot(p::GroupPlot)
   TikzPicture(takebuf_string(o), options=pgfplotsoptions(), preamble=mypreamble)
 end
 
-typealias Plottable Union(Plot,GroupPlot,Axis)
+typealias Plottable Union(Plot,GroupPlot,Axis,PolarAxis)
 
 plot(p::Plot) = plot(Axis(p))
 
