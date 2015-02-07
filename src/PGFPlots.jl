@@ -355,6 +355,8 @@ Base.mimewritable(::MIME"image/svg+xml", p::Plottable) = true
 
 cleanup(p::Axis) = map(cleanup, p.plots)
 
+cleanup(p::PolarAxis) = map(cleanup, p.plots)
+
 cleanup(p::GroupPlot) = map(cleanup, p.axes)
 
 cleanup(p::Plot) = nothing
