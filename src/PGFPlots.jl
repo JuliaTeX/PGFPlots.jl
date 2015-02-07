@@ -1,8 +1,7 @@
 module PGFPlots
 
 export LaTeXString, @L_str, @L_mstr
-export plot, Axis, GroupPlot, Plots, save, pushPGFPlots, popPGFPlots
-export PolarAxis
+export plot, Axis, PolarAxis, GroupPlot, Plots, save, pushPGFPlots, popPGFPlots
 
 include("plots.jl")
 
@@ -302,7 +301,6 @@ function plotHelper(o::IOBuffer, axis::Axis)
   end
 end
 
-# edit Louis Dressel 2/7
 # plot option string and contents; no \begin{axis} or \nextgroupplot
 function plotHelper(o::IOBuffer, axis::PolarAxis)
   optionHelper(o, polarAxisMap, axis, brackets=true, otherText=[axisOptions(p) for p in axis.plots])
@@ -319,7 +317,6 @@ function plot(axis::Axis)
   TikzPicture(takebuf_string(o), options=pgfplotsoptions(), preamble=preamble)
 end
 
-# edit Louis Dressel 2/7
 function plot(axis::PolarAxis)
   o = IOBuffer()
   print(o, "\\begin{polaraxis}")
