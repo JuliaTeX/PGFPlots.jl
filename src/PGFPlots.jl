@@ -87,9 +87,10 @@ end
 type PolarAxis
   plots::Vector{Plot}
   title
+  yticklabel
 
-  PolarAxis(plot::Plot;title=nothing) = new([plot], title)
-  PolarAxis{P <: Plot}(plots::Vector{P};title=nothing) = new(plots, title)
+  PolarAxis(plot::Plot;title=nothing, yticklabel=nothing) = new([plot], title, yticklabel)
+  PolarAxis{P <: Plot}(plots::Vector{P};title=nothing, yticklabel=nothing) = new(plots, title, yticklabel)
 end
 
 axisMap = [
@@ -110,7 +111,8 @@ axisMap = [
   ]
 
 polarAxisMap = [
-  :title => "title"
+  :title => "title",
+  :yticklabel => "yticklabel"
   ]
 
 type GroupPlot
