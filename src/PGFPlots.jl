@@ -82,6 +82,19 @@ type Axis
     new(plots, title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop, view, width, height, style, legendPos
   )
 
+  # Constructors specifically for 3d plot case
+  # The only difference here is that the view is not defaulted to a 2d view
+  # Come to think of it, is there any reason the view is forced to be {0}{90}? 
+  #  Won't it figure it out on its own?
+  Axis(plot::Linear3;title=nothing, xlabel=nothing, ylabel=nothing, xmin=nothing, xmax=nothing,
+       ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing, view=nothing, width=nothing, height=nothing, style=nothing, legendPos=nothing) =
+    new([plot], title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop, view, width, height, style, legendPos
+  )
+  Axis(plots::Vector{Linear3};title=nothing, xlabel=nothing, ylabel=nothing, xmin=nothing, xmax=nothing,
+       ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing, view=nothing, width=nothing, height=nothing, style=nothing, legendPos=nothing) =
+    new(plots, title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop, view, width, height, style, legendPos
+  )
+
 end
 
 type PolarAxis
@@ -237,6 +250,21 @@ function plotHelper(o::IOBuffer, p::Linear)
   end
 end
 
+# Specific version for Linear3 type 
+# Changes are addplot3 (vs addplot) and iterate over all 3 columns
+function plotHelper(o::IOBuffer, p::Linear3)
+  print(o, "\\addplot3+ ")
+  optionHelper(o, linearMap, p, brackets=true)
+  println(o, "coordinates {")
+  for i = 1:size(p.data,2)
+    println(o, "($(p.data[1,i]), $(p.data[2,i]), $(p.data[3,i]))")
+  end
+  println(o, "};")
+  if p.legendentry != nothing
+    println(o, "\\addlegendentry{$(p.legendentry)}")
+  end
+end
+
 function plotHelper(o::IOBuffer, p::Node)
   if p.style != nothing
     println(o, "\\node at (axis cs:$(p.x), $(p.y)) [$(p.style)] {$(p.data)};")
@@ -344,6 +372,8 @@ typealias Plottable Union(Plot,GroupPlot,Axis,PolarAxis)
 plot(p::Plot) = plot(Axis(p))
 
 plot{A<:Real,B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}) = plot(Linear(x, y))
+
+plot{A<:Real,B<:Real,C<:Real}(x::AbstractVector{A}, y::AbstractVector{B}, z::AbstractVector{C}) = plot(Linear3(x, y, z))
 
 function Plots.Linear(f::Function, range::(Real,Real); mark="none", style=nothing, legendentry=nothing)
   x = linspace(range[1], range[2])
