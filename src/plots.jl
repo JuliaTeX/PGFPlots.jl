@@ -1,6 +1,6 @@
 module Plots
 
-export Plot, Histogram, Linear, ErrorBars, Image, Contour, Scatter, Quiver, Node
+export Plot, Histogram, Linear, Linear3, ErrorBars, Image, Contour, Scatter, Quiver, Node
 import Images: grayim, imwrite
 
 include("ndgrid.jl")
@@ -41,6 +41,15 @@ type Linear <: Plot
   legendentry
   onlyMarks
   Linear{T<:Real}(data::AbstractArray{T,2}; mark=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = new(data, mark, style, legendentry, onlyMarks)
+end
+
+type Linear3 <: Plot
+  data::AbstractArray{Real,2}
+  mark
+  style
+  legendentry
+  onlyMarks
+  Linear3{T<:Real}(data::AbstractArray{T,2}; mark=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = new(data, mark, style, legendentry, onlyMarks)
 end
 
 type ErrorBars <: Plot
@@ -89,7 +98,9 @@ Quiver{A<:Real,B<:Real,C<:Real,D<:Real}(x::Vector{A}, y::Vector{B}, u::Vector{C}
 
 Linear{A<:Real, B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}; mark=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = Linear([x y]', mark=mark, style=style, legendentry=legendentry, onlyMarks=onlyMarks)
 Linear{A<:Real}(data::AbstractArray{A,1}; mark=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = Linear([1:length(data)], data, mark=mark, style=style, legendentry=legendentry, onlyMarks=onlyMarks)
-Linear{A<:Real, B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}; mark=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = Linear([x y]', mark=mark, style=style, legendentry=legendentry, onlyMarks=onlyMarks)
+
+
+Linear3{A<:Real, B<:Real, C<:Real}(x::AbstractVector{A}, y::AbstractVector{B}, z::AbstractVector{C}; mark=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = Linear3([x y z]', mark=mark, style=style, legendentry=legendentry, onlyMarks=onlyMarks)
 
 ErrorBars{A<:Real, B<:Real, C<:Real, D<:Real, E<:Real, F<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}, xplus::AbstractArray{C,1}, yplus::AbstractArray{D,1},
                             xminus::AbstractArray{E,1}, yminus::AbstractArray{F,1}; mark=nothing, style=nothing, legendentry=nothing) = ErrorBars([x y xplus yplus xminus yminus]',mark=mark, style=style, legendentry=legendentry)
