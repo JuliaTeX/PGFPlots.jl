@@ -1,8 +1,9 @@
 module PGFPlots
 
 export LaTeXString, @L_str, @L_mstr
-export plot, Axis, PolarAxis, GroupPlot, Plots, save, pushPGFPlots, popPGFPlots
+export plot, Axis, PolarAxis, GroupPlot, Plots, ColorMaps, save, pushPGFPlots, popPGFPlots
 
+include("colormaps.jl")
 include("plots.jl")
 
 import TikzPictures: TikzPicture, PDF, TEX, SVG, save, LaTeXString, @L_str, @L_mstr
@@ -55,6 +56,7 @@ contourMap = [
 
 
 using .Plots
+using .ColorMaps
 
 type Axis
   plots::Vector{Plot}
@@ -84,7 +86,7 @@ type Axis
 
   # Constructors specifically for 3d plot case
   # The only difference here is that the view is not defaulted to a 2d view
-  # Come to think of it, is there any reason the view is forced to be {0}{90}? 
+  # Come to think of it, is there any reason the view is forced to be {0}{90}?
   #  Won't it figure it out on its own?
   Axis(plot::Linear3;title=nothing, xlabel=nothing, ylabel=nothing, xmin=nothing, xmax=nothing,
        ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing, view=nothing, width=nothing, height=nothing, style=nothing, legendPos=nothing) =
@@ -250,7 +252,7 @@ function plotHelper(o::IOBuffer, p::Linear)
   end
 end
 
-# Specific version for Linear3 type 
+# Specific version for Linear3 type
 # Changes are addplot3 (vs addplot) and iterate over all 3 columns
 function plotHelper(o::IOBuffer, p::Linear3)
   print(o, "\\addplot3+ ")
@@ -367,6 +369,8 @@ function plot(p::GroupPlot)
   TikzPicture(takebuf_string(o), options=pgfplotsoptions(), preamble=mypreamble)
 end
 
+
+
 typealias Plottable Union(Plot,GroupPlot,Axis,PolarAxis)
 
 plot(p::Plot) = plot(Axis(p))
@@ -395,11 +399,32 @@ cleanup(p::Plot) = nothing
 
 cleanup(p::Image) = rm(p.filename)
 
+function cleanup(p::Contour)
+    rm("tikzpicture_contourtmp0.dat")
+    rm("tikzpicture_contourtmp0.script")
+    rm("tikzpicture_contourtmp0.table")
+end
+
 axisOptions(p::Plot) = nothing
+
+colormapOptions(cm::ColorMaps.Gray) = "colormap/blackwhite"
+
+function colormapOptions(cm::ColorMaps.RGBArray)
+    o = IOBuffer()
+    print(o, "colormap={mycolormap}{ ")
+    n = length(cm.colors)
+    for i = 1:n
+        c = cm.colors[i]
+        print(o, "rgb($(i-1)cm)=($(c.r),$(c.g),$(c.b)) ")
+    end
+    print(o, "}")
+    takebuf_string(o)
+end
 
 function axisOptions(p::Image)
   if p.colorbar
-    return "enlargelimits = false, axis on top, colormap/blackwhite, colorbar"
+    cmOpt = colormapOptions(p.colormap)
+    return "enlargelimits = false, axis on top, $cmOpt, colorbar"
   else
     return "enlargelimits = false, axis on top"
   end
