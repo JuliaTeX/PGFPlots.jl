@@ -136,7 +136,6 @@ type Image <: Plot
         zmax = maximum(A)
         A = A .- zmin
         A = A ./ (zmax - zmin)
-        A = 1 .- A
         if !isa(colormap, ColorMaps.ColorMap)
             write(ColorMaps.RGBArray(colormap), A, filename)
         end
