@@ -407,7 +407,13 @@ end
 
 axisOptions(p::Plot) = nothing
 
-colormapOptions(cm::ColorMaps.Gray) = "colormap/blackwhite"
+function colormapOptions(cm::ColorMaps.Gray)
+    if cm.invert
+        return "colormap={wb}{gray(0cm)=(1); gray(1cm)=(0)}"
+    else
+        return "colormap={wb}{gray(0cm)=(0); gray(1cm)=(1)}"
+    end
+end
 
 function colormapOptions(cm::ColorMaps.RGBArray)
     o = IOBuffer()

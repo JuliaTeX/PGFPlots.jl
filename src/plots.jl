@@ -125,7 +125,7 @@ type Image <: Plot
     zmax::Real
     colorbar::Bool
     colormap::ColorMaps.ColorMap
-    function Image(A::Matrix{Float64}, xrange::(Real,Real), yrange::(Real,Real); filename=nothing, colorbar=true, colormap=ColorMaps.Gray())
+    function Image{T <: Real}(A::Matrix{T}, xrange::(Real,Real), yrange::(Real,Real); filename=nothing, colorbar=true, colormap=ColorMaps.Gray())
         global _imgid
         if filename == nothing
             id=myid()*10000000000000+_imgid
@@ -147,7 +147,7 @@ type Image <: Plot
         y = linspace(yrange[1], yrange[2])
         (X, Y) = meshgrid(x, y)
         A = map(f, X, Y)
-        A = rotr90(A)
+        A = flipud(A)
         Image(A, xrange, yrange, filename=filename, colorbar=colorbar, colormap=colormap)
     end
 end
