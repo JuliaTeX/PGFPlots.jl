@@ -125,15 +125,19 @@ type Image <: Plot
     zmax::Real
     colorbar::Bool
     colormap::ColorMaps.ColorMap
-    function Image{T <: Real}(A::Matrix{T}, xrange::(Real,Real), yrange::(Real,Real); filename=nothing, colorbar=true, colormap=ColorMaps.Gray())
+    function Image{T <: Real}(A::Matrix{T}, xrange::(Real,Real), yrange::(Real,Real); filename=nothing, colorbar=true, colormap=ColorMaps.Gray(), zmin=nothing, zmax=nothing)
         global _imgid
         if filename == nothing
             id=myid()*10000000000000+_imgid
             filename = "tmp_$(id).png"
             _imgid += 1
         end
-        zmin = minimum(A)
-        zmax = maximum(A)
+        if zmin == nothing
+            zmin = minimum(A)
+        end
+        if zmax == nothing
+            zmax = maximum(A)
+        end
         A = A .- zmin
         A = A ./ (zmax - zmin)
         if !isa(colormap, ColorMaps.ColorMap)
@@ -142,13 +146,13 @@ type Image <: Plot
         write(colormap, A, filename)
         new(filename, xrange[1], xrange[2], yrange[1], yrange[2], zmin, zmax, colorbar, colormap)
     end
-    function Image(f::Function, xrange::(Real,Real), yrange::(Real,Real); filename=nothing, colorbar=true, colormap=ColorMaps.Gray())
+    function Image(f::Function, xrange::(Real,Real), yrange::(Real,Real); filename=nothing, colorbar=true, colormap=ColorMaps.Gray(), zmin=nothing, zmax=nothing)
         x = linspace(xrange[1], xrange[2])
         y = linspace(yrange[1], yrange[2])
         (X, Y) = meshgrid(x, y)
         A = map(f, X, Y)
         A = flipud(A)
-        Image(A, xrange, yrange, filename=filename, colorbar=colorbar, colormap=colormap)
+        Image(A, xrange, yrange, filename=filename, colorbar=colorbar, colormap=colormap, zmin=zmin, zmax=zmax)
     end
 end
 
