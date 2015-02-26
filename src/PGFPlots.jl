@@ -102,10 +102,11 @@ end
 type PolarAxis
   plots::Vector{Plot}
   title
+  ymax
   yticklabel
 
-  PolarAxis(plot::Plot;title=nothing, yticklabel=nothing) = new([plot], title, yticklabel)
-  PolarAxis{P <: Plot}(plots::Vector{P};title=nothing, yticklabel=nothing) = new(plots, title, yticklabel)
+  PolarAxis(plot::Plot;title=nothing, ymax=nothing, yticklabel=nothing) = new([plot], title, ymax, yticklabel)
+  PolarAxis{P <: Plot}(plots::Vector{P};title=nothing, ymax=nothing, yticklabel=nothing) = new(plots, title, ymax, yticklabel)
 end
 
 axisMap = [
@@ -127,6 +128,7 @@ axisMap = [
 
 polarAxisMap = [
   :title => "title",
+  :ymax => "ymax",
   :yticklabel => "yticklabel"
   ]
 
