@@ -74,14 +74,18 @@ type Axis
     height
     style
     legendPos
+	xmode
+	ymode
 
     Axis(plot::Plot;title=nothing, xlabel=nothing, ylabel=nothing, xmin=nothing, xmax=nothing,
-         ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing, view="{0}{90}", width=nothing, height=nothing, style=nothing, legendPos=nothing) =
-        new([plot], title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop, view, width, height, style, legendPos
+         ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing, view="{0}{90}", 
+		 width=nothing, height=nothing, style=nothing, legendPos=nothing, xmode=nothing, ymode=nothing) =
+        new([plot], title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop, view, width, height, style, legendPos, xmode, ymode
             )
     Axis{P <: Plot}(plots::Vector{P};title=nothing, xlabel=nothing, ylabel=nothing, xmin=nothing, xmax=nothing,
-                    ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing, view="{0}{90}", width=nothing, height=nothing, style=nothing, legendPos=nothing) =
-        new(plots, title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop, view, width, height, style, legendPos
+                    ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing, view="{0}{90}", width=nothing, 
+					height=nothing, style=nothing, legendPos=nothing, xmode=nothing, ymode=nothing) =
+        new(plots, title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop, view, width, height, style, legendPos, xmode, ymode
             )
 
     # Constructors specifically for 3d plot case
@@ -89,12 +93,14 @@ type Axis
     # Come to think of it, is there any reason the view is forced to be {0}{90}?
     #  Won't it figure it out on its own?
     Axis(plot::Linear3;title=nothing, xlabel=nothing, ylabel=nothing, xmin=nothing, xmax=nothing,
-         ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing, view=nothing, width=nothing, height=nothing, style=nothing, legendPos=nothing) =
-        new([plot], title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop, view, width, height, style, legendPos
+         ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing, view=nothing, width=nothing, 
+		 height=nothing, style=nothing, legendPos=nothing, xmode=nothing, ymode=nothing) =
+        new([plot], title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop, view, width, height, style, legendPos, xmode, ymode
             )
     Axis(plots::Vector{Linear3};title=nothing, xlabel=nothing, ylabel=nothing, xmin=nothing, xmax=nothing,
-         ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing, view=nothing, width=nothing, height=nothing, style=nothing, legendPos=nothing) =
-        new(plots, title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop, view, width, height, style, legendPos
+         ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing, view=nothing, width=nothing, 
+		 height=nothing, style=nothing, legendPos=nothing,xmode=nothing,ymode=nothing) =
+        new(plots, title, xlabel, ylabel, xmin, xmax, ymin, ymax, enlargelimits, axisOnTop, view, width, height, style, legendPos, xmode, ymode
             )
 
 end
@@ -123,7 +129,9 @@ axisMap = [
     :width => "width",
     :height => "height",
     :style => "",
-    :legendPos => "legend pos"
+    :legendPos => "legend pos",
+	:xmode => "xmode",
+	:ymode => "ymode"
     ]
 
 polarAxisMap = [
