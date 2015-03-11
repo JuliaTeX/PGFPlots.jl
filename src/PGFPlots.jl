@@ -63,7 +63,7 @@ type Axis
     title
     xlabel
     ylabel
-	zlabel
+    zlabel
     xmin
     xmax
     ymin
@@ -75,8 +75,8 @@ type Axis
     height
     style
     legendPos
-	xmode
-	ymode
+    xmode
+    ymode
 
     Axis(plot::Plot;title=nothing, xlabel=nothing, ylabel=nothing, zlabel=nothing, xmin=nothing, xmax=nothing,
          ymin=nothing, ymax=nothing, enlargelimits=nothing, axisOnTop=nothing, view="{0}{90}", 
@@ -110,10 +110,11 @@ type PolarAxis
     plots::Vector{Plot}
     title
     ymax
+    xticklabel
     yticklabel
 
-    PolarAxis(plot::Plot;title=nothing, ymax=nothing, yticklabel=nothing) = new([plot], title, ymax, yticklabel)
-    PolarAxis{P <: Plot}(plots::Vector{P};title=nothing, ymax=nothing, yticklabel=nothing) = new(plots, title, ymax, yticklabel)
+    PolarAxis(plot::Plot;title=nothing, ymax=nothing, xticklabel=nothing, yticklabel=nothing) = new([plot], title, ymax, xticklabel, yticklabel)
+    PolarAxis{P <: Plot}(plots::Vector{P};title=nothing, ymax=nothing, xticklabel=nothing, yticklabel=nothing) = new(plots, title, ymax, xticklabel, yticklabel)
 end
 
 axisMap = [
@@ -132,13 +133,14 @@ axisMap = [
     :height => "height",
     :style => "",
     :legendPos => "legend pos",
-	:xmode => "xmode",
-	:ymode => "ymode"
+    :xmode => "xmode",
+    :ymode => "ymode"
     ]
 
 polarAxisMap = [
     :title => "title",
     :ymax => "ymax",
+    :xticklabel => "xticklabel",
     :yticklabel => "yticklabel"
     ]
 
