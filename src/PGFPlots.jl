@@ -35,7 +35,9 @@ histogramMap = [
 linearMap = [
     :mark => "mark",
     :style => "",
-    :onlyMarks => "only marks"
+    :onlyMarks => "only marks",
+	:fill => "fill",
+	:fillOpacity => "fill opacity"
     ]
 
 errorbarsMap = [
