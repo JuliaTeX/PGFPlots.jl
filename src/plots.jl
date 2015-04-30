@@ -150,9 +150,9 @@ type Image <: Plot
         write(colormap, A, filename)
         new(filename, xrange[1], xrange[2], yrange[1], yrange[2], zmin, zmax, colorbar, colormap)
     end
-    function Image(f::Function, xrange::(Real,Real), yrange::(Real,Real); filename=nothing, colorbar=true, colormap=ColorMaps.Gray(), zmin=nothing, zmax=nothing)
-        x = linspace(xrange[1], xrange[2])
-        y = linspace(yrange[1], yrange[2])
+    function Image(f::Function, xrange::(Real,Real), yrange::(Real,Real); filename=nothing, colorbar=true, colormap=ColorMaps.Gray(), zmin=nothing, zmax=nothing, xbins=100, ybins=100)
+        x = linspace(xrange[1], xrange[2], xbins)
+        y = linspace(yrange[1], yrange[2], ybins)
         (X, Y) = meshgrid(x, y)
         A = map(f, X, Y)
         A = flipud(A)
