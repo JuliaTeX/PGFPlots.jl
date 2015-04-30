@@ -339,10 +339,9 @@ end
 
 function plotHelper(o::IOBuffer, p::Image)
     if p.zmin == p.zmax
-        println(o, "\\addplot [point meta min=$(p.zmin - 1), point meta max=$(p.zmax + 1)] graphics [xmin=$(p.xmin), xmax=$(p.xmax), ymin=$(p.ymin), ymax=$(p.ymax)] {$(p.filename)};")
-    else
-        println(o, "\\addplot [point meta min=$(p.zmin), point meta max=$(p.zmax)] graphics [xmin=$(p.xmin), xmax=$(p.xmax), ymin=$(p.ymin), ymax=$(p.ymax)] {$(p.filename)};")
+        error("Your colorbar range limits must not be equal to each other.")
     end
+    println(o, "\\addplot [point meta min=$(p.zmin), point meta max=$(p.zmax)] graphics [xmin=$(p.xmin), xmax=$(p.xmax), ymin=$(p.ymin), ymax=$(p.ymax)] {$(p.filename)};")
 end
 
 # plot option string and contents; no \begin{axis} or \nextgroupplot

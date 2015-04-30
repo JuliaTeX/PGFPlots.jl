@@ -138,6 +138,10 @@ type Image <: Plot
         if zmax == nothing
             zmax = maximum(A)
         end
+        if zmin == zmax
+            zmin -= 1.
+            zmax += 1.
+        end
         A = A .- zmin
         A = A ./ (zmax - zmin)
         if !isa(colormap, ColorMaps.ColorMap)
