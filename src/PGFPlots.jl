@@ -336,6 +336,14 @@ function plotHelper(o::IOBuffer, p::Contour)
     println(o, "};")
 end
 
+function plotHelper(o::IOBuffer, p::Circle)
+	println(o, "\\draw (axis cs:$(p.xc), $(p.yc)) circle[radius=$(p.radius)];")
+end
+
+function plotHelper(o::IOBuffer, p::Ellipse)
+	println(o, "\\draw (axis cs:$(p.xc), $(p.yc)) ellipse[x radius=$(p.xradius), y radius=$(p.yradius)];")
+end
+
 
 function plotHelper(o::IOBuffer, p::Image)
     if p.zmin == p.zmax
@@ -423,6 +431,10 @@ cleanup(p::PolarAxis) = map(cleanup, p.plots)
 cleanup(p::GroupPlot) = map(cleanup, p.axes)
 
 cleanup(p::Plot) = nothing
+
+cleanup(p::Circle) = nothing
+
+cleanup(p::Ellipse) = nothing
 
 cleanup(p::Image) = rm(p.filename)
 

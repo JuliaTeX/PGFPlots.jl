@@ -1,6 +1,6 @@
 module Plots
 
-export Plot, Histogram, Linear, Linear3, ErrorBars, Image, Contour, Scatter, Quiver, Node
+export Plot, Histogram, Linear, Linear3, ErrorBars, Image, Contour, Scatter, Quiver, Node, Circle, Ellipse
 
 using ..ColorMaps
 
@@ -75,6 +75,21 @@ type Node <: Plot
     x
     y
     Node(data, x, y; style=nothing) = new(data, style, x, y)
+end
+
+type Circle <: Plot
+	xc
+	yc
+	radius
+	Circle(xc=0,yc=0,radius=1) = new(xc,yc,radius)
+end
+
+type Ellipse <: Plot
+	xc
+	yc
+	xradius
+	yradius
+	Ellipse(xc=0,yc=0,xradius=1,yradius=1) = new(xc,yc,xradius,yradius)
 end
 
 function Quiver(f::Function, xrange::(Real,Real), yrange::(Real,Real); style=nothing, legendentry=nothing, samples=15, normalize=true)
