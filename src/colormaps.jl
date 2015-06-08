@@ -1,6 +1,6 @@
 module ColorMaps
 
-export ColorMap, Gray, RGBArray, Distinguishable, write
+export ColorMap, Gray, RGBArray, Distinguishable, SparseDistinguishable, write
 import Images: grayim, imwrite, ImageCmap
 import Color: RGB, distinguishable_colors, colormap
 
@@ -16,6 +16,15 @@ type RGBArray <: ColorMap
 end
 
 Distinguishable(n::Integer) = RGBArray(convert(Array{RGB{Float64},1}, distinguishable_colors(n)))
+
+function SparseDistinguishable(n, nonzeroidx; zerocolor = RGB{Float64}(1.,1.,1.))
+    m = RGB{Float64}[zerocolor for i = 1:n]
+    sm = ColorMaps.Distinguishable(length(nonzeroidx))
+    for i = 1:length(sm.colors)
+        m[nonzeroidx[i]] = sm.colors[i]
+    end
+    ColorMaps.RGBArray(m)
+end
 
 function Named(name::String = "Jet", levels=255)
     if isequal(name, "Jet")
