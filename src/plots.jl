@@ -26,7 +26,7 @@ type Contour <: Plot
     number
     levels
     Contour(data, cols, rows; style=nothing, number=nothing, levels=nothing) = new(data, cols, rows, style, number, levels)
-    function Contour(f::Function, xrange::(Real,Real), yrange::(Real,Real); style=nothing, number=nothing, levels=nothing)
+    function Contour(f::Function, xrange::Tuple{Real,Real}, yrange::Tuple{Real,Real}; style=nothing, number=nothing, levels=nothing)
         x = linspace(xrange[1], xrange[2], 40)
         y = linspace(yrange[1], yrange[2], 40)
         (X, Y) = meshgrid(x, y)
@@ -92,7 +92,7 @@ type Ellipse <: Plot
 	Ellipse(xc=0,yc=0,xradius=1,yradius=1) = new(xc,yc,xradius,yradius)
 end
 
-function Quiver(f::Function, xrange::(Real,Real), yrange::(Real,Real); style=nothing, legendentry=nothing, samples=15, normalize=true)
+function Quiver(f::Function, xrange::Tuple{Real,Real}, yrange::Tuple{Real,Real}; style=nothing, legendentry=nothing, samples=15, normalize=true)
     x = linspace(xrange[1], xrange[2], samples)
     y = linspace(yrange[1], yrange[2], samples)
     (X, Y) = meshgrid(x, y)
@@ -140,7 +140,7 @@ type Image <: Plot
     zmax::Real
     colorbar::Bool
     colormap::ColorMaps.ColorMap
-    function Image{T <: Real}(A::Matrix{T}, xrange::(Real,Real), yrange::(Real,Real); filename=nothing, colorbar=true, colormap=ColorMaps.Gray(), zmin=nothing, zmax=nothing)
+    function Image{T <: Real}(A::Matrix{T}, xrange::Tuple{Real,Real}, yrange::Tuple{Real,Real}; filename=nothing, colorbar=true, colormap=ColorMaps.Gray(), zmin=nothing, zmax=nothing)
         global _imgid
         if filename == nothing
             id=myid()*10000000000000+_imgid
@@ -165,7 +165,7 @@ type Image <: Plot
         write(colormap, A, filename)
         new(filename, xrange[1], xrange[2], yrange[1], yrange[2], zmin, zmax, colorbar, colormap)
     end
-    function Image(f::Function, xrange::(Real,Real), yrange::(Real,Real); filename=nothing, colorbar=true, colormap=ColorMaps.Gray(), zmin=nothing, zmax=nothing, xbins=100, ybins=100)
+    function Image(f::Function, xrange::Tuple{Real,Real}, yrange::Tuple{Real,Real}; filename=nothing, colorbar=true, colormap=ColorMaps.Gray(), zmin=nothing, zmax=nothing, xbins=100, ybins=100)
         x = linspace(xrange[1], xrange[2], xbins)
         y = linspace(yrange[1], yrange[2], ybins)
         (X, Y) = meshgrid(x, y)
