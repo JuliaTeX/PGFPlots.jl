@@ -3,6 +3,8 @@ module PGFPlots
 export LaTeXString, @L_str, @L_mstr
 export plot, Axis, PolarAxis, GroupPlot, Plots, ColorMaps, save, pushPGFPlots, popPGFPlots
 
+using Compat
+
 include("colormaps.jl")
 include("plots.jl")
 
@@ -57,6 +59,9 @@ contourMap = [
 
 using .Plots
 using .ColorMaps
+
+typealias IntegerRange @compat Tuple{Integer,Integer}
+typealias RealRange @compat Tuple{Real,Real}
 
 type Axis
     plots::Vector{Plot}
@@ -146,13 +151,13 @@ polarAxisMap = [
 
 type GroupPlot
     axes::AbstractArray{Axis,1}
-    dimensions::Tuple{Integer,Integer}
+    dimensions::IntegerRange
     style
     groupStyle
     GroupPlot(;style=nothing,groupStyle=nothing) = new(AbstractArray{Axis,1}[], (0,0), style, groupStyle)
     GroupPlot(axes::AbstractArray{Axis,1};style=nothing,groupStyle=nothing) = new(axes, (length(axes), 1), style, groupStyle)
     GroupPlot(plots;style=nothing,groupStyle=nothing) = new([Axis(p) for p in plots], (length(plots), 1), style, groupStyle)
-    GroupPlot(dimensions::Tuple{Integer,Integer};style=nothing,groupStyle=nothing) = new(AbstractArray{Axis,1}[], dimensions, style, groupStyle)
+    GroupPlot(dimensions::IntegerRange;style=nothing,groupStyle=nothing) = new(AbstractArray{Axis,1}[], dimensions, style, groupStyle)
     GroupPlot(rows::Integer, columns::Integer;style=nothing,groupStyle=nothing) = new(AbstractArray{Axis,1}[], (rows, columns), style, groupStyle)
 end
 
@@ -414,13 +419,13 @@ plot{A<:Real,B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}) = plot(Linea
 
 plot{A<:Real,B<:Real,C<:Real}(x::AbstractVector{A}, y::AbstractVector{B}, z::AbstractVector{C}) = plot(Linear3(x, y, z))
 
-function Plots.Linear(f::Function, range::Tuple{Real,Real}; mark="none", style=nothing, legendentry=nothing)
+function Plots.Linear(f::Function, range::RealRange; mark="none", style=nothing, legendentry=nothing)
     x = linspace(range[1], range[2])
     y = map(f, x)
     Linear(x, y, mark=mark, style=style, legendentry=legendentry)
 end
 
-plot(f::Function, range::Tuple{Real,Real}) = plot(Linear(f, range))
+plot(f::Function, range::RealRange) = plot(Linear(f, range))
 
 Base.mimewritable(::MIME"image/svg+xml", p::Plottable) = true
 
