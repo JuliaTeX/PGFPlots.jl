@@ -13,7 +13,7 @@ include("plots.jl")
 
 import TikzPictures: TikzPicture, PDF, TEX, SVG, save, LaTeXString, @L_str, @L_mstr
 
-_pgfplotsoptions = [""]
+_pgfplotsoptions = {""}
 
 pushPGFPlotsOptions(options::String) = push!(_pgfplotsoptions, options)
 function popPGFPlotsOptions()
@@ -34,7 +34,7 @@ end
 
 pgfplotsoptions() = join(_pgfplotsoptions, "\n")
 
-_pgfplotspreamble = [readall(joinpath(Pkg.dir("PGFPlots"), "src", "preamble.tex"))]
+_pgfplotspreamble = {readall(joinpath(Pkg.dir("PGFPlots"), "src", "preamble.tex"))}
 
 pushPGFPlotsPreamble(preamble::String) = push!(_pgfplotspreamble, preamble)
 function popPGFPlotsPreamble()
@@ -70,7 +70,7 @@ function define_color{T<:Integer}(name::String, color::Vector{T})
 end
 
 function define_color(name::String, color::UInt32)
-    _pgfplotspreamble[end] = _pgfplotspreamble[end] * "\n\\definecolor{$name}{HTML}{$(hex(color))}"
+    _pgfplotspreamble[end] = _pgfplotspreamble[end] * "\n\\definecolor{$name}{HTML}{$(uppercase(hex(color)))}"
 end
 
 function define_color(name::String, color::Real)
