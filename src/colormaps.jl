@@ -2,7 +2,7 @@ module ColorMaps
 
 export ColorMap, Gray, RGBArray, Distinguishable, SparseDistinguishable, write
 import Images: grayim, imwrite, ImageCmap
-import Color: RGB, distinguishable_colors, colormap
+import Colors: RGB, distinguishable_colors, colormap
 
 abstract ColorMap
 

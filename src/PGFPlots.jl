@@ -1,7 +1,9 @@
 module PGFPlots
 
 export LaTeXString, @L_str, @L_mstr
-export plot, Axis, PolarAxis, GroupPlot, Plots, ColorMaps, save, pushPGFPlots, popPGFPlots
+export plot, Axis, PolarAxis, GroupPlot, Plots, ColorMaps, save, define_color
+export pushPGFPlotsOptions, popPGFPlotsOptions, pushPGFPlotsPreamble, popPGFPlotsPreamble, pgfplotsoptions, pgfplotspreamble
+export pushPGFPlots, popPGFPlots
 
 using Compat
 
@@ -12,21 +14,47 @@ import TikzPictures: TikzPicture, PDF, TEX, SVG, save, LaTeXString, @L_str, @L_m
 
 _pgfplotsoptions = [""]
 
-pushPGFPlots(options::String) = push!(_pgfplotsoptions, options)
-function popPGFPlots()
+pushPGFPlotsOptions(options::String) = push!(_pgfplotsoptions, options)
+function popPGFPlotsOptions()
     if length(_pgfplotsoptions) > 1
         pop!(_pgfplotsoptions)
     end
 end
 
-pgfplotsoptions() = _pgfplotsoptions[end]
-
-function pgfplotsoptions(options::String)
-    global _pgfplotsoptions
-    _pgfplotsoptions = options
+function pushPGFPlots(options::String)
+    warn("Use pushPGFPlotsOptions")
+    pushPGFPlotsOptions(options)
 end
 
-preamble = readall(joinpath(Pkg.dir("PGFPlots"), "src", "preamble.tex"))
+function popPGFPlots()
+    warn("Use popPGFPlotsOptions")
+    popPGFPlotsOptions()
+end
+
+pgfplotsoptions() = join(_pgfplotsoptions, "\n")
+
+_pgfplotspreamble = [readall(joinpath(Pkg.dir("PGFPlots"), "src", "preamble.tex"))]
+
+pushPGFPlotsPreamble(preamble::String) = push!(_pgfplotspreamble, preamble)
+function popPGFPlotsPreamble()
+    if length(_pgfplotspreamble) > 1
+        pop!(_pgfplotspreamble)
+    end
+end
+
+pgfplotspreamble() = join(_pgfplotspreamble, "\n")
+
+function define_color{T<:FloatingPoint}(name::String, color::Vector{T})
+    @assert(length(color) == 3, "Color must have three components")
+    r, g, b = color[1], color[2], color[3]
+    _pgfplotspreamble[end] = _pgfplotspreamble[end] * "\n\\definecolor{$name}{rgb}{$r, $g, $b}"
+end
+
+function define_color{T<:Integer}(name::String, color::Vector{T})
+    @assert(length(color) == 3, "Color must have three components")
+    r, g, b = color[1], color[2], color[3]
+    _pgfplotspreamble[end] = _pgfplotspreamble[end] * "\n\\definecolor{$name}{RGB}{$r, $g, $b}"
+end
 
 histogramMap = [
     :bins => "bins",
@@ -382,7 +410,7 @@ function plot(axis::Axis)
     print(o, "\\begin{axis}")
     plotHelper(o, axis)
     println(o, "\\end{axis}")
-    TikzPicture(takebuf_string(o), options=pgfplotsoptions(), preamble=preamble)
+    TikzPicture(takebuf_string(o), options=pgfplotsoptions(), preamble=pgfplotspreamble())
 end
 
 function plot(axis::PolarAxis)
@@ -390,7 +418,7 @@ function plot(axis::PolarAxis)
     print(o, "\\begin{polaraxis}")
     plotHelper(o, axis)
     println(o, "\\end{polaraxis}")
-    TikzPicture(takebuf_string(o), options=pgfplotsoptions(), preamble=preamble)
+    TikzPicture(takebuf_string(o), options=pgfplotsoptions(), preamble=pgfplotspreamble())
 end
 
 function plot(p::GroupPlot)
@@ -409,7 +437,7 @@ function plot(p::GroupPlot)
         plotHelper(o, a)
     end
     println(o, "\\end{groupplot}")
-    mypreamble = preamble * "\\usepgfplotslibrary{groupplots}"
+    mypreamble = pgfplotspreamble() * "\\usepgfplotslibrary{groupplots}"
     TikzPicture(takebuf_string(o), options=pgfplotsoptions(), preamble=mypreamble)
 end
 
