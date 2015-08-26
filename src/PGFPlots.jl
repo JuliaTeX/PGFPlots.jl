@@ -4,6 +4,7 @@ export LaTeXString, @L_str, @L_mstr
 export plot, Axis, PolarAxis, GroupPlot, Plots, ColorMaps, save, define_color
 export pushPGFPlotsOptions, popPGFPlotsOptions, pushPGFPlotsPreamble, popPGFPlotsPreamble, pgfplotsoptions, pgfplotspreamble
 export pushPGFPlots, popPGFPlots
+import Colors: RGB
 
 using Compat
 
@@ -44,16 +45,36 @@ end
 
 pgfplotspreamble() = join(_pgfplotspreamble, "\n")
 
+function define_color(name::String, color::RGB)
+    _pgfplotspreamble[end] = _pgfplotspreamble[end] * "\n\\definecolor{$name}{rgb}{$(color.r), $(color.g), $(color.b)}"
+end
+
+define_color(name::String, color) = define_color(name, convert(RGB, color))
+
 function define_color{T<:FloatingPoint}(name::String, color::Vector{T})
-    @assert(length(color) == 3, "Color must have three components")
-    r, g, b = color[1], color[2], color[3]
-    _pgfplotspreamble[end] = _pgfplotspreamble[end] * "\n\\definecolor{$name}{rgb}{$r, $g, $b}"
+    if length(color) == 3
+        r, g, b = color[1], color[2], color[3]
+        _pgfplotspreamble[end] = _pgfplotspreamble[end] * "\n\\definecolor{$name}{rgb}{$r, $g, $b}"
+    elseif length(color) == 4
+        c, m, y, k = color[1], color[2], color[3], color[4]
+        _pgfplotspreamble[end] = _pgfplotspreamble[end] * "\n\\definecolor{$name}{cmyk}{$c, $m, $y, $k}"
+    else
+        error("Color must have three or four components")
+    end
 end
 
 function define_color{T<:Integer}(name::String, color::Vector{T})
     @assert(length(color) == 3, "Color must have three components")
     r, g, b = color[1], color[2], color[3]
     _pgfplotspreamble[end] = _pgfplotspreamble[end] * "\n\\definecolor{$name}{RGB}{$r, $g, $b}"
+end
+
+function define_color(name::String, color::UInt32)
+    _pgfplotspreamble[end] = _pgfplotspreamble[end] * "\n\\definecolor{$name}{HTML}{$(hex(color))}"
+end
+
+function define_color(name::String, color::Real)
+    _pgfplotspreamble[end] = _pgfplotspreamble[end] * "\n\\definecolor{$name}{gray}{$color}"
 end
 
 histogramMap = [
