@@ -56,6 +56,23 @@ type Linear3 <: Plot
     Linear3{T<:Real}(data::AbstractArray{T,2}; mark=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = new(data, mark, style, legendentry, onlyMarks)
 end
 
+type Scatter <: Plot
+    data::AbstractArray{Any,2}
+    mark
+    style
+    legendentry
+    onlyMarks
+	scatterClasses
+
+	function Scatter{T<:Any}(data::AbstractArray{T,2}; mark=nothing, style=nothing, onlyMarks=true, legendentry=nothing, scatterClasses=nothing)
+		if size(data,1) == 2
+			return Linear(data, mark=mark, style=style, onlyMarks=onlyMarks, legendentry=legendentry)
+		else
+			return new(data, mark, style, legendentry, onlyMarks, scatterClasses)
+		end
+	end
+end
+
 type ErrorBars <: Plot
     data::AbstractArray{Real,2}
     mark
@@ -126,9 +143,10 @@ ErrorBars{A<:Real, B<:Real, C<:Real, D<:Real, E<:Real, F<:Real}(x::AbstractArray
 ErrorBars{A<:Real, B<:Real, C<:Real, D<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}, yplus::AbstractArray{C,1},yminus::AbstractArray{D,1}; mark=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = ErrorBars([x y zeros(length(x)) yplus zeros(length(x)) yminus]', mark=mark, style=style, legendentry=legendentry)
 ErrorBars{A<:Real, B<:Real, C<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}, yplusminus::AbstractArray{C,1}; mark=nothing, style=nothing, legendentry=nothing) = ErrorBars([x y zeros(length(x)) yplusminus zeros(length(x)) yplusminus]', mark=mark, style=style, legendentry=legendentry)
 
-Scatter{T<:Real}(data::AbstractArray{T,2}; mark=nothing, style=nothing, legendentry=nothing) = Linear(data, mark=mark, style=style, onlyMarks = true, legendentry=nothing)
-Scatter{A<:Real, B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}; mark=nothing, style=nothing, legendentry=nothing) = Scatter([x y]', mark=mark, style=style, legendentry=nothing)
+Scatter{A<:Real, B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}; mark=nothing, style=nothing, legendentry=nothing, scatterClasses=nothing) = Scatter([x y]', mark=mark, style=style, legendentry=nothing, scatterClasses=scatterClasses)
+Scatter{A<:Real, B<:Real, C<:Any}(x::AbstractArray{A,1}, y::AbstractArray{B,1}, f::AbstractArray{C,1}; mark=nothing, style=nothing, legendentry=nothing, scatterClasses=nothing) = Scatter([x y f]', mark=mark, style=style, legendentry=nothing, scatterClasses=scatterClasses)
 Scatter{A<:Real, B<:Real}(x::A, y::B; mark=nothing, style=nothing, legendentry=nothing) = Scatter([x y]', mark=mark, style=style, legendentry=nothing)
+Scatter{A<:Real, B<:Real}(x::A, y::B, f; mark=nothing, style=nothing, legendentry=nothing, scatterClasses=nothing) = Scatter([x y f]', mark=mark, style=style, legendentry=nothing, scatterClasses=scatterClasses)
 
 global _imgid = 1
 

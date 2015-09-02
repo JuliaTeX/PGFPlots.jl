@@ -89,6 +89,13 @@ linearMap = [
     :onlyMarks => "only marks"
     ]
 
+scatterMap = [
+    :mark => "mark",
+    :style => "",
+    :onlyMarks => "only marks",
+	:scatterClasses => "scatter/classes"
+    ]
+
 errorbarsMap = [
     :mark => "mark",
     :style => ""
@@ -319,6 +326,23 @@ function plotHelper(o::IOBuffer, p::Linear)
     println(o, "coordinates {")
     for i = 1:size(p.data,2)
         println(o, "($(p.data[1,i]), $(p.data[2,i]))")
+    end
+    println(o, "};")
+    if p.legendentry != nothing
+        println(o, "\\addlegendentry{$(p.legendentry)}")
+    end
+end
+
+function plotHelper(o::IOBuffer, p::Scatter)
+	if p.scatterClasses == nothing
+		print(o, "\\addplot+[scatter, scatter src=explicit, ")
+	else
+		print(o, "\\addplot+[scatter, scatter src=explicit symbolic, ")
+	end
+    optionHelper(o, scatterMap, p)
+    println(o, "] coordinates {")
+    for i = 1:size(p.data,2)
+        println(o, "($(p.data[1,i]), $(p.data[2,i])) [$(p.data[3,i])]")
     end
     println(o, "};")
     if p.legendentry != nothing
