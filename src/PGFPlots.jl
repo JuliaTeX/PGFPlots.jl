@@ -92,6 +92,7 @@ linearMap = [
 
 scatterMap = [
     :mark => "mark",
+	:markSize => "mark size",
     :style => "",
     :onlyMarks => "only marks",
 	:scatterClasses => "scatter/classes"
