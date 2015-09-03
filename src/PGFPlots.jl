@@ -141,16 +141,17 @@ type Axis
     legendPos
     xmode
     ymode
+	colorbar
 
     Axis(plot::Plot;title=nothing, xlabel=nothing, ylabel=nothing, zlabel=nothing, xmin=nothing, xmax=nothing,
          ymin=nothing, ymax=nothing, axisEqual=nothing, axisEqualImage=nothing, enlargelimits=nothing, axisOnTop=nothing, view="{0}{90}",
-		 width=nothing, height=nothing, style=nothing, legendPos=nothing, xmode=nothing, ymode=nothing) =
-        new([plot], title, xlabel, ylabel, zlabel, xmin, xmax, ymin, ymax, axisEqual, axisEqualImage, enlargelimits, axisOnTop, view, width, height, style, legendPos, xmode, ymode
+		 width=nothing, height=nothing, style=nothing, legendPos=nothing, xmode=nothing, ymode=nothing, colorbar=nothing) =
+        new([plot], title, xlabel, ylabel, zlabel, xmin, xmax, ymin, ymax, axisEqual, axisEqualImage, enlargelimits, axisOnTop, view, width, height, style, legendPos, xmode, ymode, colorbar
             )
     Axis{P <: Plot}(plots::Vector{P};title=nothing, xlabel=nothing, ylabel=nothing, zlabel=nothing, xmin=nothing, xmax=nothing,
                     ymin=nothing, ymax=nothing, axisEqual=nothing, axisEqualImage=nothing, enlargelimits=nothing, axisOnTop=nothing, view="{0}{90}", width=nothing,
-					height=nothing, style=nothing, legendPos=nothing, xmode=nothing, ymode=nothing) =
-        new(plots, title, xlabel, ylabel, zlabel, xmin, xmax, ymin, ymax, axisEqual, axisEqualImage, enlargelimits, axisOnTop, view, width, height, style, legendPos, xmode, ymode
+					height=nothing, style=nothing, legendPos=nothing, xmode=nothing, ymode=nothing, colorbar=nothing) =
+        new(plots, title, xlabel, ylabel, zlabel, xmin, xmax, ymin, ymax, axisEqual, axisEqualImage, enlargelimits, axisOnTop, view, width, height, style, legendPos, xmode, ymode, colorbar
             )
 
     # Constructors specifically for 3d plot case
@@ -159,13 +160,13 @@ type Axis
     #  Won't it figure it out on its own?
     Axis(plot::Linear3;title=nothing, xlabel=nothing, ylabel=nothing, zlabel=nothing, xmin=nothing, xmax=nothing,
          ymin=nothing, ymax=nothing, axisEqual=nothing, axisEqualImage=nothing, enlargelimits=nothing, axisOnTop=nothing, view=nothing, width=nothing,
-		 height=nothing, style=nothing, legendPos=nothing, xmode=nothing, ymode=nothing) =
-        new([plot], title, xlabel, ylabel, zlabel, xmin, xmax, ymin, ymax, axisEqual, axisEqualImage, enlargelimits, axisOnTop, view, width, height, style, legendPos, xmode, ymode
+		 height=nothing, style=nothing, legendPos=nothing, xmode=nothing, ymode=nothing, colorbar=nothing) =
+        new([plot], title, xlabel, ylabel, zlabel, xmin, xmax, ymin, ymax, axisEqual, axisEqualImage, enlargelimits, axisOnTop, view, width, height, style, legendPos, xmode, ymode, colorbar
             )
     Axis(plots::Vector{Linear3};title=nothing, xlabel=nothing, ylabel=nothing, zlabel=nothing, xmin=nothing, xmax=nothing,
          ymin=nothing, ymax=nothing, axisEqual=nothing, axisEqualImage=nothing, enlargelimits=nothing, axisOnTop=nothing, view=nothing, width=nothing,
-		 height=nothing, style=nothing, legendPos=nothing,xmode=nothing,ymode=nothing) =
-        new(plots, title, xlabel, ylabel, zlabel, xmin, xmax, ymin, ymax, axisEqual, axisEqualImage, enlargelimits, axisOnTop, view, width, height, style, legendPos, xmode, ymode
+		 height=nothing, style=nothing, legendPos=nothing,xmode=nothing,ymode=nothing, colorbar=nothing) =
+        new(plots, title, xlabel, ylabel, zlabel, xmin, xmax, ymin, ymax, axisEqual, axisEqualImage, enlargelimits, axisOnTop, view, width, height, style, legendPos, xmode, ymode, colorbar
             )
 
 end
@@ -200,7 +201,8 @@ axisMap = [
     :style => "",
     :legendPos => "legend pos",
     :xmode => "xmode",
-    :ymode => "ymode"
+    :ymode => "ymode",
+	:colorbar => "colorbar"
     ]
 
 polarAxisMap = [
