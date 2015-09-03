@@ -85,6 +85,7 @@ histogramMap = [
 
 linearMap = [
     :mark => "mark",
+	:markSize => "mark size",
     :style => "",
     :onlyMarks => "only marks"
     ]
