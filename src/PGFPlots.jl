@@ -494,7 +494,7 @@ end
 
 
 
-typealias Plottable Union(Plot,GroupPlot,Axis,PolarAxis)
+typealias Plottable Union(Plot,GroupPlot,Axis,PolarAxis,TikzPicture)
 
 plot(p::Plot) = plot(Axis(p))
 
