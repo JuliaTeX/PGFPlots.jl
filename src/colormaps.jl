@@ -26,7 +26,7 @@ function SparseDistinguishable(n, nonzeroidx; zerocolor = RGB{Float64}(1.,1.,1.)
     ColorMaps.RGBArray(m)
 end
 
-function Named(name::String = "Jet", levels=255)
+function Named(name::AbstractString = "Jet", levels=255)
     if isequal(name, "Jet")
         return RGBArray([RGB(min(max(min(4*i/256-1.5,-4*i/256+4.5),0),1), min(max(min(4*i/256-0.5,-4*i/256+3.5),0),1),min(max(min(4*i/256+0.5,-4*i/256+2.5),0),1)) for i = 1:255])
     else
