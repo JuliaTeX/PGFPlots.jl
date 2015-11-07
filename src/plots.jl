@@ -16,7 +16,7 @@ type Histogram <: Plot
     bins::Integer
     density::Bool
     cumulative::Bool
-    style::String
+    style::AbstractString
     Histogram(data; bins=20, density=false, cumulative=false, style="fill=blue!10") = new(data, bins, density, cumulative, style)
 end
 
@@ -154,7 +154,7 @@ Scatter{A<:Real, B<:Real}(x::A, y::B, f; mark=nothing, markSize=nothing, style=n
 global _imgid = 1
 
 type Image <: Plot
-    filename::String
+    filename::AbstractString
     xmin::Real
     xmax::Real
     ymin::Real

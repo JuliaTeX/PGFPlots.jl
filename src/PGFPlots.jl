@@ -13,16 +13,16 @@ include("plots.jl")
 
 import TikzPictures: TikzPicture, PDF, TEX, SVG, save, LaTeXString, @L_str, @L_mstr
 
-_pgfplotsoptions = {""}
+_pgfplotsoptions = Any[""]
 
-pushPGFPlotsOptions(options::String) = push!(_pgfplotsoptions, options)
+pushPGFPlotsOptions(options::AbstractString) = push!(_pgfplotsoptions, options)
 function popPGFPlotsOptions()
     if length(_pgfplotsoptions) > 1
         pop!(_pgfplotsoptions)
     end
 end
 
-function pushPGFPlots(options::String)
+function pushPGFPlots(options::AbstractString)
     warn("Use pushPGFPlotsOptions")
     pushPGFPlotsOptions(options)
 end
@@ -34,9 +34,9 @@ end
 
 pgfplotsoptions() = join(_pgfplotsoptions, "\n")
 
-_pgfplotspreamble = {readall(joinpath(Pkg.dir("PGFPlots"), "src", "preamble.tex"))}
+_pgfplotspreamble = Any[readall(joinpath(Pkg.dir("PGFPlots"), "src", "preamble.tex"))]
 
-pushPGFPlotsPreamble(preamble::String) = push!(_pgfplotspreamble, preamble)
+pushPGFPlotsPreamble(preamble::AbstractString) = push!(_pgfplotspreamble, preamble)
 function popPGFPlotsPreamble()
     if length(_pgfplotspreamble) > 1
         pop!(_pgfplotspreamble)
@@ -45,13 +45,13 @@ end
 
 pgfplotspreamble() = join(_pgfplotspreamble, "\n")
 
-function define_color(name::String, color::RGB)
+function define_color(name::AbstractString, color::RGB)
     _pgfplotspreamble[end] = _pgfplotspreamble[end] * "\n\\definecolor{$name}{rgb}{$(color.r), $(color.g), $(color.b)}"
 end
 
-define_color(name::String, color) = define_color(name, convert(RGB, color))
+define_color(name::AbstractString, color) = define_color(name, convert(RGB, color))
 
-function define_color{T<:FloatingPoint}(name::String, color::Vector{T})
+function define_color{T<:AbstractFloat}(name::AbstractString, color::Vector{T})
     if length(color) == 3
         r, g, b = color[1], color[2], color[3]
         _pgfplotspreamble[end] = _pgfplotspreamble[end] * "\n\\definecolor{$name}{rgb}{$r, $g, $b}"
@@ -63,56 +63,56 @@ function define_color{T<:FloatingPoint}(name::String, color::Vector{T})
     end
 end
 
-function define_color{T<:Integer}(name::String, color::Vector{T})
+function define_color{T<:Integer}(name::AbstractString, color::Vector{T})
     @assert(length(color) == 3, "Color must have three components")
     r, g, b = color[1], color[2], color[3]
     _pgfplotspreamble[end] = _pgfplotspreamble[end] * "\n\\definecolor{$name}{RGB}{$r, $g, $b}"
 end
 
-function define_color(name::String, color::UInt32)
+function define_color(name::AbstractString, color::UInt32)
     _pgfplotspreamble[end] = _pgfplotspreamble[end] * "\n\\definecolor{$name}{HTML}{$(uppercase(hex(color)))}"
 end
 
-function define_color(name::String, color::Real)
+function define_color(name::AbstractString, color::Real)
     _pgfplotspreamble[end] = _pgfplotspreamble[end] * "\n\\definecolor{$name}{gray}{$color}"
 end
 
-histogramMap = [
+histogramMap = Dict(
     :bins => "bins",
     :density => "density",
     :cumulative => "cumulative"
-    ]
+    )
 
-linearMap = [
+linearMap = Dict(
     :mark => "mark",
 	:markSize => "mark size",
     :style => "",
     :onlyMarks => "only marks"
-    ]
+    )
 
-scatterMap = [
+scatterMap = Dict(
     :mark => "mark",
 	:markSize => "mark size",
     :style => "",
     :onlyMarks => "only marks",
 	:scatterClasses => "scatter/classes"
-    ]
+    )
 
-errorbarsMap = [
+errorbarsMap = Dict(
     :mark => "mark",
     :style => ""
-    ]
+    )
 
-quiverMap = [
+quiverMap = Dict(
     :style => ""
-    ]
+    )
 
 
-contourMap = [
+contourMap = Dict(
     :number => "number",
     :levels => "levels",
     :style => ""
-    ]
+    )
 
 
 using .Plots
@@ -185,7 +185,7 @@ type PolarAxis
     PolarAxis{P <: Plot}(plots::Vector{P};title=nothing, ymax=nothing, xticklabel=nothing, yticklabel=nothing) = new(plots, title, ymax, xticklabel, yticklabel)
 end
 
-axisMap = [
+axisMap = Dict(
     :title => "title",
     :xlabel => "xlabel",
     :ylabel => "ylabel",
@@ -208,14 +208,14 @@ axisMap = [
 	:colorbar => "colorbar",
 	:hideAxis => "hide axis",
 	:axisLines => "axis lines"
-    ]
+    )
 
-polarAxisMap = [
+polarAxisMap = Dict(
     :title => "title",
     :ymax => "ymax",
     :xticklabel => "xticklabel",
     :yticklabel => "yticklabel"
-    ]
+    )
 
 type GroupPlot
     axes::AbstractArray{Axis,1}
@@ -268,7 +268,7 @@ function printObject{T}(o::IOBuffer, object::AbstractArray{T,1})
 end
 
 
-function optionHelper(o::IOBuffer, m, object; brackets=false, otherOptions=Dict{String,String}[], otherText=nothing)
+function optionHelper(o::IOBuffer, m, object; brackets=false, otherOptions=Dict{AbstractString,AbstractString}[], otherText=nothing)
     first = true
     for (sym, str) in m
         if object.(sym) != nothing
@@ -399,7 +399,7 @@ end
 
 function plotHelper(o::IOBuffer, p::Quiver)
     print(o, "\\addplot+ ")
-    optionHelper(o, quiverMap, p, brackets=true, otherOptions=["quiver"=>"{u=\\thisrow{u},v=\\thisrow{v}}"])
+    optionHelper(o, quiverMap, p, brackets=true, otherOptions=Dict("quiver"=>"{u=\\thisrow{u},v=\\thisrow{v}}"))
     println(o, "table {")
     println(o, "x y u v")
     for i = 1:size(p.data,2)
@@ -496,7 +496,7 @@ end
 
 
 
-typealias Plottable Union(Plot,GroupPlot,Axis,PolarAxis,TikzPicture)
+typealias Plottable Union{Plot,GroupPlot,Axis,PolarAxis,TikzPicture}
 
 plot(p::Plot) = plot(Axis(p))
 
@@ -573,7 +573,7 @@ function Base.writemime(f::IO, a::MIME"image/svg+xml", p::Plottable)
     r
 end
 
-function save(filename::String, o::Plottable)
+function save(filename::AbstractString, o::Plottable)
     _, ext = splitext(filename)
     ext = lowercase(ext)
     if ext == ".pdf"
