@@ -144,16 +144,17 @@ type Axis
     ymode
 	colorbar
 	hideAxis
+	axisLines
 
     Axis(plot::Plot;title=nothing, xlabel=nothing, ylabel=nothing, zlabel=nothing, xmin=nothing, xmax=nothing,
          ymin=nothing, ymax=nothing, axisEqual=nothing, axisEqualImage=nothing, enlargelimits=nothing, axisOnTop=nothing, view="{0}{90}",
-		 width=nothing, height=nothing, style=nothing, legendPos=nothing, xmode=nothing, ymode=nothing, colorbar=nothing, hideAxis=nothing) =
-        new([plot], title, xlabel, ylabel, zlabel, xmin, xmax, ymin, ymax, axisEqual, axisEqualImage, enlargelimits, axisOnTop, view, width, height, style, legendPos, xmode, ymode, colorbar, hideAxis
+		 width=nothing, height=nothing, style=nothing, legendPos=nothing, xmode=nothing, ymode=nothing, colorbar=nothing, hideAxis=nothing, axisLines=nothing) =
+        new([plot], title, xlabel, ylabel, zlabel, xmin, xmax, ymin, ymax, axisEqual, axisEqualImage, enlargelimits, axisOnTop, view, width, height, style, legendPos, xmode, ymode, colorbar, hideAxis, axisLines
             )
     Axis{P <: Plot}(plots::Vector{P};title=nothing, xlabel=nothing, ylabel=nothing, zlabel=nothing, xmin=nothing, xmax=nothing,
                     ymin=nothing, ymax=nothing, axisEqual=nothing, axisEqualImage=nothing, enlargelimits=nothing, axisOnTop=nothing, view="{0}{90}", width=nothing,
-					height=nothing, style=nothing, legendPos=nothing, xmode=nothing, ymode=nothing, colorbar=nothing, hideAxis=nothing) =
-        new(plots, title, xlabel, ylabel, zlabel, xmin, xmax, ymin, ymax, axisEqual, axisEqualImage, enlargelimits, axisOnTop, view, width, height, style, legendPos, xmode, ymode, colorbar, hideAxis
+					height=nothing, style=nothing, legendPos=nothing, xmode=nothing, ymode=nothing, colorbar=nothing, hideAxis=nothing, axisLines=nothing) =
+        new(plots, title, xlabel, ylabel, zlabel, xmin, xmax, ymin, ymax, axisEqual, axisEqualImage, enlargelimits, axisOnTop, view, width, height, style, legendPos, xmode, ymode, colorbar, hideAxis, axisLines
             )
 
     # Constructors specifically for 3d plot case
@@ -162,13 +163,13 @@ type Axis
     #  Won't it figure it out on its own?
     Axis(plot::Linear3;title=nothing, xlabel=nothing, ylabel=nothing, zlabel=nothing, xmin=nothing, xmax=nothing,
          ymin=nothing, ymax=nothing, axisEqual=nothing, axisEqualImage=nothing, enlargelimits=nothing, axisOnTop=nothing, view=nothing, width=nothing,
-		 height=nothing, style=nothing, legendPos=nothing, xmode=nothing, ymode=nothing, colorbar=nothing, hideAxis=nothing) =
-        new([plot], title, xlabel, ylabel, zlabel, xmin, xmax, ymin, ymax, axisEqual, axisEqualImage, enlargelimits, axisOnTop, view, width, height, style, legendPos, xmode, ymode, colorbar, hideAxis
+		 height=nothing, style=nothing, legendPos=nothing, xmode=nothing, ymode=nothing, colorbar=nothing, hideAxis=nothing, axisLines=nothing) =
+        new([plot], title, xlabel, ylabel, zlabel, xmin, xmax, ymin, ymax, axisEqual, axisEqualImage, enlargelimits, axisOnTop, view, width, height, style, legendPos, xmode, ymode, colorbar, hideAxis, axisLines
             )
     Axis(plots::Vector{Linear3};title=nothing, xlabel=nothing, ylabel=nothing, zlabel=nothing, xmin=nothing, xmax=nothing,
          ymin=nothing, ymax=nothing, axisEqual=nothing, axisEqualImage=nothing, enlargelimits=nothing, axisOnTop=nothing, view=nothing, width=nothing,
-		 height=nothing, style=nothing, legendPos=nothing,xmode=nothing,ymode=nothing, colorbar=nothing, hideAxis=nothing) =
-        new(plots, title, xlabel, ylabel, zlabel, xmin, xmax, ymin, ymax, axisEqual, axisEqualImage, enlargelimits, axisOnTop, view, width, height, style, legendPos, xmode, ymode, colorbar, hideAxis
+		 height=nothing, style=nothing, legendPos=nothing,xmode=nothing,ymode=nothing, colorbar=nothing, hideAxis=nothing, axisLines=nothing) =
+        new(plots, title, xlabel, ylabel, zlabel, xmin, xmax, ymin, ymax, axisEqual, axisEqualImage, enlargelimits, axisOnTop, view, width, height, style, legendPos, xmode, ymode, colorbar, hideAxis, axisLines
             )
 
 end
@@ -205,7 +206,8 @@ axisMap = [
     :xmode => "xmode",
     :ymode => "ymode",
 	:colorbar => "colorbar",
-	:hideAxis => "hide axis"
+	:hideAxis => "hide axis",
+	:axisLines => "axis lines"
     ]
 
 polarAxisMap = [
