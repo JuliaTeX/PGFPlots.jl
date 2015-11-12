@@ -1,7 +1,7 @@
 module ColorMaps
 
 export ColorMap, Gray, RGBArray, Distinguishable, SparseDistinguishable, write
-import Images: grayim, imwrite, ImageCmap
+import Images: grayim, save, ImageCmap
 import Colors: RGB, distinguishable_colors, colormap
 
 abstract ColorMap
@@ -37,17 +37,17 @@ end
 function Base.write(colormap::ColorMaps.Gray, data, filename)
     if colormap.invert
         inverteddata = 1. - data
-        imwrite(grayim(rotr90(flipud(inverteddata))), filename)
+        save(filename, grayim(rotr90(flipdim(inverteddata, 1))))
     else
-        imwrite(grayim(rotr90(flipud(data))), filename)
+        save(filename, grayim(rotr90(flipdim(data, 1))))
     end
 end
 
 Base.write(colormap::ColorMap, data, filename) = error("Not supported")
 
 function Base.write(colormap::ColorMaps.RGBArray, data, filename)
-    img = ImageCmap(uint8(1.+(length(colormap.colors)-1).*(data)), colormap.colors)
-    imwrite(img, filename)
+    img = ImageCmap(round(UInt8, 1.+(length(colormap.colors)-1).*(data)), colormap.colors)
+    save(filename, img)
 end
 
 end

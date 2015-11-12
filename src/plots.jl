@@ -193,7 +193,7 @@ type Image <: Plot
         y = linspace(yrange[1], yrange[2], ybins)
         (X, Y) = meshgrid(x, y)
         A = map(f, X, Y)
-        A = flipud(A)
+        A = flipdim(A, 1)
         Image(A, xrange, yrange, filename=filename, colorbar=colorbar, colormap=colormap, zmin=zmin, zmax=zmax)
     end
 end
