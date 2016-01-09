@@ -281,9 +281,12 @@ function optionHelper(o::IOBuffer, m, object; brackets=false, otherOptions=Dict{
                 print(o, ", ")
             end
             if length(str) > 0
-                print(o, "$str = ")
+                print(o, "$str = {")
             end
             printObject(o, object.(sym))
+            if length(str) > 0
+                print(o, "}")
+            end
         end
     end
     for (k, v) in otherOptions
