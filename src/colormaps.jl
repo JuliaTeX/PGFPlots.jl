@@ -1,8 +1,9 @@
 module ColorMaps
 
-export ColorMap, Gray, RGBArray, Distinguishable, SparseDistinguishable, write
+export ColorMap, Gray, Brew, RGBArray, Distinguishable, SparseDistinguishable, write
 import Images: grayim, save, ImageCmap
 import Colors: RGB, distinguishable_colors, colormap
+import ColorBrewer: palette
 
 abstract ColorMap
 
@@ -13,9 +14,21 @@ end
 
 type RGBArray <: ColorMap
     colors::Array{RGB{Float64},1}
+    function RGBArray(colors; invert=false)
+        if invert
+            colors = flipdim(colors, 1)
+        end
+        new(colors)
+    end
 end
 
-Distinguishable(n::Integer) = RGBArray(convert(Array{RGB{Float64},1}, distinguishable_colors(n)))
+function Brew(name::AbstractString, number::Integer; invert = false)
+    RGBArray(palette(name, number), invert=invert)
+end
+
+function Distinguishable(n::Integer; invert=false)
+    RGBArray(convert(Array{RGB{Float64},1}, distinguishable_colors(n)), invert=invert)
+end
 
 function SparseDistinguishable(n, nonzeroidx; zerocolor = RGB{Float64}(1.,1.,1.))
     m = RGB{Float64}[zerocolor for i = 1:n]
