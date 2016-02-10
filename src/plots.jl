@@ -1,6 +1,6 @@
 module Plots
 
-export Plot, Histogram, Linear, Linear3, ErrorBars, Image, Contour, Scatter, Quiver, Node, Circle, Ellipse
+export Plot, Histogram, Histogram2, Linear, Linear3, ErrorBars, Image, Contour, Scatter, Quiver, Node, Circle, Ellipse
 
 using ..ColorMaps
 using Compat
@@ -180,12 +180,14 @@ type Image <: Plot
             zmin -= 1.
             zmax += 1.
         end
+        A = clamp(A, zmin, zmax)
         A = A .- zmin
         A = A ./ (zmax - zmin)
-        if !isa(colormap, ColorMaps.ColorMap)
+        if isa(colormap, ColorMaps.ColorMap)
+            write(colormap, A, filename)
+        else
             write(ColorMaps.RGBArray(colormap), A, filename)
         end
-        write(colormap, A, filename)
         new(filename, xrange[1], xrange[2], yrange[1], yrange[2], zmin, zmax, colorbar, colormap)
     end
     function Image(f::Function, xrange::RealRange, yrange::RealRange; filename=nothing, colorbar=true, colormap=ColorMaps.Gray(), zmin=nothing, zmax=nothing, xbins=100, ybins=100)
@@ -196,6 +198,18 @@ type Image <: Plot
         A = flipdim(A, 1)
         Image(A, xrange, yrange, filename=filename, colorbar=colorbar, colormap=colormap, zmin=zmin, zmax=zmax)
     end
+end
+
+function Histogram2{A<:Real, B<:Real}(x::Vector{A}, y::Vector{B}; xmin=minimum(x), xmax=maximum(x), ymin=minimum(y), ymax=maximum(y), xbins=50, ybins=50, density=false, filename=nothing, colorbar=true, colormap=ColorMaps.Gray(), zmin=nothing, zmax=nothing)
+    ex = linspace(xmin, xmax, xbins+1)
+    ey = linspace(ymin, ymax, ybins+1)
+    ex, ey, M = hist2d(hcat(y, x), ey, ex)
+    M = flipdim(M, 1)
+    if density
+        scale =  xbins * ybins / ((xmax-xmin) * (ymax-ymin) * sum(M))
+        M = M * scale
+    end
+    Image(M, (xmin, xmax), (ymin, ymax), filename=filename, colorbar=colorbar, colormap=colormap, zmin=zmin, zmax=zmax)
 end
 
 end # end plot module
