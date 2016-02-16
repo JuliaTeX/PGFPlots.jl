@@ -5,6 +5,11 @@ julia:
   - release
 notifications:
   email: false
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y pdf2svg
+  - sudo apt-get install -y texlive-latex-base
+  - sudo apt-get install -y texlive-binaries    
 script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
   - julia --check-bounds=yes -e 'Pkg.clone(pwd()); Pkg.build("PGFPlots"); Pkg.test("PGFPlots"; coverage=true)'
