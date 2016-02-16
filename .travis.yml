@@ -1,6 +1,6 @@
 language: julia
-os:
-  - linux
+sudo: required
+dist: trusty
 julia:
   - release
 notifications:
@@ -11,7 +11,7 @@ before_install:
   - sudo apt-get install -y texlive-latex-base
   - sudo apt-get install -y texlive-binaries
   - sudo apt-get install -y texlive-pictures
-  - tlmgr install standalone    
+  - sudo apt-get install -y texlive-latex-extra
 script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
   - julia --check-bounds=yes -e 'Pkg.clone(pwd()); Pkg.build("PGFPlots"); Pkg.test("PGFPlots"; coverage=true)'
