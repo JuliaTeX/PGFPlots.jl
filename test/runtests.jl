@@ -1,5 +1,7 @@
 using PGFPlots
 using Base.Test
 
-# write your own tests here
-@test 1 == 1
+@assert success(`lualatex -v`)
+Pkg.add("NBInclude")
+using NBInclude
+nbinclude(Pkg.dir("PGFPlots", "doc", "PGFPlots.ipynb"))
