@@ -21,20 +21,23 @@ type Histogram <: Plot
 end
 
 type Contour <: Plot
-    data::AbstractArray{Real,2} # 3 x n matrix
-    cols::Integer
-    rows::Integer
+    data::AbstractMatrix{Real}
+    xbins
+    ybins
     style
     number
     levels
-    Contour(data, cols, rows; style=nothing, number=nothing, levels=nothing) = new(data, cols, rows, style, number, levels)
-    function Contour(f::Function, xrange::RealRange, yrange::RealRange; style=nothing, number=nothing, levels=nothing)
-        x = linspace(xrange[1], xrange[2], 40)
-        y = linspace(yrange[1], yrange[2], 40)
-        (X, Y) = meshgrid(x, y)
-        A = map(f, X, Y)
-        A = [X[:]'; Y[:]'; A[:]']
-        new(A, length(x), length(y), style, number, levels)
+    Contour(data, xbins, ybins; style=nothing, number=nothing, levels=nothing) = new(data, xbins, ybins, style, number, levels)
+    function Contour(f::Function, xrange::RealRange, yrange::RealRange; xbins=40, ybins=40, style=nothing, number=nothing, levels=nothing)
+        x = linspace(xrange[1], xrange[2], xbins)
+        y = linspace(yrange[1], yrange[2], ybins)
+        A = zeros(xbins, ybins)
+        try
+            A = Float64[f(xi, yi) for xi in x, yi in y]
+        catch
+            A = Float64[f([xi,yi]) for xi in x, yi in y]
+        end
+        new(A, x, y, style, number, levels)
     end
 end
 

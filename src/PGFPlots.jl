@@ -5,6 +5,7 @@ export plot, Axis, PolarAxis, GroupPlot, Plots, ColorMaps, save, define_color
 export pushPGFPlotsOptions, popPGFPlotsOptions, pushPGFPlotsPreamble, popPGFPlotsPreamble, pgfplotsoptions, pgfplotspreamble
 export pushPGFPlots, popPGFPlots
 import Colors: RGB
+import Contour: contours
 
 using Compat
 
@@ -415,16 +416,25 @@ function plotHelper(o::IOBuffer, p::Quiver)
 end
 
 function plotHelper(o::IOBuffer, p::Contour)
-    try
-        success(`gnuplot --version`)
-    catch
-        error("You must have gnuplot installed and on your path to do contour plots.")
+    arg = 5
+    if p.number != nothing
+        arg = p.number
+    elseif p.levels != nothing
+        arg = p.levels
     end
-    print(o, "\\addplot3[contour gnuplot={")
-    optionHelper(o, contourMap, p)
-    println(o, "}, mesh/cols=$(p.cols), mesh/rows=$(p.rows)] coordinates {")
-    for i = 1:size(p.data,2)
-        println(o, "($(p.data[1,i]), $(p.data[2,i]), $(p.data[3,i]))")
+    C = contours(p.xbins, p.ybins, convert(Matrix{Float64}, p.data), arg)
+    if p.style != nothing
+        print(o, "\\addplot3[contour prepared, $(p.style)] table {")
+    else
+        print(o, "\\addplot3[contour prepared] table {")
+    end
+    for c in C
+        level = c.level
+        for l in c.lines
+            for v in l.vertices
+                println(o, "$(v[1]) $(v[2]) $level")
+            end
+        end
     end
     println(o, "};")
 end
@@ -503,6 +513,10 @@ typealias Plottable Union{Plot,GroupPlot,Axis,PolarAxis,TikzPicture}
 
 plot(p::Plot) = plot(Axis(p))
 
+function plot(p::Contour)
+    plot(Axis(p, xmin=p.xbins[1], xmax=p.xbins[end], ymin=p.ybins[1], ymax=p.ybins[end]))
+end
+
 plot{A<:Real,B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}) = plot(Linear(x, y))
 
 plot{A<:Real,B<:Real,C<:Real}(x::AbstractVector{A}, y::AbstractVector{B}, z::AbstractVector{C}) = plot(Linear3(x, y, z))
@@ -533,11 +547,7 @@ cleanup(p::Ellipse) = nothing
 
 cleanup(p::Image) = rm(p.filename)
 
-function cleanup(p::Contour)
-    rm("tikzpicture_contourtmp0.dat")
-    rm("tikzpicture_contourtmp0.script")
-    rm("tikzpicture_contourtmp0.table")
-end
+cleanup(p::Contour) = nothing
 
 axisOptions(p::Plot) = nothing
 
