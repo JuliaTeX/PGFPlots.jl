@@ -235,6 +235,7 @@ function Base.push!(g::GroupPlot, a::Axis)
     if length(g.axes) > prod(g.dimensions)
         g.dimensions = (length(g.axes), 1)
     end
+    g
 end
 
 function Base.push!(g::GroupPlot, p::Plot)
