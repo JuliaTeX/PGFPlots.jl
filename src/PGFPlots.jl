@@ -587,7 +587,7 @@ function Base.writemime(f::IO, a::MIME"image/svg+xml", p::Plottable)
     r
 end
 
-function save(filename::AbstractString, o::Plottable)
+function save(filename::AbstractString, o::Plottable; include_preamble::Bool=true)
     _, ext = splitext(filename)
     ext = lowercase(ext)
     if ext == ".pdf"
@@ -595,7 +595,7 @@ function save(filename::AbstractString, o::Plottable)
     elseif ext == ".svg"
         save(SVG(filename), plot(o))
     elseif ext == ".tex"
-        save(TEX(filename), plot(o))
+        save(TEX(filename, include_preamble=include_preamble), plot(o))
     elseif ext == "." || ext == ""
         error("You must specify a file extension.")
     else
