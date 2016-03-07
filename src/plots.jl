@@ -106,7 +106,8 @@ type Circle <: Plot
 	xc
 	yc
 	radius
-	Circle(xc=0,yc=0,radius=1) = new(xc,yc,radius)
+    style
+	Circle(xc=0,yc=0,radius=1;style=nothing) = new(xc,yc,radius,style)
 end
 
 type Ellipse <: Plot
@@ -114,7 +115,8 @@ type Ellipse <: Plot
 	yc
 	xradius
 	yradius
-	Ellipse(xc=0,yc=0,xradius=1,yradius=1) = new(xc,yc,xradius,yradius)
+    style
+	Ellipse(xc=0,yc=0,xradius=1,yradius=1;style=nothing) = new(xc,yc,xradius,yradius,style)
 end
 
 function Quiver(f::Function, xrange::RealRange, yrange::RealRange; style=nothing, legendentry=nothing, samples=15, normalize=true)

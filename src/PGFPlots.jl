@@ -441,11 +441,19 @@ function plotHelper(o::IOBuffer, p::Contour)
 end
 
 function plotHelper(o::IOBuffer, p::Circle)
-	println(o, "\\draw (axis cs:$(p.xc), $(p.yc)) circle[radius=$(p.radius)];")
+    if p.style != nothing
+        println(o, "\\draw[$(p.style)] (axis cs:$(p.xc), $(p.yc)) circle[radius=$(p.radius)];")
+    else
+        println(o, "\\draw (axis cs:$(p.xc), $(p.yc)) circle[radius=$(p.radius)];")
+    end
 end
 
 function plotHelper(o::IOBuffer, p::Ellipse)
-	println(o, "\\draw (axis cs:$(p.xc), $(p.yc)) ellipse[x radius=$(p.xradius), y radius=$(p.yradius)];")
+    if p.style != nothing
+        println(o, "\\draw[$(p.style)] (axis cs:$(p.xc), $(p.yc)) ellipse[x radius=$(p.xradius), y radius=$(p.yradius)];")
+    else
+        println(o, "\\draw (axis cs:$(p.xc), $(p.yc)) ellipse[x radius=$(p.xradius), y radius=$(p.yradius)];")
+    end
 end
 
 
