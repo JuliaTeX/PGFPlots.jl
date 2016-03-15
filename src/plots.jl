@@ -1,6 +1,6 @@
 module Plots
 
-export Plot, Histogram, Histogram2, Linear, Linear3, ErrorBars, Image, Contour, Scatter, Quiver, Node, Circle, Ellipse
+export Plot, Histogram, Histogram2, Linear, Linear3, ErrorBars, Image, Contour, Scatter, Quiver, Node, Circle, Ellipse, Command
 
 using ..ColorMaps
 using Compat
@@ -117,6 +117,11 @@ type Ellipse <: Plot
 	yradius
     style
 	Ellipse(xc=0,yc=0,xradius=1,yradius=1;style=nothing) = new(xc,yc,xradius,yradius,style)
+end
+
+type Command <: Plot
+    cmd::AbstractString
+    Command(cmd::AbstractString) = new(cmd)
 end
 
 function Quiver(f::Function, xrange::RealRange, yrange::RealRange; style=nothing, legendentry=nothing, samples=15, normalize=true)
