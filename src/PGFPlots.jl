@@ -457,7 +457,7 @@ function plotHelper(o::IOBuffer, p::Ellipse)
 end
 
 function plotHelper(o::IOBuffer, p::Command)
-    println(o, p.cmd) #Expects cmd to be terminated with a ;
+    println(o, p.cmd*";") #PGFPlots expects commands to be terminated with a ;
 end
 
 
