@@ -456,6 +456,10 @@ function plotHelper(o::IOBuffer, p::Ellipse)
     end
 end
 
+function plotHelper(o::IOBuffer, p::Command)
+    println(o, p.cmd*";") #PGFPlots expects commands to be terminated with a ;
+end
+
 
 function plotHelper(o::IOBuffer, p::Image)
     if p.zmin == p.zmax
@@ -557,6 +561,8 @@ cleanup(p::Plot) = nothing
 cleanup(p::Circle) = nothing
 
 cleanup(p::Ellipse) = nothing
+
+cleanup(p::Command) = nothing
 
 cleanup(p::Image) = rm(p.filename)
 
