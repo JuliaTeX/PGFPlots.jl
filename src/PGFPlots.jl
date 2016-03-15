@@ -33,7 +33,7 @@ function popPGFPlots()
     popPGFPlotsOptions()
 end
 
-pgfplotsoptions() = join(_pgfplotsoptions, "\n")
+pgfplotsoptions() = join(_pgfplotsoptions, ",\n")
 
 _pgfplotspreamble = Any[readall(joinpath(Pkg.dir("PGFPlots"), "src", "preamble.tex"))]
 
