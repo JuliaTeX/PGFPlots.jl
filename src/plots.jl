@@ -41,6 +41,11 @@ type Contour <: Plot
     end
 end
 
+function Contour(z::AbstractMatrix, x::Range, y::Range; style=nothing, number=nothing, levels=nothing)
+    (X, Y) = meshgrid(x, y)
+    Contour([X[:]'; Y[:]'; z[:]'], length(x), length(y); style = style, number = number, number = levels)
+end
+
 type Linear <: Plot
     data::AbstractArray{Real,2}
     mark
