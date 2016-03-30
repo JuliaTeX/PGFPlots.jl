@@ -99,7 +99,8 @@ type Node <: Plot
     style
     x
     y
-    Node(data, x, y; style=nothing) = new(data, style, x, y)
+    axis # `nothing` will default to "axis cs", other options include "axis description cs", "xticklabel cs", etc.
+    Node(data, x, y; style=nothing, axis=nothing) = new(data, style, x, y, axis)
 end
 
 type Circle <: Plot

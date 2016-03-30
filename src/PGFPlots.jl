@@ -379,10 +379,13 @@ function plotHelper(o::IOBuffer, p::Linear3)
 end
 
 function plotHelper(o::IOBuffer, p::Node)
+
+    axis = p.axis != nothing ? p.axis : "axis cs"
+
     if p.style != nothing
-        println(o, "\\node at (axis cs:$(p.x), $(p.y)) [$(p.style)] {$(p.data)};")
+        println(o, "\\node at ($(axis):$(p.x), $(p.y)) [$(p.style)] {$(p.data)};")
     else
-        println(o, "\\node at (axis cs:$(p.x), $(p.y)) {$(p.data)};")
+        println(o, "\\node at ($(axis):$(p.x), $(p.y)) {$(p.data)};")
     end
 end
 
