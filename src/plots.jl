@@ -1,6 +1,6 @@
 module Plots
 
-export Plot, Histogram, Histogram2, Linear, Linear3, ErrorBars, Image, Contour, Scatter, Quiver, Node, Circle, Ellipse
+export Plot, Histogram, Histogram2, Linear, Linear3, ErrorBars, Image, Contour, Scatter, Quiver, Node, Circle, Ellipse, Command
 
 using ..ColorMaps
 using Compat
@@ -39,6 +39,11 @@ type Contour <: Plot
         end
         new(A, x, y, style, number, levels)
     end
+end
+
+function Contour(z::AbstractMatrix, x::Range, y::Range; style=nothing, number=nothing, levels=nothing)
+    (X, Y) = meshgrid(x, y)
+    Contour([X[:]'; Y[:]'; z[:]'], length(x), length(y); style = style, number = number, number = levels)
 end
 
 type Linear <: Plot
@@ -120,6 +125,11 @@ type Ellipse <: Plot
 	Ellipse(xc=0,yc=0,xradius=1,yradius=1;style=nothing) = new(xc,yc,xradius,yradius,style)
 end
 
+type Command <: Plot
+    cmd::AbstractString
+    Command(cmd::AbstractString) = new(cmd)
+end
+
 function Quiver(f::Function, xrange::RealRange, yrange::RealRange; style=nothing, legendentry=nothing, samples=15, normalize=true)
     x = linspace(xrange[1], xrange[2], samples)
     y = linspace(yrange[1], yrange[2], samples)
@@ -169,7 +179,8 @@ type Image <: Plot
     zmax::Real
     colorbar::Bool
     colormap::ColorMaps.ColorMap
-    function Image{T <: Real}(A::Matrix{T}, xrange::RealRange, yrange::RealRange; filename=nothing, colorbar=true, colormap=ColorMaps.Gray(), zmin=nothing, zmax=nothing)
+    style
+    function Image{T <: Real}(A::Matrix{T}, xrange::RealRange, yrange::RealRange; filename=nothing, colorbar=true, colormap=ColorMaps.Gray(), zmin=nothing, zmax=nothing, style=nothing)
         global _imgid
         if filename == nothing
             id=myid()*10000000000000+_imgid
@@ -194,19 +205,19 @@ type Image <: Plot
         else
             write(ColorMaps.RGBArray(colormap), A, filename)
         end
-        new(filename, xrange[1], xrange[2], yrange[1], yrange[2], zmin, zmax, colorbar, colormap)
+        new(filename, xrange[1], xrange[2], yrange[1], yrange[2], zmin, zmax, colorbar, colormap, style)
     end
-    function Image(f::Function, xrange::RealRange, yrange::RealRange; filename=nothing, colorbar=true, colormap=ColorMaps.Gray(), zmin=nothing, zmax=nothing, xbins=100, ybins=100)
+    function Image(f::Function, xrange::RealRange, yrange::RealRange; filename=nothing, colorbar=true, colormap=ColorMaps.Gray(), zmin=nothing, zmax=nothing, xbins=100, ybins=100, style=nothing)
         x = linspace(xrange[1], xrange[2], xbins)
         y = linspace(yrange[1], yrange[2], ybins)
         (X, Y) = meshgrid(x, y)
         A = map(f, X, Y)
         A = flipdim(A, 1)
-        Image(A, xrange, yrange, filename=filename, colorbar=colorbar, colormap=colormap, zmin=zmin, zmax=zmax)
+        Image(A, xrange, yrange, filename=filename, colorbar=colorbar, colormap=colormap, zmin=zmin, zmax=zmax, style=style)
     end
 end
 
-function Histogram2{A<:Real, B<:Real}(x::Vector{A}, y::Vector{B}; xmin=minimum(x), xmax=maximum(x), ymin=minimum(y), ymax=maximum(y), xbins=50, ybins=50, density=false, filename=nothing, colorbar=true, colormap=ColorMaps.Gray(), zmin=nothing, zmax=nothing)
+function Histogram2{A<:Real, B<:Real}(x::Vector{A}, y::Vector{B}; xmin=minimum(x), xmax=maximum(x), ymin=minimum(y), ymax=maximum(y), xbins=50, ybins=50, density=false, filename=nothing, colorbar=true, colormap=ColorMaps.Gray(), zmin=nothing, zmax=nothing, style=nothing)
     ex = linspace(xmin, xmax, xbins+1)
     ey = linspace(ymin, ymax, ybins+1)
     ex, ey, M = hist2d(hcat(y, x), ey, ex)
@@ -215,7 +226,7 @@ function Histogram2{A<:Real, B<:Real}(x::Vector{A}, y::Vector{B}; xmin=minimum(x
         scale =  xbins * ybins / ((xmax-xmin) * (ymax-ymin) * sum(M))
         M = M * scale
     end
-    Image(M, (xmin, xmax), (ymin, ymax), filename=filename, colorbar=colorbar, colormap=colormap, zmin=zmin, zmax=zmax)
+    Image(M, (xmin, xmax), (ymin, ymax), filename=filename, colorbar=colorbar, colormap=colormap, zmin=zmin, zmax=zmax, style=style)
 end
 
 end # end plot module

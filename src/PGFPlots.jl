@@ -33,7 +33,7 @@ function popPGFPlots()
     popPGFPlotsOptions()
 end
 
-pgfplotsoptions() = join(_pgfplotsoptions, "\n")
+pgfplotsoptions() = join(_pgfplotsoptions, ",\n")
 
 _pgfplotspreamble = Any[readall(joinpath(Pkg.dir("PGFPlots"), "src", "preamble.tex"))]
 
@@ -459,12 +459,20 @@ function plotHelper(o::IOBuffer, p::Ellipse)
     end
 end
 
+function plotHelper(o::IOBuffer, p::Command)
+    println(o, p.cmd*";") #PGFPlots expects commands to be terminated with a ;
+end
+
 
 function plotHelper(o::IOBuffer, p::Image)
     if p.zmin == p.zmax
         error("Your colorbar range limits must not be equal to each other.")
     end
-    println(o, "\\addplot [point meta min=$(p.zmin), point meta max=$(p.zmax)] graphics [xmin=$(p.xmin), xmax=$(p.xmax), ymin=$(p.ymin), ymax=$(p.ymax)] {$(p.filename)};")
+    if p.style != nothing
+        println(o, "\\addplot [$(p.style), point meta min=$(p.zmin), point meta max=$(p.zmax)] graphics [xmin=$(p.xmin), xmax=$(p.xmax), ymin=$(p.ymin), ymax=$(p.ymax)] {$(p.filename)};")
+    else
+        println(o, "\\addplot [point meta min=$(p.zmin), point meta max=$(p.zmax)] graphics [xmin=$(p.xmin), xmax=$(p.xmax), ymin=$(p.ymin), ymax=$(p.ymax)] {$(p.filename)};")
+    end
 end
 
 # plot option string and contents; no \begin{axis} or \nextgroupplot
@@ -556,6 +564,8 @@ cleanup(p::Plot) = nothing
 cleanup(p::Circle) = nothing
 
 cleanup(p::Ellipse) = nothing
+
+cleanup(p::Command) = nothing
 
 cleanup(p::Image) = rm(p.filename)
 
