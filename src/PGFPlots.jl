@@ -1,7 +1,7 @@
 module PGFPlots
 
 export LaTeXString, @L_str, @L_mstr
-export plot, Axis, PolarAxis, GroupPlot, Plots, ColorMaps, save, define_color
+export plot, Axis, Axes, PolarAxis, GroupPlot, Plots, ColorMaps, save, define_color
 export pushPGFPlotsOptions, popPGFPlotsOptions, pushPGFPlotsPreamble, popPGFPlotsPreamble, pgfplotsoptions, pgfplotspreamble
 export pushPGFPlots, popPGFPlots
 import Colors: RGB
@@ -164,6 +164,7 @@ type Axis
     Axis(plots::Vector{Linear3}; kwargs...) = Axis(plots; kwargs..., view=nothing)        
     
 end
+typealias Axes Vector{Axis}
 
 function Base.push!(g::Axis, p::Plot)
     push!(g.plots, p)
@@ -497,7 +498,7 @@ function plot(axis::Axis)
     TikzPicture(takebuf_string(o), options=pgfplotsoptions(), preamble=pgfplotspreamble())
 end
 
-function plot(axes::Vector{Axis})
+function plot(axes::Axes)
     o = IOBuffer()
     
     for axis in axes
@@ -540,7 +541,7 @@ end
 
 
 
-typealias Plottable Union{Plot,GroupPlot,Axis,Vector{Axis},PolarAxis,TikzPicture}
+typealias Plottable Union{Plot,GroupPlot,Axis,Axes,PolarAxis,TikzPicture}
 
 plot(p::Plot) = plot(Axis(p))
 
@@ -565,7 +566,7 @@ plot(tkz::TikzPicture) = tkz # tikz pic doesn't need plot, here for convenience
 Base.mimewritable(::MIME"image/svg+xml", p::Plottable) = true
 
 cleanup(p::Axis) = map(cleanup, p.plots)
-cleanup(axes::Vector{Axis}) = map(cleanup, axes)
+cleanup(axes::Axes) = map(cleanup, axes)
 
 cleanup(p::PolarAxis) = map(cleanup, p.plots)
 
