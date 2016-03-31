@@ -160,7 +160,7 @@ type Axis
     # The only difference here is that the view is not defaulted to a 2d view
     # Come to think of it, is there any reason the view is forced to be {0}{90}?
     #  Won't it figure it out on its own?
-    Axis(plot::Linear3; kwargs...) = Axis(Plot[plot]]; kwargs..., view=nothing)
+    Axis(plot::Linear3; kwargs...) = Axis(Plot[plot]; kwargs..., view=nothing)
     Axis(plots::Vector{Linear3}; kwargs...) = Axis(plots; kwargs..., view=nothing)        
     
 end
