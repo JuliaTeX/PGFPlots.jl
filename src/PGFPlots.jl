@@ -154,7 +154,7 @@ type Axis
             )
             
     Axis(;kwargs...) = Axis(Plot[]; kwargs...)
-    Axis(plot::Plot; kwargs...) = Axis(Plot[plot]; kwargs)
+    Axis(plot::Plot; kwargs...) = Axis(Plot[plot]; kwargs...)
         
     # Constructors specifically for 3d plot case
     # The only difference here is that the view is not defaulted to a 2d view
