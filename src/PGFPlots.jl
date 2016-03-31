@@ -565,6 +565,7 @@ plot(tkz::TikzPicture) = tkz # tikz pic doesn't need plot, here for convenience
 Base.mimewritable(::MIME"image/svg+xml", p::Plottable) = true
 
 cleanup(p::Axis) = map(cleanup, p.plots)
+cleanup(axes::Vector{Axis}) = map(cleanup, axes)
 
 cleanup(p::PolarAxis) = map(cleanup, p.plots)
 
