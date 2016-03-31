@@ -147,33 +147,28 @@ type Axis
 	hideAxis
 	axisLines
 
-    Axis(plot::Plot;title=nothing, xlabel=nothing, ylabel=nothing, zlabel=nothing, xmin=nothing, xmax=nothing,
-         ymin=nothing, ymax=nothing, axisEqual=nothing, axisEqualImage=nothing, enlargelimits=nothing, axisOnTop=nothing, view="{0}{90}",
-		 width=nothing, height=nothing, style=nothing, legendPos=nothing, xmode=nothing, ymode=nothing, colorbar=nothing, hideAxis=nothing, axisLines=nothing) =
-        new([plot], title, xlabel, ylabel, zlabel, xmin, xmax, ymin, ymax, axisEqual, axisEqualImage, enlargelimits, axisOnTop, view, width, height, style, legendPos, xmode, ymode, colorbar, hideAxis, axisLines
-            )
     Axis{P <: Plot}(plots::Vector{P};title=nothing, xlabel=nothing, ylabel=nothing, zlabel=nothing, xmin=nothing, xmax=nothing,
                     ymin=nothing, ymax=nothing, axisEqual=nothing, axisEqualImage=nothing, enlargelimits=nothing, axisOnTop=nothing, view="{0}{90}", width=nothing,
-					height=nothing, style=nothing, legendPos=nothing, xmode=nothing, ymode=nothing, colorbar=nothing, hideAxis=nothing, axisLines=nothing) =
+                    height=nothing, style=nothing, legendPos=nothing, xmode=nothing, ymode=nothing, colorbar=nothing, hideAxis=nothing, axisLines=nothing) =
         new(plots, title, xlabel, ylabel, zlabel, xmin, xmax, ymin, ymax, axisEqual, axisEqualImage, enlargelimits, axisOnTop, view, width, height, style, legendPos, xmode, ymode, colorbar, hideAxis, axisLines
             )
-
+            
+    Axis(;kwargs...) = Axis(Plot[]; kwargs...)
+    Axis(plot::Plot; kwargs...) = Axis(Plot[plot]; kwargs)
+        
     # Constructors specifically for 3d plot case
     # The only difference here is that the view is not defaulted to a 2d view
     # Come to think of it, is there any reason the view is forced to be {0}{90}?
     #  Won't it figure it out on its own?
-    Axis(plot::Linear3;title=nothing, xlabel=nothing, ylabel=nothing, zlabel=nothing, xmin=nothing, xmax=nothing,
-         ymin=nothing, ymax=nothing, axisEqual=nothing, axisEqualImage=nothing, enlargelimits=nothing, axisOnTop=nothing, view=nothing, width=nothing,
-		 height=nothing, style=nothing, legendPos=nothing, xmode=nothing, ymode=nothing, colorbar=nothing, hideAxis=nothing, axisLines=nothing) =
-        new([plot], title, xlabel, ylabel, zlabel, xmin, xmax, ymin, ymax, axisEqual, axisEqualImage, enlargelimits, axisOnTop, view, width, height, style, legendPos, xmode, ymode, colorbar, hideAxis, axisLines
-            )
-    Axis(plots::Vector{Linear3};title=nothing, xlabel=nothing, ylabel=nothing, zlabel=nothing, xmin=nothing, xmax=nothing,
-         ymin=nothing, ymax=nothing, axisEqual=nothing, axisEqualImage=nothing, enlargelimits=nothing, axisOnTop=nothing, view=nothing, width=nothing,
-		 height=nothing, style=nothing, legendPos=nothing,xmode=nothing,ymode=nothing, colorbar=nothing, hideAxis=nothing, axisLines=nothing) =
-        new(plots, title, xlabel, ylabel, zlabel, xmin, xmax, ymin, ymax, axisEqual, axisEqualImage, enlargelimits, axisOnTop, view, width, height, style, legendPos, xmode, ymode, colorbar, hideAxis, axisLines
-            )
-
+    Axis(plot::Linear3; kwargs...) = Axis(Plot[plot]]; kwargs..., view=nothing)
+    Axis(plots::Vector{Linear3}; kwargs...) = Axis(plots; kwargs..., view=nothing)        
+    
 end
+
+function Base.push!(g::Axis, p::Plot)
+    push!(g.plots, p)
+end
+
 
 type PolarAxis
     plots::Vector{Plot}
@@ -475,6 +470,7 @@ function plotHelper(o::IOBuffer, p::Image)
     end
 end
 
+
 # plot option string and contents; no \begin{axis} or \nextgroupplot
 function plotHelper(o::IOBuffer, axis::Axis)
     optionHelper(o, axisMap, axis, brackets=true, otherText=[axisOptions(p) for p in axis.plots])
@@ -482,6 +478,8 @@ function plotHelper(o::IOBuffer, axis::Axis)
         plotHelper(o, p)
     end
 end
+
+
 
 # plot option string and contents; no \begin{axis} or \nextgroupplot
 function plotHelper(o::IOBuffer, axis::PolarAxis)
@@ -498,6 +496,19 @@ function plot(axis::Axis)
     println(o, "\\end{axis}")
     TikzPicture(takebuf_string(o), options=pgfplotsoptions(), preamble=pgfplotspreamble())
 end
+
+function plot(axes::Vector{Axis})
+    o = IOBuffer()
+    
+    for axis in axes
+        print(o, "\\begin{axis}")
+        plotHelper(o, axis)
+        println(o, "\\end{axis}")
+    end        
+    TikzPicture(takebuf_string(o), options=pgfplotsoptions(), preamble=pgfplotspreamble())
+end
+
+
 
 function plot(axis::PolarAxis)
     o = IOBuffer()
@@ -529,7 +540,7 @@ end
 
 
 
-typealias Plottable Union{Plot,GroupPlot,Axis,PolarAxis,TikzPicture}
+typealias Plottable Union{Plot,GroupPlot,Axis,Vector{Axis},PolarAxis,TikzPicture}
 
 plot(p::Plot) = plot(Axis(p))
 
