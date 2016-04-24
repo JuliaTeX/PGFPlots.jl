@@ -23,7 +23,8 @@ type RGBArray <: ColorMap
 end
 
 function Brew(name::AbstractString, number::Integer; invert = false)
-    RGBArray(palette(name, number), invert=invert)
+    a = RGB{Float64}[convert(RGB{Float64}, c) for c in palette(name, number)]
+    RGBArray(a, invert=invert)
 end
 
 function Distinguishable(n::Integer; invert=false)
