@@ -148,21 +148,16 @@ type Axis
 	axisLines
 
     Axis{P <: Plot}(plots::Vector{P};title=nothing, xlabel=nothing, ylabel=nothing, zlabel=nothing, xmin=nothing, xmax=nothing,
-                    ymin=nothing, ymax=nothing, axisEqual=nothing, axisEqualImage=nothing, enlargelimits=nothing, axisOnTop=nothing, view="{0}{90}", width=nothing,
+                    ymin=nothing, ymax=nothing, axisEqual=nothing, axisEqualImage=nothing, enlargelimits=nothing, axisOnTop=nothing, view=nothing, width=nothing,
                     height=nothing, style=nothing, legendPos=nothing, xmode=nothing, ymode=nothing, colorbar=nothing, hideAxis=nothing, axisLines=nothing) =
         new(plots, title, xlabel, ylabel, zlabel, xmin, xmax, ymin, ymax, axisEqual, axisEqualImage, enlargelimits, axisOnTop, view, width, height, style, legendPos, xmode, ymode, colorbar, hideAxis, axisLines
             )
-            
+
     Axis(;kwargs...) = Axis(Plot[]; kwargs...)
     Axis(plot::Plot; kwargs...) = Axis(Plot[plot]; kwargs...)
-        
-    # Constructors specifically for 3d plot case
-    # The only difference here is that the view is not defaulted to a 2d view
-    # Come to think of it, is there any reason the view is forced to be {0}{90}?
-    #  Won't it figure it out on its own?
-    Axis(plot::Linear3; kwargs...) = Axis(Plot[plot]; kwargs..., view=nothing)
-    Axis(plots::Vector{Linear3}; kwargs...) = Axis(plots; kwargs..., view=nothing)        
-    
+
+    Axis(plot::Contour; kwargs...) = Axis(Plot[plot]; kwargs..., view="{0}{90}")
+    Axis(plots::Vector{Contour}; kwargs...) = Axis(Plot[plots...]; kwargs..., view="{0}{90}")
 end
 typealias Axes Vector{Axis}
 
@@ -500,12 +495,12 @@ end
 
 function plot(axes::Axes)
     o = IOBuffer()
-    
+
     for axis in axes
         print(o, "\\begin{axis}")
         plotHelper(o, axis)
         println(o, "\\end{axis}")
-    end        
+    end
     TikzPicture(takebuf_string(o), options=pgfplotsoptions(), preamble=pgfplotspreamble())
 end
 
