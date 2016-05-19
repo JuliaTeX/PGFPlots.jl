@@ -2,7 +2,8 @@ module PGFPlots
 
 export LaTeXString, @L_str, @L_mstr
 export plot, Axis, Axes, PolarAxis, GroupPlot, Plots, ColorMaps, save, define_color
-export pushPGFPlotsOptions, popPGFPlotsOptions, pushPGFPlotsPreamble, popPGFPlotsPreamble, pgfplotsoptions, pgfplotspreamble
+export pushPGFPlotsOptions, popPGFPlotsOptions, resetPGFPlotsOptions, pgfplotsoptions
+export pushPGFPlotsPreamble, popPGFPlotsPreamble, resetPGFPlotsPreamble, pgfplotspreamble
 export pushPGFPlots, popPGFPlots
 import Colors: RGB
 import Contour: contours
@@ -22,6 +23,7 @@ function popPGFPlotsOptions()
         pop!(_pgfplotsoptions)
     end
 end
+resetPGFPlotsOptions() = deleteat!(_pgfplotsoptions, 2:length(_pgfplotsoptions))
 
 function pushPGFPlots(options::AbstractString)
     warn("Use pushPGFPlotsOptions")
@@ -43,6 +45,7 @@ function popPGFPlotsPreamble()
         pop!(_pgfplotspreamble)
     end
 end
+resetPGFPlotsPreamble() = deleteat!(_pgfplotspreamble,2:length(_pgfplotspreamble))
 
 pgfplotspreamble() = join(_pgfplotspreamble, "\n")
 
