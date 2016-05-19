@@ -2,7 +2,8 @@ module PGFPlots
 
 export LaTeXString, @L_str, @L_mstr
 export plot, Axis, Axes, PolarAxis, GroupPlot, Plots, ColorMaps, save, define_color
-export pushPGFPlotsOptions, popPGFPlotsOptions, pushPGFPlotsPreamble, popPGFPlotsPreamble, pgfplotsoptions, pgfplotspreamble
+export pushPGFPlotsOptions, popPGFPlotsOptions, resetPGFPlotsOptions, pgfplotsoptions
+export pushPGFPlotsPreamble, popPGFPlotsPreamble, resetPGFPlotsPreamble, pgfplotspreamble
 export pushPGFPlots, popPGFPlots
 import Colors: RGB
 import Contour: contours
@@ -22,6 +23,7 @@ function popPGFPlotsOptions()
         pop!(_pgfplotsoptions)
     end
 end
+resetPGFPlotsOptions() = deleteat!(_pgfplotsoptions, 2:length(_pgfplotsoptions))
 
 function pushPGFPlots(options::AbstractString)
     warn("Use pushPGFPlotsOptions")
@@ -43,6 +45,7 @@ function popPGFPlotsPreamble()
         pop!(_pgfplotspreamble)
     end
 end
+resetPGFPlotsPreamble() = deleteat!(_pgfplotspreamble,2:length(_pgfplotspreamble))
 
 pgfplotspreamble() = join(_pgfplotspreamble, "\n")
 
@@ -86,17 +89,17 @@ histogramMap = Dict(
 
 linearMap = Dict(
     :mark => "mark",
-	:markSize => "mark size",
+    :markSize => "mark size",
     :style => "",
     :onlyMarks => "only marks"
     )
 
 scatterMap = Dict(
     :mark => "mark",
-	:markSize => "mark size",
+    :markSize => "mark size",
     :style => "",
     :onlyMarks => "only marks",
-	:scatterClasses => "scatter/classes"
+    :scatterClasses => "scatter/classes"
     )
 
 errorbarsMap = Dict(
@@ -126,14 +129,17 @@ type Axis
     plots::Vector{Plot}
     title
     xlabel
+    xlabelStyle
     ylabel
+    ylabelStyle
     zlabel
+    zlabelStyle
     xmin
     xmax
     ymin
     ymax
-	axisEqual
-	axisEqualImage
+    axisEqual
+    axisEqualImage
     enlargelimits
     axisOnTop
     view
@@ -143,14 +149,14 @@ type Axis
     legendPos
     xmode
     ymode
-	colorbar
-	hideAxis
-	axisLines
+    colorbar
+    hideAxis
+    axisLines
 
-    Axis{P <: Plot}(plots::Vector{P};title=nothing, xlabel=nothing, ylabel=nothing, zlabel=nothing, xmin=nothing, xmax=nothing,
+    Axis{P <: Plot}(plots::Vector{P};title=nothing, xlabel=nothing, xlabelStyle=nothing, ylabel=nothing, ylabelStyle=nothing, zlabel=nothing, zlabelStyle=nothing, xmin=nothing, xmax=nothing,
                     ymin=nothing, ymax=nothing, axisEqual=nothing, axisEqualImage=nothing, enlargelimits=nothing, axisOnTop=nothing, view=nothing, width=nothing,
                     height=nothing, style=nothing, legendPos=nothing, xmode=nothing, ymode=nothing, colorbar=nothing, hideAxis=nothing, axisLines=nothing) =
-        new(plots, title, xlabel, ylabel, zlabel, xmin, xmax, ymin, ymax, axisEqual, axisEqualImage, enlargelimits, axisOnTop, view, width, height, style, legendPos, xmode, ymode, colorbar, hideAxis, axisLines
+        new(plots, title, xlabel, xlabelStyle, ylabel, ylabelStyle, zlabel, zlabelStyle, xmin, xmax, ymin, ymax, axisEqual, axisEqualImage, enlargelimits, axisOnTop, view, width, height, style, legendPos, xmode, ymode, colorbar, hideAxis, axisLines
             )
 
     Axis(;kwargs...) = Axis(Plot[]; kwargs...)
@@ -180,14 +186,17 @@ end
 axisMap = Dict(
     :title => "title",
     :xlabel => "xlabel",
+    :xlabelStyle => "xlabel style",
     :ylabel => "ylabel",
+    :ylabelStyle => "ylabel style",
     :zlabel => "zlabel",
+    :zlabelStyle => "zlabel style",
     :xmin => "xmin",
     :xmax => "xmax",
     :ymin => "ymin",
     :ymax => "ymax",
-	:axisEqual => "axis equal",
-	:axisEqualImage => "axis equal image",
+    :axisEqual => "axis equal",
+    :axisEqualImage => "axis equal image",
     :enlargelimits => "enlargelimits",
     :axisOnTop => "axis on top",
     :view => "view",
@@ -197,9 +206,9 @@ axisMap = Dict(
     :legendPos => "legend pos",
     :xmode => "xmode",
     :ymode => "ymode",
-	:colorbar => "colorbar",
-	:hideAxis => "hide axis",
-	:axisLines => "axis lines"
+    :colorbar => "colorbar",
+    :hideAxis => "hide axis",
+    :axisLines => "axis lines"
     )
 
 polarAxisMap = Dict(
@@ -338,11 +347,11 @@ function plotHelper(o::IOBuffer, p::Linear)
 end
 
 function plotHelper(o::IOBuffer, p::Scatter)
-	if p.scatterClasses == nothing
-		print(o, "\\addplot+[scatter, scatter src=explicit, ")
-	else
-		print(o, "\\addplot+[scatter, scatter src=explicit symbolic, ")
-	end
+    if p.scatterClasses == nothing
+        print(o, "\\addplot+[scatter, scatter src=explicit, ")
+    else
+        print(o, "\\addplot+[scatter, scatter src=explicit symbolic, ")
+    end
     optionHelper(o, scatterMap, p)
     println(o, "] coordinates {")
     for i = 1:size(p.data,2)
