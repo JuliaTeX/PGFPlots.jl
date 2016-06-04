@@ -438,6 +438,7 @@ function plotHelper(o::IOBuffer, p::Contour)
             for v in l.vertices
                 println(o, "$(v[1]) $(v[2]) $level")
             end
+            println(o)
         end
     end
     println(o, "};")
