@@ -27,8 +27,9 @@ type Contour <: Plot
     style
     number
     levels
-    Contour(data, xbins, ybins; style=nothing, number=nothing, levels=nothing) = new(data, xbins, ybins, style, number, levels)
-    function Contour(f::Function, xrange::RealRange, yrange::RealRange; xbins=40, ybins=40, style=nothing, number=nothing, levels=nothing)
+	labels
+    Contour(data, xbins, ybins; style=nothing, number=nothing, levels=nothing,labels=nothing) = new(data, xbins, ybins, style, number, levels, labels)
+    function Contour(f::Function, xrange::RealRange, yrange::RealRange; xbins=40, ybins=40, style=nothing, number=nothing, levels=nothing, labels=nothing)
         x = linspace(xrange[1], xrange[2], xbins)
         y = linspace(yrange[1], yrange[2], ybins)
         A = zeros(xbins, ybins)
@@ -37,13 +38,13 @@ type Contour <: Plot
         catch
             A = Float64[f([xi,yi]) for xi in x, yi in y]
         end
-        new(A, x, y, style, number, levels)
+        new(A, x, y, style, number, levels, labels)
     end
 end
 
-function Contour(z::AbstractMatrix, x::Range, y::Range; style=nothing, number=nothing, levels=nothing)
+function Contour(z::AbstractMatrix, x::Range, y::Range; style=nothing, number=nothing, levels=nothing, labels=nothing)
     (X, Y) = meshgrid(x, y)
-    Contour([X[:]'; Y[:]'; z[:]'], length(x), length(y); style = style, number = number, number = levels)
+    Contour([X[:]'; Y[:]'; z[:]'], length(x), length(y); style = style, number = number, number = levels, labels=labels)
 end
 
 type Linear <: Plot

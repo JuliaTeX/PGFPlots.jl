@@ -115,7 +115,8 @@ quiverMap = Dict(
 contourMap = Dict(
     :number => "number",
     :levels => "levels",
-    :style => ""
+    :style => "",
+	:labels => "labels"
     )
 
 
@@ -427,11 +428,22 @@ function plotHelper(o::IOBuffer, p::Contour)
         arg = p.levels
     end
     C = contours(p.xbins, p.ybins, convert(Matrix{Float64}, p.data), arg)
-    if p.style != nothing
-        print(o, "\\addplot3[contour prepared, $(p.style)] table {")
-    else
-        print(o, "\\addplot3[contour prepared] table {")
-    end
+	if p.labels == nothing
+		p.labels = true
+	end
+	if p.labels
+		if p.style != nothing
+			print(o, "\\addplot3[contour prepared, $(p.style)] table {")
+		else
+			print(o, "\\addplot3[contour prepared] table {")
+		end
+	else
+		if p.style != nothing
+			print(o, "\\addplot3[contour prepared={labels=false}, $(p.style)] table {")
+		else
+			print(o, "\\addplot3[contour prepared={labels=false}] table {")
+		end
+	end
     for c in C
         level = c.level
         for l in c.lines
