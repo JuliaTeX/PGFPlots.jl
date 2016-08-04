@@ -4,6 +4,7 @@ export Plot, Histogram, Histogram2, Linear, Linear3, ErrorBars, Image, Contour, 
 
 using ..ColorMaps
 using Compat
+using Discretizers
 
 typealias RealRange @compat Tuple{Real,Real}
 
@@ -11,14 +12,92 @@ include("ndgrid.jl")
 
 abstract Plot
 
+type Linear <: Plot
+    data::AbstractArray{Real,2}
+    mark
+    markSize
+    style
+    legendentry
+    onlyMarks
+    Linear{T<:Real}(data::AbstractArray{T,2}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = new(data, mark, markSize, style, legendentry, onlyMarks)
+end
+
+type Linear3 <: Plot
+    data::AbstractArray{Real,2}
+    mark
+    markSize
+    style
+    legendentry
+    onlyMarks
+    Linear3{T<:Real}(data::AbstractArray{T,2}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = new(data, mark, markSize, style, legendentry, onlyMarks)
+end
+
+const THRESHOLD_NSAMPLES_DISC_OURSELVES = 1000 # if we have more samples than this we discretize ourselves
+function _construct_histogram_linear_data{Q<:Real,R<:Real}(
+    data::Vector{Q},
+    binedges::Vector{R},
+    density::Bool, # If true, the bar height will be based on the probability density - otherwise directly on counts
+    cumulative::Bool, # A cumulative histogram uses the sum of all previous bins and the current one as final value.
+    )
+
+    n = length(binedges)
+    disc = LinearDiscretizer(binedges)
+    counts = get_discretization_counts(disc, data)
+    if cumulative
+        cumsum!(counts, counts)
+    end
+
+    arr_x = convert(Vector{Float64}, binedges)
+    arr_y = convert(Vector{Float64}, counts)
+    if density
+        arr_y ./= sum(counts)
+        arr_y ./= binwidths(disc)
+    end
+    push!(arr_y, arr_y[end])
+
+    Linear(hcat(arr_x, arr_y)', style="ybar interval,fill=blue!10, draw=blue", mark="none")
+end
 type Histogram <: Plot
     data::AbstractArray{Real,1}
     bins::Integer
     density::Bool
     cumulative::Bool
     style::AbstractString
-    Histogram(data; bins=20, density=false, cumulative=false, style="fill=blue!10") = new(data, bins, density, cumulative, style)
 end
+function Histogram(data; bins=nothing, discalg=:default, density=false, cumulative=false, style="fill=blue!10", mark=nothing, markSize=nothing, legendentry=nothing, onlyMarks=nothing)
+    if isa(bins, Integer) && (discalg == :pgfplots == (discalg == :default && length(data) ≤ THRESHOLD_NSAMPLES_DISC_OURSELVES))
+        # default - discretize using PGFPlots for smaller sample sizes
+        Histogram(data, bins, density, cumulative, style)
+    else
+        # discretize using Discretizers.jl and produce a Linear plot
+
+        if isa(bins, Integer)
+            lo, hi = extrema(data)
+            edges = collect(linspace(lo,hi,bins+1))
+        else
+            if discalg == :default
+                discalg = :auto # default is auto
+            end
+            edges = binedges(DiscretizeUniformWidth(discalg), data)
+        end
+
+        linear = _construct_histogram_linear_data(data, edges, density, cumulative)
+        if style != "fill=blue!10"
+            linear.style = style
+            if !contains(linear.style, "ybar interval")
+                linear.style = "ybar interval," * linear.style
+            end
+        end
+        if !isa(mark, Void)
+            linear.mark = mark
+        end
+        linear.markSize = markSize
+        linear.legendentry = legendentry
+        linear.onlyMarks = onlyMarks
+        linear
+    end
+end
+
 
 type Contour <: Plot
     data::AbstractMatrix{Real}
@@ -45,26 +124,6 @@ end
 function Contour(z::AbstractMatrix, x::Range, y::Range; style=nothing, number=nothing, levels=nothing, labels=nothing)
     (X, Y) = meshgrid(x, y)
     Contour([X[:]'; Y[:]'; z[:]'], length(x), length(y); style = style, number = number, number = levels, labels=labels)
-end
-
-type Linear <: Plot
-    data::AbstractArray{Real,2}
-    mark
-	markSize
-    style
-    legendentry
-    onlyMarks
-    Linear{T<:Real}(data::AbstractArray{T,2}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = new(data, mark, markSize, style, legendentry, onlyMarks)
-end
-
-type Linear3 <: Plot
-    data::AbstractArray{Real,2}
-    mark
-	markSize
-    style
-    legendentry
-    onlyMarks
-    Linear3{T<:Real}(data::AbstractArray{T,2}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = new(data, mark, markSize, style, legendentry, onlyMarks)
 end
 
 type Scatter <: Plot
