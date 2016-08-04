@@ -64,8 +64,8 @@ type Histogram <: Plot
     cumulative::Bool
     style::AbstractString
 end
-function Histogram(data; bins=nothing, discalg=:default, density=false, cumulative=false, style="fill=blue!10", mark=nothing, markSize=nothing, legendentry=nothing, onlyMarks=nothing)
-    if isa(bins, Integer) && (discalg == :pgfplots == (discalg == :default && length(data) ≤ THRESHOLD_NSAMPLES_DISC_OURSELVES))
+function Histogram(data; bins=nothing, discretization=:default, density=false, cumulative=false, style="fill=blue!10", mark=nothing, markSize=nothing, legendentry=nothing, onlyMarks=nothing)
+    if isa(bins, Integer) && (discretization == :pgfplots == (discretization == :default && length(data) ≤ THRESHOLD_NSAMPLES_DISC_OURSELVES))
         # default - discretize using PGFPlots for smaller sample sizes
         Histogram(data, bins, density, cumulative, style)
     else
@@ -75,10 +75,10 @@ function Histogram(data; bins=nothing, discalg=:default, density=false, cumulati
             lo, hi = extrema(data)
             edges = collect(linspace(lo,hi,bins+1))
         else
-            if discalg == :default
-                discalg = :auto # default is auto
+            if discretization == :default
+                discretization = :auto # default is auto
             end
-            edges = binedges(DiscretizeUniformWidth(discalg), data)
+            edges = binedges(DiscretizeUniformWidth(discretization), data)
         end
 
         linear = _construct_histogram_linear_data(data, edges, density, cumulative)
