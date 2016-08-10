@@ -91,7 +91,7 @@ end
 
 function Contour(z::AbstractMatrix, x::Range, y::Range; style=nothing, number=nothing, levels=nothing, labels=nothing)
     (X, Y) = meshgrid(x, y)
-    Contour([X[:]'; Y[:]'; z[:]'], length(x), length(y); style = style, number = number, number = levels, labels=labels)
+    Contour([X[:]'; Y[:]'; z[:]'], length(x), length(y); style = style, number = number, levels = levels, labels=labels)
 end
 
 type Scatter <: Plot
