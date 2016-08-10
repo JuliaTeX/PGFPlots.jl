@@ -11,6 +11,7 @@ import Colors: RGB
 import Contour: contours
 
 using Compat
+using Discretizers
 
 include("colormaps.jl")
 include("plots.jl")
@@ -328,14 +329,37 @@ function optionHelper(o::IOBuffer, m, object; brackets=false, otherOptions=Dict{
 end
 
 function plotHelper(o::IOBuffer, p::Histogram)
-    print(o, "\\addplot+ [mark=none, $(p.style), hist={")
-    optionHelper(o, histogramMap, p)
-    print(o, "}] table [row sep=\\\\, y index = 0] {")
-    println(o, "data\\\\")
-    for d in p.data
-        println(o, "$d \\\\ ")
+    if (p.discretization == :pgfplots && p.bins > 0) ||
+       (p.discretization == :default && length(p.data) ≤ Plots.THRESHOLD_NSAMPLES_DISC_OURSELVES)
+
+        print(o, "\\addplot+ [mark=none, $(p.style), hist={")
+        optionHelper(o, histogramMap, p)
+        print(o, "}] table [row sep=\\\\, y index = 0] {")
+        println(o, "data\\\\")
+        for d in p.data
+            println(o, "$d \\\\ ")
+        end
+        println(o, "};")
+
+    else
+        # discretize using Discretizers.jl
+
+        if p.discretization == :specified && p.bins > 0
+            edges = binedges(DiscretizeUniformWidth(p.bins), convert(Vector{Float64}, p.data))
+        else
+            discretization = p.discretization == :default ? :auto : p.discretization
+            edges = binedges(DiscretizeUniformWidth(discretization), convert(Vector{Float64}, p.data))
+        end
+
+        linear = Plots._construct_histogram_linear_data(p.data, edges, p.density, p.cumulative)
+        if p.style != "fill=blue!10"
+            linear.style = p.style
+            if !contains(linear.style, "ybar interval")
+                linear.style = "ybar interval," * linear.style
+            end
+        end
+        plotHelper(o, linear)
     end
-    println(o, "};")
 end
 
 function plotHelper(o::IOBuffer, p::Linear)

@@ -63,41 +63,9 @@ type Histogram <: Plot
     density::Bool
     cumulative::Bool
     style::AbstractString
+    discretization::Symbol
+    Histogram(data; bins=10, discretization=:default, density=false, cumulative=false, style="fill=blue!10") = new(data,bins,density,cumulative,style,discretization)
 end
-function Histogram(data; bins=nothing, discretization=:default, density=false, cumulative=false, style="fill=blue!10", mark=nothing, markSize=nothing, legendentry=nothing, onlyMarks=nothing)
-    if isa(bins, Integer) && (discretization == :pgfplots == (discretization == :default && length(data) ≤ THRESHOLD_NSAMPLES_DISC_OURSELVES))
-        # default - discretize using PGFPlots for smaller sample sizes
-        Histogram(data, bins, density, cumulative, style)
-    else
-        # discretize using Discretizers.jl and produce a Linear plot
-
-        if isa(bins, Integer)
-            lo, hi = extrema(data)
-            edges = collect(linspace(lo,hi,bins+1))
-        else
-            if discretization == :default
-                discretization = :auto # default is auto
-            end
-            edges = binedges(DiscretizeUniformWidth(discretization), data)
-        end
-
-        linear = _construct_histogram_linear_data(data, edges, density, cumulative)
-        if style != "fill=blue!10"
-            linear.style = style
-            if !contains(linear.style, "ybar interval")
-                linear.style = "ybar interval," * linear.style
-            end
-        end
-        if !isa(mark, Void)
-            linear.mark = mark
-        end
-        linear.markSize = markSize
-        linear.legendentry = legendentry
-        linear.onlyMarks = onlyMarks
-        linear
-    end
-end
-
 
 type Contour <: Plot
     data::AbstractMatrix{Real}
