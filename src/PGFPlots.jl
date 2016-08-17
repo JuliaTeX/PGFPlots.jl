@@ -362,6 +362,14 @@ function plotHelper(o::IOBuffer, p::Histogram)
     end
 end
 
+plotLegend(o::IOBuffer, entry) = nothing
+plotLegend(o::IOBuffer, entry::AbstractString) = println(o, "\\addlegendentry{$entry}")
+function plotLegend{T <: AbstractString}(o::IOBuffer, entries::Vector{T})
+    for entry in entries
+        plotLegend(o, entry)
+    end
+end
+
 function plotHelper(o::IOBuffer, p::Linear)
     print(o, "\\addplot+ ")
     optionHelper(o, linearMap, p, brackets=true)
@@ -370,9 +378,7 @@ function plotHelper(o::IOBuffer, p::Linear)
         println(o, "($(p.data[1,i]), $(p.data[2,i]))")
     end
     println(o, "};")
-    if p.legendentry != nothing
-        println(o, "\\addlegendentry{$(p.legendentry)}")
-    end
+    plotLegend(o, p.legendentry)
 end
 
 function plotHelper(o::IOBuffer, p::Scatter)
@@ -387,9 +393,7 @@ function plotHelper(o::IOBuffer, p::Scatter)
         println(o, "($(p.data[1,i]), $(p.data[2,i])) [$(p.data[3,i])]")
     end
     println(o, "};")
-    if p.legendentry != nothing
-        println(o, "\\addlegendentry{$(p.legendentry)}")
-    end
+    plotLegend(o, p.legendentry)
 end
 
 # Specific version for Linear3 type
@@ -402,9 +406,7 @@ function plotHelper(o::IOBuffer, p::Linear3)
         println(o, "($(p.data[1,i]), $(p.data[2,i]), $(p.data[3,i]))")
     end
     println(o, "};")
-    if p.legendentry != nothing
-        println(o, "\\addlegendentry{$(p.legendentry)}")
-    end
+    plotLegend(o, p.legendentry)
 end
 
 function plotHelper(o::IOBuffer, p::Node)
@@ -429,9 +431,7 @@ function plotHelper(o::IOBuffer, p::ErrorBars)
         println(o, "($(p.data[1,i]), $(p.data[2,i])) +=($(p.data[3,i]),$(p.data[4,i])) -=($(p.data[5,i]),$(p.data[6,i]))")
     end
     println(o, "};")
-    if p.legendentry != nothing
-        println(o, "\\addlegendentry{$(p.legendentry)}")
-    end
+    plotLegend(o, p.legendentry)
 end
 
 function plotHelper(o::IOBuffer, p::Quiver)
@@ -443,9 +443,7 @@ function plotHelper(o::IOBuffer, p::Quiver)
         println(o, "$(p.data[1,i]) $(p.data[2,i]) $(p.data[3,i]) $(p.data[4,i])")
     end
     println(o, "};")
-    if p.legendentry != nothing
-        println(o, "\\addlegendentry{$(p.legendentry)}")
-    end
+    plotLegend(o, p.legendentry)
 end
 
 function plotHelper(o::IOBuffer, p::Contour)
