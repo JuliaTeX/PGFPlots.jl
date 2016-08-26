@@ -1,7 +1,7 @@
 julia 0.4
 TikzPictures 0.3.2
 Images
-Compat
+Compat 0.8.0
 Colors
 ColorBrewer
 Contour
