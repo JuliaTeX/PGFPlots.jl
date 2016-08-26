@@ -40,7 +40,7 @@ end
 
 pgfplotsoptions() = join(_pgfplotsoptions, ",\n")
 
-_pgfplotspreamble = Any[readall(joinpath(dirname(@__FILE__), "preamble.tex"))]
+_pgfplotspreamble = Any[readstring(joinpath(dirname(@__FILE__), "preamble.tex"))]
 
 pushPGFPlotsPreamble(preamble::AbstractString) = push!(_pgfplotspreamble, preamble)
 function popPGFPlotsPreamble()
@@ -658,8 +658,8 @@ function axisOptions(p::Image)
     end
 end
 
-function Base.writemime(f::IO, a::MIME"image/svg+xml", p::Plottable)
-    r = Base.writemime(f, a, plot(p))
+function Base.show(f::IO, a::MIME"image/svg+xml", p::Plottable)
+    r = Base.show(f, a, plot(p))
     cleanup(p)
     r
 end
