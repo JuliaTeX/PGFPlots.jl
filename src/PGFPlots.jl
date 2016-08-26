@@ -8,7 +8,7 @@ export pushPGFPlotsOptions, popPGFPlotsOptions, resetPGFPlotsOptions, pgfplotsop
 export pushPGFPlotsPreamble, popPGFPlotsPreamble, resetPGFPlotsPreamble, pgfplotspreamble
 export pushPGFPlots, popPGFPlots
 import Colors: RGB
-import Contour: contours
+import Contour: contours, levels
 
 using Compat
 using Discretizers
@@ -119,7 +119,7 @@ contourMap = Dict(
     :number => "number",
     :levels => "levels",
     :style => "",
-	:labels => "labels"
+    :labels => "labels"
     )
 
 
@@ -454,23 +454,23 @@ function plotHelper(o::IOBuffer, p::Contour)
         arg = p.levels
     end
     C = contours(p.xbins, p.ybins, convert(Matrix{Float64}, p.data), arg)
-	if p.labels == nothing
-		p.labels = true
-	end
-	if p.labels
-		if p.style != nothing
-			print(o, "\\addplot3[contour prepared, $(p.style)] table {")
-		else
-			print(o, "\\addplot3[contour prepared] table {")
-		end
-	else
-		if p.style != nothing
-			print(o, "\\addplot3[contour prepared={labels=false}, $(p.style)] table {")
-		else
-			print(o, "\\addplot3[contour prepared={labels=false}] table {")
-		end
-	end
-    for c in C
+    if p.labels == nothing
+        p.labels = true
+    end
+    if p.labels
+        if p.style != nothing
+            print(o, "\\addplot3[contour prepared, $(p.style)] table {")
+        else
+            print(o, "\\addplot3[contour prepared] table {")
+        end
+    else
+        if p.style != nothing
+            print(o, "\\addplot3[contour prepared={labels=false}, $(p.style)] table {")
+        else
+            print(o, "\\addplot3[contour prepared={labels=false}] table {")
+        end
+    end
+    for c in levels(C)
         level = c.level
         for l in c.lines
             for v in l.vertices
