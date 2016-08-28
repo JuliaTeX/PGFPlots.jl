@@ -279,7 +279,7 @@ end
 function optionHelper(o::IOBuffer, m, object; brackets=false, otherOptions=Dict{AbstractString,AbstractString}[], otherText=nothing)
     first = true
     for (sym, str) in m
-        if object.(sym) != nothing
+        if getfield(object,sym) != nothing
             if first
                 first = false
                 if brackets
@@ -291,7 +291,7 @@ function optionHelper(o::IOBuffer, m, object; brackets=false, otherOptions=Dict{
             if length(str) > 0
                 print(o, "$str = {")
             end
-            printObject(o, object.(sym))
+            printObject(o, getfield(object,sym))
             if length(str) > 0
                 print(o, "}")
             end
