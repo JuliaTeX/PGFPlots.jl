@@ -74,7 +74,7 @@ type Contour <: Plot
     style
     number
     levels
-	labels
+    labels
     Contour(data, xbins, ybins; style=nothing, number=nothing, levels=nothing,labels=nothing) = new(data, xbins, ybins, style, number, levels, labels)
     function Contour(f::Function, xrange::RealRange, yrange::RealRange; xbins=40, ybins=40, style=nothing, number=nothing, levels=nothing, labels=nothing)
         x = linspace(xrange[1], xrange[2], xbins)
@@ -97,19 +97,19 @@ end
 type Scatter <: Plot
     data::AbstractArray{Any,2}
     mark
-	markSize
+    markSize
     style
     legendentry
     onlyMarks
-	scatterClasses
+    scatterClasses
 
-	function Scatter{T<:Any}(data::AbstractArray{T,2}; mark=nothing, markSize=nothing, style=nothing, onlyMarks=true, legendentry=nothing, scatterClasses=nothing)
-		if size(data,1) == 2
-			return Linear(data, mark=mark, markSize=markSize, style=style, onlyMarks=onlyMarks, legendentry=legendentry)
-		else
-			return new(data, mark, markSize, style, legendentry, onlyMarks, scatterClasses)
-		end
-	end
+    function Scatter{T<:Any}(data::AbstractArray{T,2}; mark=nothing, markSize=nothing, style=nothing, onlyMarks=true, legendentry=nothing, scatterClasses=nothing)
+        if size(data,1) == 2
+            return Linear(data, mark=mark, markSize=markSize, style=style, onlyMarks=onlyMarks, legendentry=legendentry)
+        else
+            return new(data, mark, markSize, style, legendentry, onlyMarks, scatterClasses)
+        end
+    end
 end
 
 type ErrorBars <: Plot
@@ -137,20 +137,20 @@ type Node <: Plot
 end
 
 type Circle <: Plot
-	xc
-	yc
-	radius
+    xc
+    yc
+    radius
     style
-	Circle(xc=0,yc=0,radius=1;style=nothing) = new(xc,yc,radius,style)
+    Circle(xc=0,yc=0,radius=1;style=nothing) = new(xc,yc,radius,style)
 end
 
 type Ellipse <: Plot
-	xc
-	yc
-	xradius
-	yradius
+    xc
+    yc
+    xradius
+    yradius
     style
-	Ellipse(xc=0,yc=0,xradius=1,yradius=1;style=nothing) = new(xc,yc,xradius,yradius,style)
+    Ellipse(xc=0,yc=0,xradius=1,yradius=1;style=nothing) = new(xc,yc,xradius,yradius,style)
 end
 
 type Command <: Plot

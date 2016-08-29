@@ -8,7 +8,7 @@ export pushPGFPlotsOptions, popPGFPlotsOptions, resetPGFPlotsOptions, pgfplotsop
 export pushPGFPlotsPreamble, popPGFPlotsPreamble, resetPGFPlotsPreamble, pgfplotspreamble
 export pushPGFPlots, popPGFPlots
 import Colors: RGB
-import Contour: contours
+import Contour: contours, levels
 
 using Compat
 using Discretizers
@@ -40,7 +40,7 @@ end
 
 pgfplotsoptions() = join(_pgfplotsoptions, ",\n")
 
-_pgfplotspreamble = Any[readall(joinpath(dirname(@__FILE__), "preamble.tex"))]
+_pgfplotspreamble = Any[readstring(joinpath(dirname(@__FILE__), "preamble.tex"))]
 
 pushPGFPlotsPreamble(preamble::AbstractString) = push!(_pgfplotspreamble, preamble)
 function popPGFPlotsPreamble()
@@ -119,7 +119,7 @@ contourMap = Dict(
     :number => "number",
     :levels => "levels",
     :style => "",
-	:labels => "labels"
+    :labels => "labels"
     )
 
 
@@ -279,7 +279,7 @@ end
 function optionHelper(o::IOBuffer, m, object; brackets=false, otherOptions=Dict{AbstractString,AbstractString}[], otherText=nothing)
     first = true
     for (sym, str) in m
-        if object.(sym) != nothing
+        if getfield(object,sym) != nothing
             if first
                 first = false
                 if brackets
@@ -291,7 +291,7 @@ function optionHelper(o::IOBuffer, m, object; brackets=false, otherOptions=Dict{
             if length(str) > 0
                 print(o, "$str = {")
             end
-            printObject(o, object.(sym))
+            printObject(o, getfield(object,sym))
             if length(str) > 0
                 print(o, "}")
             end
@@ -454,23 +454,23 @@ function plotHelper(o::IOBuffer, p::Contour)
         arg = p.levels
     end
     C = contours(p.xbins, p.ybins, convert(Matrix{Float64}, p.data), arg)
-	if p.labels == nothing
-		p.labels = true
-	end
-	if p.labels
-		if p.style != nothing
-			print(o, "\\addplot3[contour prepared, $(p.style)] table {")
-		else
-			print(o, "\\addplot3[contour prepared] table {")
-		end
-	else
-		if p.style != nothing
-			print(o, "\\addplot3[contour prepared={labels=false}, $(p.style)] table {")
-		else
-			print(o, "\\addplot3[contour prepared={labels=false}] table {")
-		end
-	end
-    for c in C
+    if p.labels == nothing
+        p.labels = true
+    end
+    if p.labels
+        if p.style != nothing
+            print(o, "\\addplot3[contour prepared, $(p.style)] table {")
+        else
+            print(o, "\\addplot3[contour prepared] table {")
+        end
+    else
+        if p.style != nothing
+            print(o, "\\addplot3[contour prepared={labels=false}, $(p.style)] table {")
+        else
+            print(o, "\\addplot3[contour prepared={labels=false}] table {")
+        end
+    end
+    for c in levels(C)
         level = c.level
         for l in c.lines
             for v in l.vertices
@@ -658,8 +658,8 @@ function axisOptions(p::Image)
     end
 end
 
-function Base.writemime(f::IO, a::MIME"image/svg+xml", p::Plottable)
-    r = Base.writemime(f, a, plot(p))
+@compat function Base.show(f::IO, a::MIME"image/svg+xml", p::Plottable)
+    r = Base.show(f, a, plot(p))
     cleanup(p)
     r
 end
