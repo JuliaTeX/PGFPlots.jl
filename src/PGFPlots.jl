@@ -157,11 +157,12 @@ type Axis
     colorbar
     hideAxis
     axisLines
+    axisKeyword
 
     Axis{P <: Plot}(plots::Vector{P};title=nothing, xlabel=nothing, xlabelStyle=nothing, ylabel=nothing, ylabelStyle=nothing, zlabel=nothing, zlabelStyle=nothing, xmin=nothing, xmax=nothing,
                     ymin=nothing, ymax=nothing, axisEqual=nothing, axisEqualImage=nothing, enlargelimits=nothing, axisOnTop=nothing, view=nothing, width=nothing,
-                    height=nothing, style=nothing, legendPos=nothing, legendStyle=nothing, xmode=nothing, ymode=nothing, colorbar=nothing, hideAxis=nothing, axisLines=nothing) =
-        new(plots, title, xlabel, xlabelStyle, ylabel, ylabelStyle, zlabel, zlabelStyle, xmin, xmax, ymin, ymax, axisEqual, axisEqualImage, enlargelimits, axisOnTop, view, width, height, style, legendPos, legendStyle, xmode, ymode, colorbar, hideAxis, axisLines
+                    height=nothing, style=nothing, legendPos=nothing, legendStyle=nothing, xmode=nothing, ymode=nothing, colorbar=nothing, hideAxis=nothing, axisLines=nothing, axisKeyword="axis") =
+        new(plots, title, xlabel, xlabelStyle, ylabel, ylabelStyle, zlabel, zlabelStyle, xmin, xmax, ymin, ymax, axisEqual, axisEqualImage, enlargelimits, axisOnTop, view, width, height, style, legendPos, legendStyle, xmode, ymode, colorbar, hideAxis, axisLines, axisKeyword
             )
 
     Axis(;kwargs...) = Axis(Plot[]; kwargs...)
@@ -170,22 +171,13 @@ type Axis
     Axis(plot::Contour; kwargs...) = Axis(Plot[plot]; kwargs..., view="{0}{90}")
     Axis(plots::Vector{Contour}; kwargs...) = Axis(Plot[plots...]; kwargs..., view="{0}{90}")
 end
+
+PolarAxis(args...; kwargs...) = Axis(args...; kwargs..., axisKeyword = "polaraxis")
+
 typealias Axes Vector{Axis}
 
 function Base.push!(g::Axis, p::Plot)
     push!(g.plots, p)
-end
-
-
-type PolarAxis
-    plots::Vector{Plot}
-    title
-    ymax
-    xticklabel
-    yticklabel
-
-    PolarAxis(plot::Plot;title=nothing, ymax=nothing, xticklabel=nothing, yticklabel=nothing) = new([plot], title, ymax, xticklabel, yticklabel)
-    PolarAxis{P <: Plot}(plots::Vector{P};title=nothing, ymax=nothing, xticklabel=nothing, yticklabel=nothing) = new(plots, title, ymax, xticklabel, yticklabel)
 end
 
 axisMap = Dict(
@@ -215,13 +207,6 @@ axisMap = Dict(
     :colorbar => "colorbar",
     :hideAxis => "hide axis",
     :axisLines => "axis lines"
-    )
-
-polarAxisMap = Dict(
-    :title => "title",
-    :ymax => "ymax",
-    :xticklabel => "xticklabel",
-    :yticklabel => "yticklabel"
     )
 
 type GroupPlot
@@ -523,21 +508,11 @@ function plotHelper(o::IOBuffer, axis::Axis)
     end
 end
 
-
-
-# plot option string and contents; no \begin{axis} or \nextgroupplot
-function plotHelper(o::IOBuffer, axis::PolarAxis)
-    optionHelper(o, polarAxisMap, axis, brackets=true, otherText=[axisOptions(p) for p in axis.plots])
-    for p in axis.plots
-        plotHelper(o, p)
-    end
-end
-
 function plot(axis::Axis)
     o = IOBuffer()
-    print(o, "\\begin{axis}")
+    print(o, "\\begin{$(axis.axisKeyword)}")
     plotHelper(o, axis)
-    println(o, "\\end{axis}")
+    println(o, "\\end{$(axis.axisKeyword)}")
     TikzPicture(takebuf_string(o), options=pgfplotsoptions(), preamble=pgfplotspreamble())
 end
 
@@ -545,20 +520,10 @@ function plot(axes::Axes)
     o = IOBuffer()
 
     for axis in axes
-        print(o, "\\begin{axis}")
+        print(o, "\\begin{$(axis.axisKeyword)}")
         plotHelper(o, axis)
-        println(o, "\\end{axis}")
+        println(o, "\\end{$(axis.axisKeyword)}")
     end
-    TikzPicture(takebuf_string(o), options=pgfplotsoptions(), preamble=pgfplotspreamble())
-end
-
-
-
-function plot(axis::PolarAxis)
-    o = IOBuffer()
-    print(o, "\\begin{polaraxis}")
-    plotHelper(o, axis)
-    println(o, "\\end{polaraxis}")
     TikzPicture(takebuf_string(o), options=pgfplotsoptions(), preamble=pgfplotspreamble())
 end
 
@@ -582,9 +547,7 @@ function plot(p::GroupPlot)
     TikzPicture(takebuf_string(o), options=pgfplotsoptions(), preamble=mypreamble)
 end
 
-
-
-typealias Plottable Union{Plot,GroupPlot,Axis,Axes,PolarAxis,TikzPicture}
+typealias Plottable Union{Plot,GroupPlot,Axis,Axes,TikzPicture}
 
 plot(p::Plot) = plot(Axis(p))
 
@@ -610,21 +573,12 @@ Base.mimewritable(::MIME"image/svg+xml", p::Plottable) = true
 
 cleanup(p::Axis) = map(cleanup, p.plots)
 cleanup(axes::Axes) = map(cleanup, axes)
-
-cleanup(p::PolarAxis) = map(cleanup, p.plots)
-
 cleanup(p::GroupPlot) = map(cleanup, p.axes)
-
 cleanup(p::Plot) = nothing
-
 cleanup(p::Circle) = nothing
-
 cleanup(p::Ellipse) = nothing
-
 cleanup(p::Command) = nothing
-
 cleanup(p::Image) = rm(p.filename)
-
 cleanup(p::Contour) = nothing
 
 axisOptions(p::Plot) = nothing
