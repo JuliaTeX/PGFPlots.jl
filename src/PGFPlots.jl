@@ -1,3 +1,5 @@
+VERSION >= v"0.4.0-dev+6521" && __precompile__(true)
+
 module PGFPlots
 
 export LaTeXString, @L_str, @L_mstr
@@ -6,9 +8,10 @@ export pushPGFPlotsOptions, popPGFPlotsOptions, resetPGFPlotsOptions, pgfplotsop
 export pushPGFPlotsPreamble, popPGFPlotsPreamble, resetPGFPlotsPreamble, pgfplotspreamble
 export pushPGFPlots, popPGFPlots
 import Colors: RGB
-import Contour: contours
+import Contour: contours, levels
 
 using Compat
+using Discretizers
 
 include("colormaps.jl")
 include("plots.jl")
@@ -37,7 +40,7 @@ end
 
 pgfplotsoptions() = join(_pgfplotsoptions, ",\n")
 
-_pgfplotspreamble = Any[readall(joinpath(dirname(@__FILE__), "preamble.tex"))]
+_pgfplotspreamble = Any[readstring(joinpath(dirname(@__FILE__), "preamble.tex"))]
 
 pushPGFPlotsPreamble(preamble::AbstractString) = push!(_pgfplotspreamble, preamble)
 function popPGFPlotsPreamble()
@@ -116,7 +119,7 @@ contourMap = Dict(
     :number => "number",
     :levels => "levels",
     :style => "",
-	:labels => "labels"
+    :labels => "labels"
     )
 
 
@@ -154,11 +157,12 @@ type Axis
     colorbar
     hideAxis
     axisLines
+    axisKeyword
 
     Axis{P <: Plot}(plots::Vector{P};title=nothing, xlabel=nothing, xlabelStyle=nothing, ylabel=nothing, ylabelStyle=nothing, zlabel=nothing, zlabelStyle=nothing, xmin=nothing, xmax=nothing,
                     ymin=nothing, ymax=nothing, axisEqual=nothing, axisEqualImage=nothing, enlargelimits=nothing, axisOnTop=nothing, view=nothing, width=nothing,
-                    height=nothing, style=nothing, legendPos=nothing, legendStyle=nothing, xmode=nothing, ymode=nothing, colorbar=nothing, hideAxis=nothing, axisLines=nothing) =
-        new(plots, title, xlabel, xlabelStyle, ylabel, ylabelStyle, zlabel, zlabelStyle, xmin, xmax, ymin, ymax, axisEqual, axisEqualImage, enlargelimits, axisOnTop, view, width, height, style, legendPos, legendStyle, xmode, ymode, colorbar, hideAxis, axisLines
+                    height=nothing, style=nothing, legendPos=nothing, legendStyle=nothing, xmode=nothing, ymode=nothing, colorbar=nothing, hideAxis=nothing, axisLines=nothing, axisKeyword="axis") =
+        new(plots, title, xlabel, xlabelStyle, ylabel, ylabelStyle, zlabel, zlabelStyle, xmin, xmax, ymin, ymax, axisEqual, axisEqualImage, enlargelimits, axisOnTop, view, width, height, style, legendPos, legendStyle, xmode, ymode, colorbar, hideAxis, axisLines, axisKeyword
             )
 
     Axis(;kwargs...) = Axis(Plot[]; kwargs...)
@@ -167,22 +171,13 @@ type Axis
     Axis(plot::Contour; kwargs...) = Axis(Plot[plot]; kwargs..., view="{0}{90}")
     Axis(plots::Vector{Contour}; kwargs...) = Axis(Plot[plots...]; kwargs..., view="{0}{90}")
 end
+
+PolarAxis(args...; kwargs...) = Axis(args...; kwargs..., axisKeyword = "polaraxis")
+
 typealias Axes Vector{Axis}
 
 function Base.push!(g::Axis, p::Plot)
     push!(g.plots, p)
-end
-
-
-type PolarAxis
-    plots::Vector{Plot}
-    title
-    ymax
-    xticklabel
-    yticklabel
-
-    PolarAxis(plot::Plot;title=nothing, ymax=nothing, xticklabel=nothing, yticklabel=nothing) = new([plot], title, ymax, xticklabel, yticklabel)
-    PolarAxis{P <: Plot}(plots::Vector{P};title=nothing, ymax=nothing, xticklabel=nothing, yticklabel=nothing) = new(plots, title, ymax, xticklabel, yticklabel)
 end
 
 axisMap = Dict(
@@ -212,13 +207,6 @@ axisMap = Dict(
     :colorbar => "colorbar",
     :hideAxis => "hide axis",
     :axisLines => "axis lines"
-    )
-
-polarAxisMap = Dict(
-    :title => "title",
-    :ymax => "ymax",
-    :xticklabel => "xticklabel",
-    :yticklabel => "yticklabel"
     )
 
 type GroupPlot
@@ -276,7 +264,7 @@ end
 function optionHelper(o::IOBuffer, m, object; brackets=false, otherOptions=Dict{AbstractString,AbstractString}[], otherText=nothing)
     first = true
     for (sym, str) in m
-        if object.(sym) != nothing
+        if getfield(object,sym) != nothing
             if first
                 first = false
                 if brackets
@@ -288,7 +276,7 @@ function optionHelper(o::IOBuffer, m, object; brackets=false, otherOptions=Dict{
             if length(str) > 0
                 print(o, "$str = {")
             end
-            printObject(o, object.(sym))
+            printObject(o, getfield(object,sym))
             if length(str) > 0
                 print(o, "}")
             end
@@ -326,14 +314,45 @@ function optionHelper(o::IOBuffer, m, object; brackets=false, otherOptions=Dict{
 end
 
 function plotHelper(o::IOBuffer, p::Histogram)
-    print(o, "\\addplot+ [mark=none, $(p.style), hist={")
-    optionHelper(o, histogramMap, p)
-    print(o, "}] table [row sep=\\\\, y index = 0] {")
-    println(o, "data\\\\")
-    for d in p.data
-        println(o, "$d \\\\ ")
+    if (p.discretization == :pgfplots && p.bins > 0) ||
+       (p.discretization == :default && length(p.data) ≤ Plots.THRESHOLD_NSAMPLES_DISC_OURSELVES)
+
+        print(o, "\\addplot+ [mark=none, $(p.style), hist={")
+        optionHelper(o, histogramMap, p)
+        print(o, "}] table [row sep=\\\\, y index = 0] {")
+        println(o, "data\\\\")
+        for d in p.data
+            println(o, "$d \\\\ ")
+        end
+        println(o, "};")
+
+    else
+        # discretize using Discretizers.jl
+
+        if p.discretization == :specified && p.bins > 0
+            edges = binedges(DiscretizeUniformWidth(p.bins), convert(Vector{Float64}, p.data))
+        else
+            discretization = p.discretization == :default ? :auto : p.discretization
+            edges = binedges(DiscretizeUniformWidth(discretization), convert(Vector{Float64}, p.data))
+        end
+
+        linear = Plots._construct_histogram_linear_data(p.data, edges, p.density, p.cumulative)
+        if p.style != "fill=blue!10"
+            linear.style = p.style
+            if !contains(linear.style, "ybar interval")
+                linear.style = "ybar interval," * linear.style
+            end
+        end
+        plotHelper(o, linear)
     end
-    println(o, "};")
+end
+
+plotLegend(o::IOBuffer, entry) = nothing
+plotLegend(o::IOBuffer, entry::AbstractString) = println(o, "\\addlegendentry{$entry}")
+function plotLegend{T <: AbstractString}(o::IOBuffer, entries::Vector{T})
+    for entry in entries
+        plotLegend(o, entry)
+    end
 end
 
 function plotHelper(o::IOBuffer, p::Linear)
@@ -344,9 +363,7 @@ function plotHelper(o::IOBuffer, p::Linear)
         println(o, "($(p.data[1,i]), $(p.data[2,i]))")
     end
     println(o, "};")
-    if p.legendentry != nothing
-        println(o, "\\addlegendentry{$(p.legendentry)}")
-    end
+    plotLegend(o, p.legendentry)
 end
 
 function plotHelper(o::IOBuffer, p::Scatter)
@@ -361,9 +378,7 @@ function plotHelper(o::IOBuffer, p::Scatter)
         println(o, "($(p.data[1,i]), $(p.data[2,i])) [$(p.data[3,i])]")
     end
     println(o, "};")
-    if p.legendentry != nothing
-        println(o, "\\addlegendentry{$(p.legendentry)}")
-    end
+    plotLegend(o, p.legendentry)
 end
 
 # Specific version for Linear3 type
@@ -376,9 +391,7 @@ function plotHelper(o::IOBuffer, p::Linear3)
         println(o, "($(p.data[1,i]), $(p.data[2,i]), $(p.data[3,i]))")
     end
     println(o, "};")
-    if p.legendentry != nothing
-        println(o, "\\addlegendentry{$(p.legendentry)}")
-    end
+    plotLegend(o, p.legendentry)
 end
 
 function plotHelper(o::IOBuffer, p::Node)
@@ -403,9 +416,7 @@ function plotHelper(o::IOBuffer, p::ErrorBars)
         println(o, "($(p.data[1,i]), $(p.data[2,i])) +=($(p.data[3,i]),$(p.data[4,i])) -=($(p.data[5,i]),$(p.data[6,i]))")
     end
     println(o, "};")
-    if p.legendentry != nothing
-        println(o, "\\addlegendentry{$(p.legendentry)}")
-    end
+    plotLegend(o, p.legendentry)
 end
 
 function plotHelper(o::IOBuffer, p::Quiver)
@@ -417,9 +428,7 @@ function plotHelper(o::IOBuffer, p::Quiver)
         println(o, "$(p.data[1,i]) $(p.data[2,i]) $(p.data[3,i]) $(p.data[4,i])")
     end
     println(o, "};")
-    if p.legendentry != nothing
-        println(o, "\\addlegendentry{$(p.legendentry)}")
-    end
+    plotLegend(o, p.legendentry)
 end
 
 function plotHelper(o::IOBuffer, p::Contour)
@@ -430,23 +439,23 @@ function plotHelper(o::IOBuffer, p::Contour)
         arg = p.levels
     end
     C = contours(p.xbins, p.ybins, convert(Matrix{Float64}, p.data), arg)
-	if p.labels == nothing
-		p.labels = true
-	end
-	if p.labels
-		if p.style != nothing
-			print(o, "\\addplot3[contour prepared, $(p.style)] table {")
-		else
-			print(o, "\\addplot3[contour prepared] table {")
-		end
-	else
-		if p.style != nothing
-			print(o, "\\addplot3[contour prepared={labels=false}, $(p.style)] table {")
-		else
-			print(o, "\\addplot3[contour prepared={labels=false}] table {")
-		end
-	end
-    for c in C
+    if p.labels == nothing
+        p.labels = true
+    end
+    if p.labels
+        if p.style != nothing
+            print(o, "\\addplot3[contour prepared, $(p.style)] table {")
+        else
+            print(o, "\\addplot3[contour prepared] table {")
+        end
+    else
+        if p.style != nothing
+            print(o, "\\addplot3[contour prepared={labels=false}, $(p.style)] table {")
+        else
+            print(o, "\\addplot3[contour prepared={labels=false}] table {")
+        end
+    end
+    for c in levels(C)
         level = c.level
         for l in c.lines
             for v in l.vertices
@@ -499,21 +508,11 @@ function plotHelper(o::IOBuffer, axis::Axis)
     end
 end
 
-
-
-# plot option string and contents; no \begin{axis} or \nextgroupplot
-function plotHelper(o::IOBuffer, axis::PolarAxis)
-    optionHelper(o, polarAxisMap, axis, brackets=true, otherText=[axisOptions(p) for p in axis.plots])
-    for p in axis.plots
-        plotHelper(o, p)
-    end
-end
-
 function plot(axis::Axis)
     o = IOBuffer()
-    print(o, "\\begin{axis}")
+    print(o, "\\begin{$(axis.axisKeyword)}")
     plotHelper(o, axis)
-    println(o, "\\end{axis}")
+    println(o, "\\end{$(axis.axisKeyword)}")
     TikzPicture(takebuf_string(o), options=pgfplotsoptions(), preamble=pgfplotspreamble())
 end
 
@@ -521,20 +520,10 @@ function plot(axes::Axes)
     o = IOBuffer()
 
     for axis in axes
-        print(o, "\\begin{axis}")
+        print(o, "\\begin{$(axis.axisKeyword)}")
         plotHelper(o, axis)
-        println(o, "\\end{axis}")
+        println(o, "\\end{$(axis.axisKeyword)}")
     end
-    TikzPicture(takebuf_string(o), options=pgfplotsoptions(), preamble=pgfplotspreamble())
-end
-
-
-
-function plot(axis::PolarAxis)
-    o = IOBuffer()
-    print(o, "\\begin{polaraxis}")
-    plotHelper(o, axis)
-    println(o, "\\end{polaraxis}")
     TikzPicture(takebuf_string(o), options=pgfplotsoptions(), preamble=pgfplotspreamble())
 end
 
@@ -558,9 +547,7 @@ function plot(p::GroupPlot)
     TikzPicture(takebuf_string(o), options=pgfplotsoptions(), preamble=mypreamble)
 end
 
-
-
-typealias Plottable Union{Plot,GroupPlot,Axis,Axes,PolarAxis,TikzPicture}
+typealias Plottable Union{Plot,GroupPlot,Axis,Axes,TikzPicture}
 
 plot(p::Plot) = plot(Axis(p))
 
@@ -586,21 +573,12 @@ Base.mimewritable(::MIME"image/svg+xml", p::Plottable) = true
 
 cleanup(p::Axis) = map(cleanup, p.plots)
 cleanup(axes::Axes) = map(cleanup, axes)
-
-cleanup(p::PolarAxis) = map(cleanup, p.plots)
-
 cleanup(p::GroupPlot) = map(cleanup, p.axes)
-
 cleanup(p::Plot) = nothing
-
 cleanup(p::Circle) = nothing
-
 cleanup(p::Ellipse) = nothing
-
 cleanup(p::Command) = nothing
-
 cleanup(p::Image) = rm(p.filename)
-
 cleanup(p::Contour) = nothing
 
 axisOptions(p::Plot) = nothing
@@ -634,8 +612,8 @@ function axisOptions(p::Image)
     end
 end
 
-function Base.writemime(f::IO, a::MIME"image/svg+xml", p::Plottable)
-    r = Base.writemime(f, a, plot(p))
+@compat function Base.show(f::IO, a::MIME"image/svg+xml", p::Plottable)
+    r = Base.show(f, a, plot(p))
     cleanup(p)
     r
 end

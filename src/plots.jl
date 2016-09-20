@@ -4,6 +4,7 @@ export Plot, Histogram, Histogram2, Linear, Linear3, ErrorBars, Image, Contour, 
 
 using ..ColorMaps
 using Compat
+using Discretizers
 
 typealias RealRange @compat Tuple{Real,Real}
 
@@ -11,13 +12,59 @@ include("ndgrid.jl")
 
 abstract Plot
 
+type Linear <: Plot
+    data::AbstractArray{Real,2}
+    mark
+    markSize
+    style
+    legendentry
+    onlyMarks
+    Linear{T<:Real}(data::AbstractArray{T,2}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = new(data, mark, markSize, style, legendentry, onlyMarks)
+end
+
+type Linear3 <: Plot
+    data::AbstractArray{Real,2}
+    mark
+    markSize
+    style
+    legendentry
+    onlyMarks
+    Linear3{T<:Real}(data::AbstractArray{T,2}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = new(data, mark, markSize, style, legendentry, onlyMarks)
+end
+
+const THRESHOLD_NSAMPLES_DISC_OURSELVES = 1000 # if we have more samples than this we discretize ourselves
+function _construct_histogram_linear_data{Q<:Real,R<:Real}(
+    data::Vector{Q},
+    binedges::Vector{R},
+    density::Bool, # If true, the bar height will be based on the probability density - otherwise directly on counts
+    cumulative::Bool, # A cumulative histogram uses the sum of all previous bins and the current one as final value.
+    )
+
+    n = length(binedges)
+    disc = LinearDiscretizer(binedges)
+    counts = get_discretization_counts(disc, data)
+    if cumulative
+        cumsum!(counts, counts)
+    end
+
+    arr_x = convert(Vector{Float64}, binedges)
+    arr_y = convert(Vector{Float64}, counts)
+    if density
+        arr_y ./= sum(counts)
+        arr_y ./= binwidths(disc)
+    end
+    push!(arr_y, arr_y[end])
+
+    Linear(hcat(arr_x, arr_y)', style="ybar interval,fill=blue!10, draw=blue", mark="none")
+end
 type Histogram <: Plot
     data::AbstractArray{Real,1}
     bins::Integer
     density::Bool
     cumulative::Bool
     style::AbstractString
-    Histogram(data; bins=20, density=false, cumulative=false, style="fill=blue!10") = new(data, bins, density, cumulative, style)
+    discretization::Symbol
+    Histogram(data; bins=10, discretization=:default, density=false, cumulative=false, style="fill=blue!10") = new(data,bins,density,cumulative,style,discretization)
 end
 
 type Contour <: Plot
@@ -27,7 +74,7 @@ type Contour <: Plot
     style
     number
     levels
-	labels
+    labels
     Contour(data, xbins, ybins; style=nothing, number=nothing, levels=nothing,labels=nothing) = new(data, xbins, ybins, style, number, levels, labels)
     function Contour(f::Function, xrange::RealRange, yrange::RealRange; xbins=40, ybins=40, style=nothing, number=nothing, levels=nothing, labels=nothing)
         x = linspace(xrange[1], xrange[2], xbins)
@@ -44,45 +91,25 @@ end
 
 function Contour(z::AbstractMatrix, x::Range, y::Range; style=nothing, number=nothing, levels=nothing, labels=nothing)
     (X, Y) = meshgrid(x, y)
-    Contour([X[:]'; Y[:]'; z[:]'], length(x), length(y); style = style, number = number, number = levels, labels=labels)
-end
-
-type Linear <: Plot
-    data::AbstractArray{Real,2}
-    mark
-	markSize
-    style
-    legendentry
-    onlyMarks
-    Linear{T<:Real}(data::AbstractArray{T,2}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = new(data, mark, markSize, style, legendentry, onlyMarks)
-end
-
-type Linear3 <: Plot
-    data::AbstractArray{Real,2}
-    mark
-	markSize
-    style
-    legendentry
-    onlyMarks
-    Linear3{T<:Real}(data::AbstractArray{T,2}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = new(data, mark, markSize, style, legendentry, onlyMarks)
+    Contour([X[:]'; Y[:]'; z[:]'], length(x), length(y); style = style, number = number, levels = levels, labels=labels)
 end
 
 type Scatter <: Plot
     data::AbstractArray{Any,2}
     mark
-	markSize
+    markSize
     style
     legendentry
     onlyMarks
-	scatterClasses
+    scatterClasses
 
-	function Scatter{T<:Any}(data::AbstractArray{T,2}; mark=nothing, markSize=nothing, style=nothing, onlyMarks=true, legendentry=nothing, scatterClasses=nothing)
-		if size(data,1) == 2
-			return Linear(data, mark=mark, markSize=markSize, style=style, onlyMarks=onlyMarks, legendentry=legendentry)
-		else
-			return new(data, mark, markSize, style, legendentry, onlyMarks, scatterClasses)
-		end
-	end
+    function Scatter{T<:Any}(data::AbstractArray{T,2}; mark=nothing, markSize=nothing, style=nothing, onlyMarks=true, legendentry=nothing, scatterClasses=nothing)
+        if size(data,1) == 2
+            return Linear(data, mark=mark, markSize=markSize, style=style, onlyMarks=onlyMarks, legendentry=legendentry)
+        else
+            return new(data, mark, markSize, style, legendentry, onlyMarks, scatterClasses)
+        end
+    end
 end
 
 type ErrorBars <: Plot
@@ -110,20 +137,20 @@ type Node <: Plot
 end
 
 type Circle <: Plot
-	xc
-	yc
-	radius
+    xc
+    yc
+    radius
     style
-	Circle(xc=0,yc=0,radius=1;style=nothing) = new(xc,yc,radius,style)
+    Circle(xc=0,yc=0,radius=1;style=nothing) = new(xc,yc,radius,style)
 end
 
 type Ellipse <: Plot
-	xc
-	yc
-	xradius
-	yradius
+    xc
+    yc
+    xradius
+    yradius
     style
-	Ellipse(xc=0,yc=0,xradius=1,yradius=1;style=nothing) = new(xc,yc,xradius,yradius,style)
+    Ellipse(xc=0,yc=0,xradius=1,yradius=1;style=nothing) = new(xc,yc,xradius,yradius,style)
 end
 
 type Command <: Plot
@@ -163,10 +190,10 @@ ErrorBars{A<:Real, B<:Real, C<:Real, D<:Real, E<:Real, F<:Real}(x::AbstractArray
 ErrorBars{A<:Real, B<:Real, C<:Real, D<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}, yplus::AbstractArray{C,1},yminus::AbstractArray{D,1}; mark=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = ErrorBars([x y zeros(length(x)) yplus zeros(length(x)) yminus]', mark=mark, style=style, legendentry=legendentry)
 ErrorBars{A<:Real, B<:Real, C<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}, yplusminus::AbstractArray{C,1}; mark=nothing, style=nothing, legendentry=nothing) = ErrorBars([x y zeros(length(x)) yplusminus zeros(length(x)) yplusminus]', mark=mark, style=style, legendentry=legendentry)
 
-Scatter{A<:Real, B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, scatterClasses=nothing) = Scatter([x y]', mark=mark, markSize=markSize, style=style, legendentry=nothing, scatterClasses=scatterClasses)
-Scatter{A<:Real, B<:Real, C<:Any}(x::AbstractArray{A,1}, y::AbstractArray{B,1}, f::AbstractArray{C,1}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, scatterClasses=nothing) = Scatter([x y f]', mark=mark, markSize=markSize, style=style, legendentry=nothing, scatterClasses=scatterClasses)
-Scatter{A<:Real, B<:Real}(x::A, y::B; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing) = Scatter([x y]', mark=mark, markSize=markSize, style=style, legendentry=nothing)
-Scatter{A<:Real, B<:Real}(x::A, y::B, f; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, scatterClasses=nothing) = Scatter([x y f]', mark=mark, markSize=markSize, style=style, legendentry=nothing, scatterClasses=scatterClasses)
+Scatter{A<:Real, B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, scatterClasses=nothing) = Scatter([x y]', mark=mark, markSize=markSize, style=style, legendentry=legendentry, scatterClasses=scatterClasses)
+Scatter{A<:Real, B<:Real, C<:Any}(x::AbstractArray{A,1}, y::AbstractArray{B,1}, f::AbstractArray{C,1}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, scatterClasses=nothing) = Scatter([x y f]', mark=mark, markSize=markSize, style=style, legendentry=legendentry, scatterClasses=scatterClasses)
+Scatter{A<:Real, B<:Real}(x::A, y::B; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing) = Scatter([x y]', mark=mark, markSize=markSize, style=style, legendentry=legendentry)
+Scatter{A<:Real, B<:Real}(x::A, y::B, f; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, scatterClasses=nothing) = Scatter([x y f]', mark=mark, markSize=markSize, style=style, legendentry=legendentry, scatterClasses=scatterClasses)
 
 global _imgid = 1
 
