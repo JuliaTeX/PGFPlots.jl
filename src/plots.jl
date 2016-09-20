@@ -153,7 +153,7 @@ end
 Quiver{A<:Real,B<:Real,C<:Real,D<:Real}(x::Vector{A}, y::Vector{B}, u::Vector{C}, v::Vector{D}; style=nothing, legendentry=nothing) = Quiver([x y u v]', style=style, legendentry=legendentry)
 
 Linear{A<:Real, B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = Linear([x y]', mark=mark, markSize=markSize, style=style, legendentry=legendentry, onlyMarks=onlyMarks)
-Linear{A<:Real}(data::AbstractArray{A,1}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = Linear([1:length(data)], data, mark=mark, markSize=markSize, style=style, legendentry=legendentry, onlyMarks=onlyMarks)
+Linear{A<:Real}(data::AbstractArray{A,1}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = Linear(collect(1:length(data)), data, mark=mark, markSize=markSize, style=style, legendentry=legendentry, onlyMarks=onlyMarks)
 
 
 Linear3{A<:Real, B<:Real, C<:Real}(x::AbstractVector{A}, y::AbstractVector{B}, z::AbstractVector{C}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = Linear3([x y z]', mark=mark, markSize=markSize, style=style, legendentry=legendentry, onlyMarks=onlyMarks)
