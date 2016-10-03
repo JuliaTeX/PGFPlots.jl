@@ -31,7 +31,7 @@ function ErrorBars(; x=nothing, y=nothing, xplus=nothing, xminus=nothing, yplus=
         yplus = y
         yminus = y
     end
-    n = maximum(map(mylength, [xplus, xminus, yplus, yminus]))
+    n = maximum(map(mylength, Any[xplus, xminus, yplus, yminus]))
     xplus = mylength(xplus) == n ? xplus : zeros(n)
     xminus = mylength(xminus) == n ? xminus : zeros(n)
     yplus = mylength(yplus) == n ? yplus : zeros(n)
