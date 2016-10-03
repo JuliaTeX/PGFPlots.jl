@@ -3,7 +3,7 @@ VERSION >= v"0.4.0-dev+6521" && __precompile__(true)
 module PGFPlots
 
 export LaTeXString, @L_str, @L_mstr
-export plot, Axis, Axes, PolarAxis, GroupPlot, Plots, ColorMaps, save, define_color
+export plot, ErrorBars, Axis, Axes, PolarAxis, GroupPlot, Plots, ColorMaps, save, define_color
 export pushPGFPlotsOptions, popPGFPlotsOptions, resetPGFPlotsOptions, pgfplotsoptions
 export pushPGFPlotsPreamble, popPGFPlotsPreamble, resetPGFPlotsPreamble, pgfplotspreamble
 export pushPGFPlots, popPGFPlots
@@ -12,6 +12,33 @@ import Contour: contours, levels
 
 using Compat
 using Discretizers
+
+type ErrorBars
+    data::AbstractMatrix{Real}
+    style
+    mark
+    ErrorBars{T <: Real}(data::AbstractMatrix{T}; style=nothing, mark=nothing) = new(data, style, mark)
+end
+
+mylength(x) = (x == nothing) ? 0 : length(x)
+
+function ErrorBars(; x=nothing, y=nothing, xplus=nothing, xminus=nothing, yplus=nothing, yminus=nothing, style=nothing, mark=nothing)
+    if x != nothing
+        xplus = x
+        xminus = x
+    end
+    if y != nothing
+        yplus = y
+        yminus = y
+    end
+    n = maximum(map(mylength, [xplus, xminus, yplus, yminus]))
+    xplus = mylength(xplus) == n ? xplus : zeros(n)
+    xminus = mylength(xminus) == n ? xminus : zeros(n)
+    yplus = mylength(yplus) == n ? yplus : zeros(n)
+    yminus = mylength(yminus) == n ? yminus : zeros(n)
+    data = hcat(xplus, xminus, yplus, yminus)'
+    ErrorBars(data, style=style, mark=mark)
+end
 
 include("colormaps.jl")
 include("plots.jl")
@@ -106,8 +133,8 @@ scatterMap = Dict(
     )
 
 errorbarsMap = Dict(
-    :mark => "mark",
-    :style => ""
+    :mark => "error mark",
+    :style => "error bar style"
     )
 
 quiverMap = Dict(
@@ -355,14 +382,36 @@ function plotLegend{T <: AbstractString}(o::IOBuffer, entries::Vector{T})
     end
 end
 
-function plotHelper(o::IOBuffer, p::Linear)
-    print(o, "\\addplot+ ")
-    optionHelper(o, linearMap, p, brackets=true)
-    println(o, "coordinates {")
-    for i = 1:size(p.data,2)
-        println(o, "($(p.data[1,i]), $(p.data[2,i]))")
+# todo: add error bars style
+function plotHelperErrorBars(o::IOBuffer, p::Linear)
+    println(o, "[")
+    optionHelper(o, linearMap, p, brackets=false)
+    println(o, ", error bars/.cd, ")
+    optionHelper(o, errorbarsMap, p.errorBars, otherText=["x dir=both", "x explicit", "y dir=both", "y explicit"])
+    println(o, "]")
+    x = vcat(p.data, p.errorBars.data)
+    println(o, "table [")
+    println(o, "x error plus=ex+, x error minus=ex-, y error plus=ey+, y error minus=ey-")
+    println(o, "] {")
+    println(o, "x y ex+ ex- ey+ ey-")
+    for i = 1:size(p.data, 2)
+        println(o, "$(x[1,i]) $(x[2,i]) $(x[3,i]) $(x[4,i]) $(x[5,i]) $(x[6,i])")
     end
     println(o, "};")
+end
+
+function plotHelper(o::IOBuffer, p::Linear)
+    print(o, "\\addplot+ ")
+    if p.errorBars == nothing
+        optionHelper(o, linearMap, p, brackets=true)
+        println(o, "coordinates {")
+        for i = 1:size(p.data,2)
+            println(o, "($(p.data[1,i]), $(p.data[2,i]))")
+        end
+        println(o, "};")
+    else
+        plotHelperErrorBars(o, p)
+    end
     plotLegend(o, p.legendentry)
 end
 
@@ -555,9 +604,9 @@ function plot(p::Contour)
     plot(Axis(p, xmin=p.xbins[1], xmax=p.xbins[end], ymin=p.ybins[1], ymax=p.ybins[end]))
 end
 
-plot{A<:Real,B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}) = plot(Linear(x, y))
+plot{A<:Real,B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}; kwargs...) = plot(Linear(x, y; kwargs...))
 
-plot{A<:Real,B<:Real,C<:Real}(x::AbstractVector{A}, y::AbstractVector{B}, z::AbstractVector{C}) = plot(Linear3(x, y, z))
+plot{A<:Real,B<:Real,C<:Real}(x::AbstractVector{A}, y::AbstractVector{B}, z::AbstractVector{C}; kwargs...) = plot(Linear3(x, y, z; kwargs...))
 
 function Plots.Linear(f::Function, range::RealRange; mark="none", style=nothing, legendentry=nothing)
     x = linspace(range[1], range[2])
@@ -565,7 +614,7 @@ function Plots.Linear(f::Function, range::RealRange; mark="none", style=nothing,
     Linear(x, y, mark=mark, style=style, legendentry=legendentry)
 end
 
-plot(f::Function, range::RealRange) = plot(Linear(f, range))
+plot(f::Function, range::RealRange; kwargs...) = plot(Linear(f, range; kwargs...))
 
 plot(tkz::TikzPicture) = tkz # tikz pic doesn't need plot, here for convenience
 

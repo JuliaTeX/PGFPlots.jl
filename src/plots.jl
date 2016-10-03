@@ -1,10 +1,11 @@
 module Plots
 
-export Plot, Histogram, Histogram2, Linear, Linear3, ErrorBars, Image, Contour, Scatter, Quiver, Node, Circle, Ellipse, Command
+export Plot, Histogram, Histogram2, Linear, Linear3, Image, Contour, Scatter, Quiver, Node, Circle, Ellipse, Command
 
 using ..ColorMaps
 using Compat
 using Discretizers
+using StatsBase
 
 typealias RealRange @compat Tuple{Real,Real}
 
@@ -13,23 +14,24 @@ include("ndgrid.jl")
 abstract Plot
 
 type Linear <: Plot
-    data::AbstractArray{Real,2}
+    data::AbstractMatrix{Real}
     mark
     markSize
     style
     legendentry
     onlyMarks
-    Linear{T<:Real}(data::AbstractArray{T,2}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = new(data, mark, markSize, style, legendentry, onlyMarks)
+    errorBars
+    Linear{T <: Real}(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing, errorBars=nothing) = new(data, mark, markSize, style, legendentry, onlyMarks, errorBars)
 end
 
 type Linear3 <: Plot
-    data::AbstractArray{Real,2}
+    data::AbstractMatrix{Real}
     mark
     markSize
     style
     legendentry
     onlyMarks
-    Linear3{T<:Real}(data::AbstractArray{T,2}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = new(data, mark, markSize, style, legendentry, onlyMarks)
+    Linear3{T<:Real}(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = new(data, mark, markSize, style, legendentry, onlyMarks)
 end
 
 const THRESHOLD_NSAMPLES_DISC_OURSELVES = 1000 # if we have more samples than this we discretize ourselves
@@ -58,7 +60,7 @@ function _construct_histogram_linear_data{Q<:Real,R<:Real}(
     Linear(hcat(arr_x, arr_y)', style="ybar interval,fill=blue!10, draw=blue", mark="none")
 end
 type Histogram <: Plot
-    data::AbstractArray{Real,1}
+    data::AbstractVector{Real}
     bins::Integer
     density::Bool
     cumulative::Bool
@@ -95,7 +97,7 @@ function Contour(z::AbstractMatrix, x::Range, y::Range; style=nothing, number=no
 end
 
 type Scatter <: Plot
-    data::AbstractArray{Any,2}
+    data::AbstractMatrix{Any}
     mark
     markSize
     style
@@ -103,21 +105,13 @@ type Scatter <: Plot
     onlyMarks
     scatterClasses
 
-    function Scatter{T<:Any}(data::AbstractArray{T,2}; mark=nothing, markSize=nothing, style=nothing, onlyMarks=true, legendentry=nothing, scatterClasses=nothing)
+    function Scatter{T<:Any}(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, onlyMarks=true, legendentry=nothing, scatterClasses=nothing)
         if size(data,1) == 2
             return Linear(data, mark=mark, markSize=markSize, style=style, onlyMarks=onlyMarks, legendentry=legendentry)
         else
             return new(data, mark, markSize, style, legendentry, onlyMarks, scatterClasses)
         end
     end
-end
-
-type ErrorBars <: Plot
-    data::AbstractArray{Real,2}
-    mark
-    style
-    legendentry
-    ErrorBars{T<:Real}(data::AbstractArray{T,2}; mark=nothing, style=nothing, legendentry=nothing) = new(data, mark, style, legendentry)
 end
 
 type Quiver <: Plot
@@ -177,23 +171,17 @@ function Quiver(f::Function, xrange::RealRange, yrange::RealRange; style=nothing
     Quiver(X[:], Y[:], U, V, style=style, legendentry=legendentry)
 end
 
-Quiver{A<:Real,B<:Real,C<:Real,D<:Real}(x::Vector{A}, y::Vector{B}, u::Vector{C}, v::Vector{D}; style=nothing, legendentry=nothing) = Quiver([x y u v]', style=style, legendentry=legendentry)
+Quiver{A<:Real,B<:Real,C<:Real,D<:Real}(x::Vector{A}, y::Vector{B}, u::Vector{C}, v::Vector{D}; kwargs...) = Quiver(hcat(x, y, u, v)'; kwargs...)
 
-Linear{A<:Real, B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = Linear([x y]', mark=mark, markSize=markSize, style=style, legendentry=legendentry, onlyMarks=onlyMarks)
-Linear{A<:Real}(data::AbstractArray{A,1}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = Linear(collect(1:length(data)), data, mark=mark, markSize=markSize, style=style, legendentry=legendentry, onlyMarks=onlyMarks)
+Linear{A<:Real, B<:Real}(x::AbstractVector{A}, y::AbstractVector{B}; kwargs...) = Linear(hcat(x, y)'; kwargs...)
+Linear{A<:Real}(data::AbstractVector{A}; kwags...) = Linear(collect(1:length(data)), data; kwargs...)
 
+Linear3{A<:Real, B<:Real, C<:Real}(x::AbstractVector{A}, y::AbstractVector{B}, z::AbstractVector{C}; kwargs...) = Linear3(hcat(x, y, z)'; kwargs...)
 
-Linear3{A<:Real, B<:Real, C<:Real}(x::AbstractVector{A}, y::AbstractVector{B}, z::AbstractVector{C}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = Linear3([x y z]', mark=mark, markSize=markSize, style=style, legendentry=legendentry, onlyMarks=onlyMarks)
-
-ErrorBars{A<:Real, B<:Real, C<:Real, D<:Real, E<:Real, F<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}, xplus::AbstractArray{C,1}, yplus::AbstractArray{D,1},
-                                                                xminus::AbstractArray{E,1}, yminus::AbstractArray{F,1}; mark=nothing, style=nothing, legendentry=nothing) = ErrorBars([x y xplus yplus xminus yminus]',mark=mark, style=style, legendentry=legendentry)
-ErrorBars{A<:Real, B<:Real, C<:Real, D<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}, yplus::AbstractArray{C,1},yminus::AbstractArray{D,1}; mark=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = ErrorBars([x y zeros(length(x)) yplus zeros(length(x)) yminus]', mark=mark, style=style, legendentry=legendentry)
-ErrorBars{A<:Real, B<:Real, C<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}, yplusminus::AbstractArray{C,1}; mark=nothing, style=nothing, legendentry=nothing) = ErrorBars([x y zeros(length(x)) yplusminus zeros(length(x)) yplusminus]', mark=mark, style=style, legendentry=legendentry)
-
-Scatter{A<:Real, B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, scatterClasses=nothing) = Scatter([x y]', mark=mark, markSize=markSize, style=style, legendentry=legendentry, scatterClasses=scatterClasses)
-Scatter{A<:Real, B<:Real, C<:Any}(x::AbstractArray{A,1}, y::AbstractArray{B,1}, f::AbstractArray{C,1}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, scatterClasses=nothing) = Scatter([x y f]', mark=mark, markSize=markSize, style=style, legendentry=legendentry, scatterClasses=scatterClasses)
-Scatter{A<:Real, B<:Real}(x::A, y::B; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing) = Scatter([x y]', mark=mark, markSize=markSize, style=style, legendentry=legendentry)
-Scatter{A<:Real, B<:Real}(x::A, y::B, f; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, scatterClasses=nothing) = Scatter([x y f]', mark=mark, markSize=markSize, style=style, legendentry=legendentry, scatterClasses=scatterClasses)
+Scatter{A<:Real, B<:Real}(x::AbstractVector{A}, y::AbstractVector{B}; kwargs...) = Scatter(hcat(x, y)'; kwargs...)
+Scatter{A<:Real, B<:Real, C<:Any}(x::AbstractVector{A}, y::AbstractVector{B}, f::AbstractVector{C}; kwargs...) = Scatter(permutedims(hcat(x, y, f), [2,1]); kwargs...)
+Scatter{A<:Real, B<:Real}(x::A, y::B; kwargs...) = Scatter(hcat(x, y)'; kwargs...)
+Scatter{A<:Real, B<:Real}(x::A, y::B, f; kwargs...) = Scatter(hcat(x, y, f)'; kwargs...)
 
 global _imgid = 1
 
@@ -248,7 +236,8 @@ end
 function Histogram2{A<:Real, B<:Real}(x::Vector{A}, y::Vector{B}; xmin=minimum(x), xmax=maximum(x), ymin=minimum(y), ymax=maximum(y), xbins=50, ybins=50, density=false, filename=nothing, colorbar=true, colormap=ColorMaps.Gray(), zmin=nothing, zmax=nothing, style=nothing)
     ex = linspace(xmin, xmax, xbins+1)
     ey = linspace(ymin, ymax, ybins+1)
-    ex, ey, M = hist2d(hcat(y, x), ey, ex)
+    h = fit(StatsBase.Histogram, (y, x), (ey, ex))
+    ex, ey, M = h.edges[1], h.edges[2], h.weights
     M = flipdim(M, 1)
     if density
         scale =  xbins * ybins / ((xmax-xmin) * (ymax-ymin) * sum(M))
