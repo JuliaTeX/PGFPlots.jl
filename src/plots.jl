@@ -174,7 +174,7 @@ end
 Quiver{A<:Real,B<:Real,C<:Real,D<:Real}(x::Vector{A}, y::Vector{B}, u::Vector{C}, v::Vector{D}; kwargs...) = Quiver(hcat(x, y, u, v)'; kwargs...)
 
 Linear{A<:Real, B<:Real}(x::AbstractVector{A}, y::AbstractVector{B}; kwargs...) = Linear(hcat(x, y)'; kwargs...)
-Linear{A<:Real}(data::AbstractVector{A}; kwags...) = Linear(collect(1:length(data)), data; kwargs...)
+Linear{A<:Real}(data::AbstractVector{A}; kwargs...) = Linear(collect(1:length(data)), data; kwargs...)
 
 Linear3{A<:Real, B<:Real, C<:Real}(x::AbstractVector{A}, y::AbstractVector{B}, z::AbstractVector{C}; kwargs...) = Linear3(hcat(x, y, z)'; kwargs...)
 
