@@ -255,9 +255,12 @@ function Base.push!(g::GroupPlot, a::Axis)
     end
     g
 end
-
-function Base.push!(g::GroupPlot, p::Plot)
-    push!(g, Axis(p))
+Base.push!(g::GroupPlot, p::Plot) = push!(g, Axis(p))
+function Base.append!{T<:Union{Plot,Axis}}(g::GroupPlot, arr::AbstractVector{T})
+    for a in arr
+        push!(g, a)
+    end
+    g
 end
 
 function printList{T}(o::IOBuffer, a::AbstractArray{T,1}; brackets=false)
@@ -278,15 +281,8 @@ function printList{T}(o::IOBuffer, a::AbstractArray{T,1}; brackets=false)
     end
 end
 
-
-function printObject(o::IOBuffer, object)
-    print(o, "$(object)")
-end
-
-function printObject{T}(o::IOBuffer, object::AbstractArray{T,1})
-    printList(o, object, brackets = true)
-end
-
+printObject(o::IOBuffer, object) = print(o, "$(object)")
+printObject{T}(o::IOBuffer, object::AbstractArray{T,1}) = printList(o, object, brackets = true)
 
 function optionHelper(o::IOBuffer, m, object; brackets=false, otherOptions=Dict{AbstractString,AbstractString}[], otherText=nothing)
     first = true
