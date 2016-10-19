@@ -1,6 +1,6 @@
 module Plots
 
-export Plot, Histogram, Histogram2, Linear, Linear3, Image, Contour, Scatter, Quiver, Node, Circle, Ellipse, Command
+export Plot, Histogram, Histogram2, Linear, Linear3, Image, Patch2D, Contour, Scatter, Quiver, Node, Circle, Ellipse, Command
 
 using ..ColorMaps
 using Compat
@@ -232,6 +232,19 @@ type Image <: Plot
         Image(A, xrange, yrange, filename=filename, colorbar=colorbar, colormap=colormap, zmin=zmin, zmax=zmax, style=style)
     end
 end
+
+type Patch2D{R<:Real} <: Plots.Plot
+    data::Matrix{R} # d × m⋅n
+                    # where m = 4 for rect and m = 3 for triangle (defaults to triangle)
+                    #   and n = number of patches
+                    #   and d = {x,y,color} or {x,y}
+    style
+    patch_type
+    shader
+    legendentry
+end
+Patch2D{R<:Real}(data::Matrix{R}; style="patch", patch_type=nothing, shader=nothing, legendentry=nothing) = Patch2D{R}(data, style, patch_type, shader, legendentry)
+
 
 function Histogram2{A<:Real, B<:Real}(x::Vector{A}, y::Vector{B}; xmin=minimum(x), xmax=maximum(x), ymin=minimum(y), ymax=maximum(y), xbins=50, ybins=50, density=false, filename=nothing, colorbar=true, colormap=ColorMaps.Gray(), zmin=nothing, zmax=nothing, style=nothing)
     ex = linspace(xmin, xmax, xbins+1)

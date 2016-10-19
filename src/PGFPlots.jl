@@ -141,7 +141,6 @@ quiverMap = Dict(
     :style => ""
     )
 
-
 contourMap = Dict(
     :number => "number",
     :levels => "levels",
@@ -149,6 +148,12 @@ contourMap = Dict(
     :labels => "labels"
     )
 
+patch2DMap = Dict(
+    :style => "",
+    :patch_type => "patch type",
+    :shader => "shader",
+    :legendentry => "legendentry"
+    )
 
 using .Plots
 using .ColorMaps
@@ -532,7 +537,6 @@ function plotHelper(o::IOBuffer, p::Command)
     println(o, p.cmd*";") #PGFPlots expects commands to be terminated with a ;
 end
 
-
 function plotHelper(o::IOBuffer, p::Image)
     if p.zmin == p.zmax
         error("Your colorbar range limits must not be equal to each other.")
@@ -544,6 +548,50 @@ function plotHelper(o::IOBuffer, p::Image)
     end
 end
 
+function plotHelper{R<:Real}(o::IOBuffer, p::Patch2D{R})
+    print(o, "\\addplot")
+
+    optionHelper(o, patch2DMap, p, brackets=true)
+    println(o)
+
+    m = p.patch_type == "rectangle" ? 4 : 3
+
+    if R <: AbstractFloat
+        println(o, "table[point meta=\\thisrow{c}] {")
+        println(o, "\tx y c")
+        for i in 1 : size(p.data, 2)
+            @printf(o, "\t %.6e %.6e", convert(Float64, p.data[1,i]), # x
+                                       convert(Float64, p.data[2,i])) # y
+            if size(p.data, 1) > 2
+                @printf(o, " %.6e\n", convert(Float64, p.data[3,i])) # color
+            else
+                println(o, "")
+            end
+
+            if mod(i, m) == 0
+                println(o) # extra space between patches (trainges or rectangles)
+            end
+        end
+    else
+        println(o, "table {")
+        println(o, "\tx y")
+        for i in 1 : size(p.data, 2)
+            @printf(o, "\t %d %d", p.data[1,i], # x
+                                   p.data[2,i]) # y
+            if size(p.data, 1) > 2
+                @printf(o, " %d\n", p.data[3,i]) # color
+            else
+                println(o, "")
+            end
+
+            if mod(i, m) == 0
+                println(o) # extra space between patches (trainges or rectangles)
+            end
+        end
+    end
+    println(o, "};")
+    plotLegend(o, p.legendentry)
+end
 
 # plot option string and contents; no \begin{axis} or \nextgroupplot
 function plotHelper(o::IOBuffer, axis::Axis)
