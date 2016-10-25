@@ -9,6 +9,7 @@ export pushPGFPlotsPreamble, popPGFPlotsPreamble, resetPGFPlotsPreamble, pgfplot
 export pushPGFPlots, popPGFPlots
 import Colors: RGB
 import Contour: contours, levels
+import Reel: extension
 
 using Compat
 using Discretizers
@@ -735,5 +736,10 @@ function save(filename::AbstractString, o::Plottable; include_preamble::Bool=tru
         error("Unsupported file extensions: $ext")
     end
 end
+
+###################################################
+# Reel configuration
+
+extension(m::MIME"image/svg+xml") = "svg"
 
 end # module
