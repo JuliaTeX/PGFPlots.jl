@@ -23,6 +23,8 @@ type Linear <: Plot
     errorBars
     Linear{T <: Real}(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing, errorBars=nothing) = new(data, mark, markSize, style, legendentry, onlyMarks, errorBars)
 end
+Linear{A<:Real, B<:Real}(x::AbstractVector{A}, y::AbstractVector{B}; kwargs...) = Linear(hcat(x, y)'; kwargs...)
+Linear{A<:Real}(data::AbstractVector{A}; kwargs...) = Linear(collect(1:length(data)), data; kwargs...)
 
 type Linear3 <: Plot
     data::AbstractMatrix{Real}
@@ -33,6 +35,7 @@ type Linear3 <: Plot
     onlyMarks
     Linear3{T<:Real}(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = new(data, mark, markSize, style, legendentry, onlyMarks)
 end
+Linear3{A<:Real, B<:Real, C<:Real}(x::AbstractVector{A}, y::AbstractVector{B}, z::AbstractVector{C}; kwargs...) = Linear3(hcat(x, y, z)'; kwargs...)
 
 const THRESHOLD_NSAMPLES_DISC_OURSELVES = 1000 # if we have more samples than this we discretize ourselves
 function _construct_histogram_linear_data{Q<:Real,R<:Real}(
@@ -113,6 +116,10 @@ type Scatter <: Plot
         end
     end
 end
+Scatter{A<:Real, B<:Real}(x::AbstractVector{A}, y::AbstractVector{B}; kwargs...) = Scatter(hcat(x, y)'; kwargs...)
+Scatter{A<:Real, B<:Real, C<:Any}(x::AbstractVector{A}, y::AbstractVector{B}, f::AbstractVector{C}; kwargs...) = Scatter(permutedims(hcat(x, y, f), [2,1]); kwargs...)
+Scatter{A<:Real, B<:Real}(x::A, y::B; kwargs...) = Scatter(hcat(x, y)'; kwargs...)
+Scatter{A<:Real, B<:Real}(x::A, y::B, f; kwargs...) = Scatter(hcat(x, y, f)'; kwargs...)
 
 type Quiver <: Plot
     data::Matrix{Real}
@@ -120,6 +127,25 @@ type Quiver <: Plot
     legendentry
     Quiver{T<:Real}(data::Matrix{T}; style=nothing, legendentry=nothing) = new(data, style, legendentry)
 end
+function Quiver(f::Function, xrange::RealRange, yrange::RealRange; style=nothing, legendentry=nothing, samples=15, normalize=true)
+    x = linspace(xrange[1], xrange[2], samples)
+    y = linspace(yrange[1], yrange[2], samples)
+    (X, Y) = meshgrid(x, y)
+    n = length(X)
+    U = zeros(n)
+    V = zeros(n)
+    for i = 1:n
+        (U[i], V[i]) = f(X[i], Y[i])
+    end
+    if normalize
+        r = max(maximum(U),maximum(V))
+        r /= min(minimum(diff(x)),minimum(diff(y)))
+        U /= r
+        V /= r
+    end
+    Quiver(X[:], Y[:], U, V, style=style, legendentry=legendentry)
+end
+Quiver{A<:Real,B<:Real,C<:Real,D<:Real}(x::Vector{A}, y::Vector{B}, u::Vector{C}, v::Vector{D}; kwargs...) = Quiver(hcat(x, y, u, v)'; kwargs...)
 
 type Node <: Plot
     data
@@ -151,37 +177,6 @@ type Command <: Plot
     cmd::AbstractString
     Command(cmd::AbstractString) = new(cmd)
 end
-
-function Quiver(f::Function, xrange::RealRange, yrange::RealRange; style=nothing, legendentry=nothing, samples=15, normalize=true)
-    x = linspace(xrange[1], xrange[2], samples)
-    y = linspace(yrange[1], yrange[2], samples)
-    (X, Y) = meshgrid(x, y)
-    n = length(X)
-    U = zeros(n)
-    V = zeros(n)
-    for i = 1:n
-        (U[i], V[i]) = f(X[i], Y[i])
-    end
-    if normalize
-        r = max(maximum(U),maximum(V))
-        r /= min(minimum(diff(x)),minimum(diff(y)))
-        U /= r
-        V /= r
-    end
-    Quiver(X[:], Y[:], U, V, style=style, legendentry=legendentry)
-end
-
-Quiver{A<:Real,B<:Real,C<:Real,D<:Real}(x::Vector{A}, y::Vector{B}, u::Vector{C}, v::Vector{D}; kwargs...) = Quiver(hcat(x, y, u, v)'; kwargs...)
-
-Linear{A<:Real, B<:Real}(x::AbstractVector{A}, y::AbstractVector{B}; kwargs...) = Linear(hcat(x, y)'; kwargs...)
-Linear{A<:Real}(data::AbstractVector{A}; kwargs...) = Linear(collect(1:length(data)), data; kwargs...)
-
-Linear3{A<:Real, B<:Real, C<:Real}(x::AbstractVector{A}, y::AbstractVector{B}, z::AbstractVector{C}; kwargs...) = Linear3(hcat(x, y, z)'; kwargs...)
-
-Scatter{A<:Real, B<:Real}(x::AbstractVector{A}, y::AbstractVector{B}; kwargs...) = Scatter(hcat(x, y)'; kwargs...)
-Scatter{A<:Real, B<:Real, C<:Any}(x::AbstractVector{A}, y::AbstractVector{B}, f::AbstractVector{C}; kwargs...) = Scatter(permutedims(hcat(x, y, f), [2,1]); kwargs...)
-Scatter{A<:Real, B<:Real}(x::A, y::B; kwargs...) = Scatter(hcat(x, y)'; kwargs...)
-Scatter{A<:Real, B<:Real}(x::A, y::B, f; kwargs...) = Scatter(hcat(x, y, f)'; kwargs...)
 
 global _imgid = 1
 
@@ -257,6 +252,58 @@ function Histogram2{A<:Real, B<:Real}(x::Vector{A}, y::Vector{B}; xmin=minimum(x
         M = M * scale
     end
     Image(M, (xmin, xmax), (ymin, ymax), filename=filename, colorbar=colorbar, colormap=colormap, zmin=zmin, zmax=zmax, style=style)
+end
+function Histogram2{A<:Real, B<:Real, C<:Real}(x::Vector{A}, y::Vector{B}, edges_x::AbstractVector{C}, edges_y::AbstractVector{C};
+    density=false,
+    style=nothing,
+    )
+
+    h = fit(StatsBase.Histogram, (x, y), (edges_x, edges_y))
+    ex, ey, M = h.edges[1], h.edges[2], h.weights
+    m = length(ex)-1
+    n = length(ey)-1
+    scale =  m*n / ((ex[end]-ex[1]) * (ey[end]-ey[1]) * sum(M))
+
+    patchdata = Array(Float64, 3, 4*n*m)
+    patchidx = 0
+    for i in 1 : m
+        x₁, x₂ = ex[i], ex[i+1]
+        for j in 1 : n
+            y₁, y₂ = ey[j], ey[j+1]
+            c = M[i,j]
+            if density
+                c /= (scale*(x₂-x₁)*(y₂-y₁))
+            end
+
+            patchidx += 1
+            patchdata[1, patchidx] = x₁
+            patchdata[2, patchidx] = y₁
+            patchdata[3, patchidx] = c
+
+            patchidx += 1
+            patchdata[1, patchidx] = x₂
+            patchdata[2, patchidx] = y₁
+            patchdata[3, patchidx] = c
+
+            patchidx += 1
+            patchdata[1, patchidx] = x₂
+            patchdata[2, patchidx] = y₂
+            patchdata[3, patchidx] = c
+
+            patchidx += 1
+            patchdata[1, patchidx] = x₁
+            patchdata[2, patchidx] = y₂
+            patchdata[3, patchidx] = c
+        end
+    end
+
+    if isa(style, Void)
+        style = "patch"
+    elseif isa(style, String)
+        style = "patch" * (isempty(style) ? "" : (", "*style))
+    end
+
+    Patch2D(patchdata, style=style, patch_type="rectangle")
 end
 
 end # end plot module
