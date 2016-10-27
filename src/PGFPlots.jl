@@ -498,7 +498,7 @@ function plotHelper(o::IOBuffer, p::Contour)
     elseif p.levels != nothing
         arg = p.levels
     end
-    C = contours(p.xbins, p.ybins, convert(Matrix{Float64}, p.data), arg)
+    C = contours(convert(Vector{Float64}, p.xbins), convert(Vector{Float64}, p.ybins), convert(Matrix{Float64}, p.data), arg)
     if p.labels == nothing
         p.labels = true
     end

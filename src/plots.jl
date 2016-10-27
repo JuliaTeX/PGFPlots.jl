@@ -73,14 +73,14 @@ type Histogram <: Plot
 end
 
 type Contour <: Plot
-    data::AbstractMatrix{Real}
+    data::AbstractMatrix
     xbins
     ybins
     style
     number
     levels
     labels
-    Contour(data, xbins, ybins; style=nothing, number=nothing, levels=nothing,labels=nothing) = new(data, xbins, ybins, style, number, levels, labels)
+    Contour(data, xbins, ybins; style=nothing, number=nothing, levels=nothing, labels=nothing) = new(data, xbins, ybins, style, number, levels, labels)
     function Contour(f::Function, xrange::RealRange, yrange::RealRange; xbins=40, ybins=40, style=nothing, number=nothing, levels=nothing, labels=nothing)
         x = linspace(xrange[1], xrange[2], xbins)
         y = linspace(yrange[1], yrange[2], ybins)
@@ -92,11 +92,6 @@ type Contour <: Plot
         end
         new(A, x, y, style, number, levels, labels)
     end
-end
-
-function Contour(z::AbstractMatrix, x::Range, y::Range; style=nothing, number=nothing, levels=nothing, labels=nothing)
-    (X, Y) = meshgrid(x, y)
-    Contour([X[:]'; Y[:]'; z[:]'], length(x), length(y); style = style, number = number, levels = levels, labels=labels)
 end
 
 type Scatter <: Plot
