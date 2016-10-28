@@ -121,10 +121,14 @@ function define_color(name::AbstractString, color::Real)
     _pgfplotspreamble[end] = _pgfplotspreamble[end] * "\n\\definecolor{$name}{gray}{$color}"
 end
 
+barMap = Dict(
+    :style => "style",
+    )
+
 histogramMap = Dict(
     :bins => "bins",
     :density => "density",
-    :cumulative => "cumulative"
+    :cumulative => "cumulative",
     )
 
 linearMap = Dict(
@@ -393,6 +397,16 @@ function plotLegend{T <: AbstractString}(o::IOBuffer, entries::Vector{T})
     end
 end
 
+function plotHelper(o::IOBuffer, p::Bar)
+    print(o, "\\addplot [ybar, ")
+    optionHelper(o, barMap, p, brackets=false)
+    print(o, "] plot coordinates {")
+    for (i,v) in enumerate(p.bar_heights)
+        print(o, "(", i, ", ", v, ") ")
+    end
+    println(o, "};")
+end
+
 # todo: add error bars style
 function plotHelperErrorBars(o::IOBuffer, p::Linear)
     println(o, "[")
@@ -416,7 +430,7 @@ function plotHelper(o::IOBuffer, p::Linear)
     if p.errorBars == nothing
         optionHelper(o, linearMap, p, brackets=true)
         println(o, "coordinates {")
-        for i = 1:size(p.data,2)
+        for i in 1:size(p.data,2)
             println(o, "($(p.data[1,i]), $(p.data[2,i]))")
         end
         println(o, "};")
