@@ -412,6 +412,7 @@ function plotHelperErrorBars(o::IOBuffer, p::Linear)
 end
 
 function plotHelper(o::IOBuffer, p::Linear)
+    print(o, p.preamble)
     print(o, "\\addplot+ ")
     if p.errorBars == nothing
         optionHelper(o, linearMap, p, brackets=true)
@@ -424,9 +425,11 @@ function plotHelper(o::IOBuffer, p::Linear)
         plotHelperErrorBars(o, p)
     end
     plotLegend(o, p.legendentry)
+    print(o, p.epilogue)
 end
 
 function plotHelper(o::IOBuffer, p::Scatter)
+    print(o, p.preamble)
     if p.scatterClasses == nothing
         print(o, "\\addplot+[scatter, scatter src=explicit, ")
     else
@@ -439,11 +442,13 @@ function plotHelper(o::IOBuffer, p::Scatter)
     end
     println(o, "};")
     plotLegend(o, p.legendentry)
+    print(o, p.epilogue)
 end
 
 # Specific version for Linear3 type
 # Changes are addplot3 (vs addplot) and iterate over all 3 columns
 function plotHelper(o::IOBuffer, p::Linear3)
+    print(o, p.preamble)
     print(o, "\\addplot3+ ")
     optionHelper(o, linearMap, p, brackets=true)
     println(o, "coordinates {")
@@ -452,10 +457,11 @@ function plotHelper(o::IOBuffer, p::Linear3)
     end
     println(o, "};")
     plotLegend(o, p.legendentry)
+    print(o, p.epilogue)
 end
 
 function plotHelper(o::IOBuffer, p::Node)
-
+    print(o, p.preamble)
     axis = p.axis != nothing ? p.axis : "axis cs"
 
     if p.style != nothing
@@ -463,10 +469,12 @@ function plotHelper(o::IOBuffer, p::Node)
     else
         println(o, "\\node at ($(axis):$(p.x), $(p.y)) {$(p.data)};")
     end
+    print(o, p.epilogue)
 end
 
 
 function plotHelper(o::IOBuffer, p::ErrorBars)
+    print(o, p.preamble)
     print(o, "\\addplot+ [")
     optionHelper(o, errorbarsMap, p)
     print(o, ",error bars/.cd, x dir=both, x explicit, y dir=both, y explicit")
@@ -477,9 +485,11 @@ function plotHelper(o::IOBuffer, p::ErrorBars)
     end
     println(o, "};")
     plotLegend(o, p.legendentry)
+    print(o, p.epilogue)
 end
 
 function plotHelper(o::IOBuffer, p::Quiver)
+    print(o, p.preamble)
     print(o, "\\addplot+ ")
     optionHelper(o, quiverMap, p, brackets=true, otherOptions=Dict("quiver"=>"{u=\\thisrow{u},v=\\thisrow{v}}"))
     println(o, "table {")
@@ -489,9 +499,11 @@ function plotHelper(o::IOBuffer, p::Quiver)
     end
     println(o, "};")
     plotLegend(o, p.legendentry)
+    print(o, p.epilogue)
 end
 
 function plotHelper(o::IOBuffer, p::Contour)
+    print(o, p.preamble)
     arg = 5
     if p.number != nothing
         arg = p.number
@@ -525,22 +537,27 @@ function plotHelper(o::IOBuffer, p::Contour)
         end
     end
     println(o, "};")
+    print(o, p.epilogue)
 end
 
 function plotHelper(o::IOBuffer, p::Circle)
+    print(o, p.preamble)
     if p.style != nothing
         println(o, "\\draw[$(p.style)] (axis cs:$(p.xc), $(p.yc)) circle[radius=$(p.radius)];")
     else
         println(o, "\\draw (axis cs:$(p.xc), $(p.yc)) circle[radius=$(p.radius)];")
     end
+    print(o, p.epilogue)
 end
 
 function plotHelper(o::IOBuffer, p::Ellipse)
+    print(o, p.preamble)
     if p.style != nothing
         println(o, "\\draw[$(p.style)] (axis cs:$(p.xc), $(p.yc)) ellipse[x radius=$(p.xradius), y radius=$(p.yradius)];")
     else
         println(o, "\\draw (axis cs:$(p.xc), $(p.yc)) ellipse[x radius=$(p.xradius), y radius=$(p.yradius)];")
     end
+    print(o, p.epilogue)
 end
 
 function plotHelper(o::IOBuffer, p::Command)
@@ -548,6 +565,7 @@ function plotHelper(o::IOBuffer, p::Command)
 end
 
 function plotHelper(o::IOBuffer, p::Image)
+    print(o, p.preamble)
     if p.zmin == p.zmax
         error("Your colorbar range limits must not be equal to each other.")
     end
@@ -556,6 +574,7 @@ function plotHelper(o::IOBuffer, p::Image)
     else
         println(o, "\\addplot [point meta min=$(p.zmin), point meta max=$(p.zmax)] graphics [xmin=$(p.xmin), xmax=$(p.xmax), ymin=$(p.ymin), ymax=$(p.ymax)] {$(p.filename)};")
     end
+    print(o, p.epilogue)
 end
 
 function plotHelper{R<:Real}(o::IOBuffer, p::Patch2D{R})

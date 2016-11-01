@@ -21,7 +21,9 @@ type Linear <: Plot
     legendentry
     onlyMarks
     errorBars
-    Linear{T <: Real}(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing, errorBars=nothing) = new(data, mark, markSize, style, legendentry, onlyMarks, errorBars)
+    preamble
+    epilogue
+    Linear{T <: Real}(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing, errorBars=nothing, preamble=nothing, epilogue=nothing) = new(data, mark, markSize, style, legendentry, onlyMarks, errorBars,preamble,epilogue)
 end
 Linear{A<:Real, B<:Real}(x::AbstractVector{A}, y::AbstractVector{B}; kwargs...) = Linear(hcat(x, y)'; kwargs...)
 Linear{A<:Real}(data::AbstractVector{A}; kwargs...) = Linear(collect(1:length(data)), data; kwargs...)
@@ -33,7 +35,9 @@ type Linear3 <: Plot
     style
     legendentry
     onlyMarks
-    Linear3{T<:Real}(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = new(data, mark, markSize, style, legendentry, onlyMarks)
+    preamble
+    epilogue
+    Linear3{T<:Real}(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing, preamble=nothing, epilogue=nothing) = new(data, mark, markSize, style, legendentry, onlyMarks,preamble,epilogue)
 end
 Linear3{A<:Real, B<:Real, C<:Real}(x::AbstractVector{A}, y::AbstractVector{B}, z::AbstractVector{C}; kwargs...) = Linear3(hcat(x, y, z)'; kwargs...)
 
@@ -69,7 +73,9 @@ type Histogram <: Plot
     cumulative::Bool
     style::AbstractString
     discretization::Symbol
-    Histogram(data; bins=10, discretization=:default, density=false, cumulative=false, style="fill=blue!10") = new(data,bins,density,cumulative,style,discretization)
+    preamble
+    epilogue
+    Histogram(data; bins=10, discretization=:default, density=false, cumulative=false, style="fill=blue!10", preamble=nothing, epilogue=nothing) = new(data,bins,density,cumulative,style,discretization,preamble,epilogue)
 end
 
 type Contour <: Plot
@@ -80,8 +86,10 @@ type Contour <: Plot
     number
     levels
     labels
-    Contour(data, xbins, ybins; style=nothing, number=nothing, levels=nothing, labels=nothing) = new(data, xbins, ybins, style, number, levels, labels)
-    function Contour(f::Function, xrange::RealRange, yrange::RealRange; xbins=40, ybins=40, style=nothing, number=nothing, levels=nothing, labels=nothing)
+    preamble
+    epilogue
+    Contour(data, xbins, ybins; style=nothing, number=nothing, levels=nothing, labels=nothing, preamble=nothing, epilogue=nothing) = new(data, xbins, ybins, style, number, levels, labels,preamble,epilogue)
+    function Contour(f::Function, xrange::RealRange, yrange::RealRange; xbins=40, ybins=40, style=nothing, number=nothing, levels=nothing, labels=nothing, preamble=nothing, epilogue=nothing)
         x = linspace(xrange[1], xrange[2], xbins)
         y = linspace(yrange[1], yrange[2], ybins)
         A = zeros(xbins, ybins)
@@ -90,7 +98,7 @@ type Contour <: Plot
         catch
             A = Float64[f([xi,yi]) for xi in x, yi in y]
         end
-        new(A, x, y, style, number, levels, labels)
+        new(A, x, y, style, number, levels, labels, preamble, epilogue)
     end
 end
 
@@ -102,12 +110,13 @@ type Scatter <: Plot
     legendentry
     onlyMarks
     scatterClasses
-
-    function Scatter{T<:Any}(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, onlyMarks=true, legendentry=nothing, scatterClasses=nothing)
+    preamble
+    epilogue
+    function Scatter{T<:Any}(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, onlyMarks=true, legendentry=nothing, scatterClasses=nothing, preamble=nothing, epilogue=nothing)
         if size(data,1) == 2
-            return Linear(data, mark=mark, markSize=markSize, style=style, onlyMarks=onlyMarks, legendentry=legendentry)
+            return Linear(data, mark=mark, markSize=markSize, style=style, onlyMarks=onlyMarks, legendentry=legendentry,preamble=preamble,epilogue=epilogue)
         else
-            return new(data, mark, markSize, style, legendentry, onlyMarks, scatterClasses)
+            return new(data, mark, markSize, style, legendentry, onlyMarks, scatterClasses,preamble,epilogue)
         end
     end
 end
@@ -120,7 +129,9 @@ type Quiver <: Plot
     data::Matrix{Real}
     style
     legendentry
-    Quiver{T<:Real}(data::Matrix{T}; style=nothing, legendentry=nothing) = new(data, style, legendentry)
+    preamble
+    epilogue
+    Quiver{T<:Real}(data::Matrix{T}; style=nothing, legendentry=nothing, preamble=nothing, epilogue=nothing) = new(data, style, legendentry,preamble,epilogue)
 end
 function Quiver(f::Function, xrange::RealRange, yrange::RealRange; style=nothing, legendentry=nothing, samples=15, normalize=true)
     x = linspace(xrange[1], xrange[2], samples)
@@ -148,7 +159,9 @@ type Node <: Plot
     x
     y
     axis # `nothing` will default to "axis cs", other options include "axis description cs", "xticklabel cs", etc.
-    Node(data, x, y; style=nothing, axis=nothing) = new(data, style, x, y, axis)
+    preamble
+    epilogue
+    Node(data, x, y; style=nothing, axis=nothing, preamble=nothing, epilogue=nothing) = new(data, style, x, y, axis,preamble,epilogue)
 end
 
 type Circle <: Plot
@@ -156,7 +169,9 @@ type Circle <: Plot
     yc
     radius
     style
-    Circle(xc=0,yc=0,radius=1;style=nothing) = new(xc,yc,radius,style)
+    preamble
+    epilogue
+    Circle(xc=0,yc=0,radius=1;style=nothing, preamble=nothing, epilogue=nothing) = new(xc,yc,radius,style,preamble,epilogue)
 end
 
 type Ellipse <: Plot
@@ -165,7 +180,9 @@ type Ellipse <: Plot
     xradius
     yradius
     style
-    Ellipse(xc=0,yc=0,xradius=1,yradius=1;style=nothing) = new(xc,yc,xradius,yradius,style)
+    preamble
+    epilogue
+    Ellipse(xc=0,yc=0,xradius=1,yradius=1;style=nothing, preamble=nothing, epilogue=nothing) = new(xc,yc,xradius,yradius,style,preamble,epilogue)
 end
 
 type Command <: Plot
@@ -186,7 +203,9 @@ type Image <: Plot
     colorbar::Bool
     colormap::ColorMaps.ColorMap
     style
-    function Image{T <: Real}(A::Matrix{T}, xrange::RealRange, yrange::RealRange; filename=nothing, colorbar=true, colormap=ColorMaps.Gray(), zmin=nothing, zmax=nothing, style=nothing)
+    preamble
+    epilogue
+    function Image{T <: Real}(A::Matrix{T}, xrange::RealRange, yrange::RealRange; filename=nothing, colorbar=true, colormap=ColorMaps.Gray(), zmin=nothing, zmax=nothing, style=nothing, preamble=nothing, epilogue=nothing)
         global _imgid
         if filename == nothing
             id=myid()*10000000000000+_imgid
@@ -211,15 +230,15 @@ type Image <: Plot
         else
             write(ColorMaps.RGBArray(colormap), A, filename)
         end
-        new(filename, xrange[1], xrange[2], yrange[1], yrange[2], zmin, zmax, colorbar, colormap, style)
+        new(filename, xrange[1], xrange[2], yrange[1], yrange[2], zmin, zmax, colorbar, colormap, style, preamble, epilogue)
     end
-    function Image(f::Function, xrange::RealRange, yrange::RealRange; filename=nothing, colorbar=true, colormap=ColorMaps.Gray(), zmin=nothing, zmax=nothing, xbins=100, ybins=100, style=nothing)
+    function Image(f::Function, xrange::RealRange, yrange::RealRange; filename=nothing, colorbar=true, colormap=ColorMaps.Gray(), zmin=nothing, zmax=nothing, xbins=100, ybins=100, style=nothing, preamble=nothing, epilogue=nothing)
         x = linspace(xrange[1], xrange[2], xbins)
         y = linspace(yrange[1], yrange[2], ybins)
         (X, Y) = meshgrid(x, y)
         A = map(f, X, Y)
         A = flipdim(A, 1)
-        Image(A, xrange, yrange, filename=filename, colorbar=colorbar, colormap=colormap, zmin=zmin, zmax=zmax, style=style)
+        Image(A, xrange, yrange, filename=filename, colorbar=colorbar, colormap=colormap, zmin=zmin, zmax=zmax, style=style, preamble=preamble, epilogue=epilogue)
     end
 end
 
