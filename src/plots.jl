@@ -75,7 +75,7 @@ type Histogram <: Plot
     discretization::Symbol
     preamble
     epilogue
-    Histogram(data; bins=10, discretization=:default, density=false, cumulative=false, style="fill=blue!10") = new(data,bins,density,cumulative,style,discretization,preamble,epilogue)
+    Histogram(data; bins=10, discretization=:default, density=false, cumulative=false, style="fill=blue!10", preamble=nothing, epilogue=nothing) = new(data,bins,density,cumulative,style,discretization,preamble,epilogue)
 end
 
 type Contour <: Plot
@@ -89,7 +89,7 @@ type Contour <: Plot
     preamble
     epilogue
     Contour(data, xbins, ybins; style=nothing, number=nothing, levels=nothing, labels=nothing, preamble=nothing, epilogue=nothing) = new(data, xbins, ybins, style, number, levels, labels,preamble,epilogue)
-    function Contour(f::Function, xrange::RealRange, yrange::RealRange; xbins=40, ybins=40, style=nothing, number=nothing, levels=nothing, labels=nothing)
+    function Contour(f::Function, xrange::RealRange, yrange::RealRange; xbins=40, ybins=40, style=nothing, number=nothing, levels=nothing, labels=nothing, preamble=nothing, epilogue=nothing)
         x = linspace(xrange[1], xrange[2], xbins)
         y = linspace(yrange[1], yrange[2], ybins)
         A = zeros(xbins, ybins)
@@ -98,7 +98,7 @@ type Contour <: Plot
         catch
             A = Float64[f([xi,yi]) for xi in x, yi in y]
         end
-        new(A, x, y, style, number, levels, labels)
+        new(A, x, y, style, number, levels, labels, preamble, epilogue)
     end
 end
 
@@ -114,7 +114,7 @@ type Scatter <: Plot
     epilogue
     function Scatter{T<:Any}(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, onlyMarks=true, legendentry=nothing, scatterClasses=nothing, preamble=nothing, epilogue=nothing)
         if size(data,1) == 2
-            return Linear(data, mark=mark, markSize=markSize, style=style, onlyMarks=onlyMarks, legendentry=legendentry,preamble,epilogue)
+            return Linear(data, mark=mark, markSize=markSize, style=style, onlyMarks=onlyMarks, legendentry=legendentry,preamble=preamble,epilogue=epilogue)
         else
             return new(data, mark, markSize, style, legendentry, onlyMarks, scatterClasses,preamble,epilogue)
         end
@@ -238,7 +238,7 @@ type Image <: Plot
         (X, Y) = meshgrid(x, y)
         A = map(f, X, Y)
         A = flipdim(A, 1)
-        Image(A, xrange, yrange, filename=filename, colorbar=colorbar, colormap=colormap, zmin=zmin, zmax=zmax, style=style, preamble, epilogue)
+        Image(A, xrange, yrange, filename=filename, colorbar=colorbar, colormap=colormap, zmin=zmin, zmax=zmax, style=style, preamble=preamble, epilogue=epilogue)
     end
 end
 
