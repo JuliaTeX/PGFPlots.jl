@@ -21,7 +21,9 @@ type Linear <: Plot
     legendentry
     onlyMarks
     errorBars
-    Linear{T <: Real}(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing, errorBars=nothing) = new(data, mark, markSize, style, legendentry, onlyMarks, errorBars)
+    preamble
+    epilogue
+    Linear{T <: Real}(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing, errorBars=nothing, preamble=nothing, epilogue=nothing) = new(data, mark, markSize, style, legendentry, onlyMarks, errorBars,preamble,epilogue)
 end
 
 type Linear3 <: Plot
@@ -31,7 +33,9 @@ type Linear3 <: Plot
     style
     legendentry
     onlyMarks
-    Linear3{T<:Real}(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = new(data, mark, markSize, style, legendentry, onlyMarks)
+    preamble
+    epilogue
+    Linear3{T<:Real}(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing, preamble=nothing, epilogue=nothing) = new(data, mark, markSize, style, legendentry, onlyMarks,preamble,epilogue)
 end
 
 const THRESHOLD_NSAMPLES_DISC_OURSELVES = 1000 # if we have more samples than this we discretize ourselves
@@ -66,7 +70,9 @@ type Histogram <: Plot
     cumulative::Bool
     style::AbstractString
     discretization::Symbol
-    Histogram(data; bins=10, discretization=:default, density=false, cumulative=false, style="fill=blue!10") = new(data,bins,density,cumulative,style,discretization)
+    preamble
+    epilogue
+    Histogram(data; bins=10, discretization=:default, density=false, cumulative=false, style="fill=blue!10") = new(data,bins,density,cumulative,style,discretization,preamble,epilogue)
 end
 
 type Contour <: Plot
@@ -77,7 +83,9 @@ type Contour <: Plot
     number
     levels
     labels
-    Contour(data, xbins, ybins; style=nothing, number=nothing, levels=nothing,labels=nothing) = new(data, xbins, ybins, style, number, levels, labels)
+    preamble
+    epilogue
+    Contour(data, xbins, ybins; style=nothing, number=nothing, levels=nothing,labels=nothing, preamble=nothing, epilogue=nothing) = new(data, xbins, ybins, style, number, levels, labels,preamble,epilogue)
     function Contour(f::Function, xrange::RealRange, yrange::RealRange; xbins=40, ybins=40, style=nothing, number=nothing, levels=nothing, labels=nothing)
         x = linspace(xrange[1], xrange[2], xbins)
         y = linspace(yrange[1], yrange[2], ybins)
@@ -104,12 +112,13 @@ type Scatter <: Plot
     legendentry
     onlyMarks
     scatterClasses
-
-    function Scatter{T<:Any}(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, onlyMarks=true, legendentry=nothing, scatterClasses=nothing)
+    preamble
+    epilogue
+    function Scatter{T<:Any}(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, onlyMarks=true, legendentry=nothing, scatterClasses=nothing, preamble=nothing, epilogue=nothing)
         if size(data,1) == 2
-            return Linear(data, mark=mark, markSize=markSize, style=style, onlyMarks=onlyMarks, legendentry=legendentry)
+            return Linear(data, mark=mark, markSize=markSize, style=style, onlyMarks=onlyMarks, legendentry=legendentry,preamble,epilogue)
         else
-            return new(data, mark, markSize, style, legendentry, onlyMarks, scatterClasses)
+            return new(data, mark, markSize, style, legendentry, onlyMarks, scatterClasses,preamble,epilogue)
         end
     end
 end
@@ -118,7 +127,9 @@ type Quiver <: Plot
     data::Matrix{Real}
     style
     legendentry
-    Quiver{T<:Real}(data::Matrix{T}; style=nothing, legendentry=nothing) = new(data, style, legendentry)
+    preamble
+    epilogue
+    Quiver{T<:Real}(data::Matrix{T}; style=nothing, legendentry=nothing, preamble=nothing, epilogue=nothing) = new(data, style, legendentry,preamble,epilogue)
 end
 
 type Node <: Plot
@@ -127,7 +138,9 @@ type Node <: Plot
     x
     y
     axis # `nothing` will default to "axis cs", other options include "axis description cs", "xticklabel cs", etc.
-    Node(data, x, y; style=nothing, axis=nothing) = new(data, style, x, y, axis)
+    preamble
+    epilogue
+    Node(data, x, y; style=nothing, axis=nothing, preamble=nothing, epilogue=nothing) = new(data, style, x, y, axis,preamble,epilogue)
 end
 
 type Circle <: Plot
@@ -135,7 +148,9 @@ type Circle <: Plot
     yc
     radius
     style
-    Circle(xc=0,yc=0,radius=1;style=nothing) = new(xc,yc,radius,style)
+    preamble
+    epilogue
+    Circle(xc=0,yc=0,radius=1;style=nothing, preamble=nothing, epilogue=nothing) = new(xc,yc,radius,style,preamble,epilogue)
 end
 
 type Ellipse <: Plot
@@ -144,7 +159,9 @@ type Ellipse <: Plot
     xradius
     yradius
     style
-    Ellipse(xc=0,yc=0,xradius=1,yradius=1;style=nothing) = new(xc,yc,xradius,yradius,style)
+    preamble
+    epilogue
+    Ellipse(xc=0,yc=0,xradius=1,yradius=1;style=nothing, preamble=nothing, epilogue=nothing) = new(xc,yc,xradius,yradius,style,preamble,epilogue)
 end
 
 type Command <: Plot
@@ -152,7 +169,7 @@ type Command <: Plot
     Command(cmd::AbstractString) = new(cmd)
 end
 
-function Quiver(f::Function, xrange::RealRange, yrange::RealRange; style=nothing, legendentry=nothing, samples=15, normalize=true)
+function Quiver(f::Function, xrange::RealRange, yrange::RealRange; style=nothing, legendentry=nothing, samples=15, normalize=true,preamble=nothing, epilogue=nothing)
     x = linspace(xrange[1], xrange[2], samples)
     y = linspace(yrange[1], yrange[2], samples)
     (X, Y) = meshgrid(x, y)
@@ -168,7 +185,7 @@ function Quiver(f::Function, xrange::RealRange, yrange::RealRange; style=nothing
         U /= r
         V /= r
     end
-    Quiver(X[:], Y[:], U, V, style=style, legendentry=legendentry)
+    Quiver(X[:], Y[:], U, V, style=style, legendentry=legendentry,preamble,epilogue)
 end
 
 Quiver{A<:Real,B<:Real,C<:Real,D<:Real}(x::Vector{A}, y::Vector{B}, u::Vector{C}, v::Vector{D}; kwargs...) = Quiver(hcat(x, y, u, v)'; kwargs...)
@@ -196,7 +213,9 @@ type Image <: Plot
     colorbar::Bool
     colormap::ColorMaps.ColorMap
     style
-    function Image{T <: Real}(A::Matrix{T}, xrange::RealRange, yrange::RealRange; filename=nothing, colorbar=true, colormap=ColorMaps.Gray(), zmin=nothing, zmax=nothing, style=nothing)
+    preamble
+    epilogue
+    function Image{T <: Real}(A::Matrix{T}, xrange::RealRange, yrange::RealRange; filename=nothing, colorbar=true, colormap=ColorMaps.Gray(), zmin=nothing, zmax=nothing, style=nothing, preamble=nothing, epilogue=nothing)
         global _imgid
         if filename == nothing
             id=myid()*10000000000000+_imgid
@@ -221,15 +240,15 @@ type Image <: Plot
         else
             write(ColorMaps.RGBArray(colormap), A, filename)
         end
-        new(filename, xrange[1], xrange[2], yrange[1], yrange[2], zmin, zmax, colorbar, colormap, style)
+        new(filename, xrange[1], xrange[2], yrange[1], yrange[2], zmin, zmax, colorbar, colormap, style, preamble, epilogue)
     end
-    function Image(f::Function, xrange::RealRange, yrange::RealRange; filename=nothing, colorbar=true, colormap=ColorMaps.Gray(), zmin=nothing, zmax=nothing, xbins=100, ybins=100, style=nothing)
+    function Image(f::Function, xrange::RealRange, yrange::RealRange; filename=nothing, colorbar=true, colormap=ColorMaps.Gray(), zmin=nothing, zmax=nothing, xbins=100, ybins=100, style=nothing, preamble=nothing, epilogue=nothing)
         x = linspace(xrange[1], xrange[2], xbins)
         y = linspace(yrange[1], yrange[2], ybins)
         (X, Y) = meshgrid(x, y)
         A = map(f, X, Y)
         A = flipdim(A, 1)
-        Image(A, xrange, yrange, filename=filename, colorbar=colorbar, colormap=colormap, zmin=zmin, zmax=zmax, style=style)
+        Image(A, xrange, yrange, filename=filename, colorbar=colorbar, colormap=colormap, zmin=zmin, zmax=zmax, style=style, preamble, epilogue)
     end
 end
 
