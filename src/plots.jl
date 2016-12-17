@@ -77,11 +77,12 @@ type Contour <: Plot
     xbins
     ybins
     style
+    contour_style
     number
     levels
     labels
-    Contour(data, xbins, ybins; style=nothing, number=nothing, levels=nothing, labels=nothing) = new(data, xbins, ybins, style, number, levels, labels)
-    function Contour(f::Function, xrange::RealRange, yrange::RealRange; xbins=40, ybins=40, style=nothing, number=nothing, levels=nothing, labels=nothing)
+    Contour(data, xbins, ybins; style=nothing, contour_style=nothing, number=nothing, levels=nothing, labels=nothing) = new(data, xbins, ybins, style, contour_style, number, levels, labels)
+    function Contour(f::Function, xrange::RealRange, yrange::RealRange; xbins=40, ybins=40, style=nothing, contour_style=nothing, number=nothing, levels=nothing, labels=nothing)
         x = linspace(xrange[1], xrange[2], xbins)
         y = linspace(yrange[1], yrange[2], ybins)
         A = zeros(xbins, ybins)
@@ -90,7 +91,7 @@ type Contour <: Plot
         catch
             A = Float64[f([xi,yi]) for xi in x, yi in y]
         end
-        new(A, x, y, style, number, levels, labels)
+        new(A, x, y, style, contour_style, number, levels, labels)
     end
 end
 

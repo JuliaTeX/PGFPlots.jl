@@ -499,22 +499,18 @@ function plotHelper(o::IOBuffer, p::Contour)
         arg = p.levels
     end
     C = contours(convert(Vector{Float64}, p.xbins), convert(Vector{Float64}, p.ybins), convert(Matrix{Float64}, p.data), arg)
-    if p.labels == nothing
-        p.labels = true
+
+    print(o, "\\addplot3[contour prepared")
+    if p.contour_style != nothing
+        print(o, "={$(p.contour_style)}")
+    elseif p.labels == false
+        print(o, "={labels=false}")
     end
-    if p.labels
-        if p.style != nothing
-            print(o, "\\addplot3[contour prepared, $(p.style)] table {")
-        else
-            print(o, "\\addplot3[contour prepared] table {")
-        end
-    else
-        if p.style != nothing
-            print(o, "\\addplot3[contour prepared={labels=false}, $(p.style)] table {")
-        else
-            print(o, "\\addplot3[contour prepared={labels=false}] table {")
-        end
+    if p.style != nothing
+        print(o, ", $(p.style)")
     end
+    print(o, "] table {")
+
     for c in levels(C)
         level = c.level
         for l in c.lines
