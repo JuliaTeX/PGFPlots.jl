@@ -658,10 +658,9 @@ plot{A<:Real,B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}; kwargs...) =
 
 plot{A<:Real,B<:Real,C<:Real}(x::AbstractVector{A}, y::AbstractVector{B}, z::AbstractVector{C}; kwargs...) = plot(Linear3(x, y, z; kwargs...))
 
-function Plots.Linear(f::Function, range::RealRange; mark="none", style=nothing, legendentry=nothing)
-    x = linspace(range[1], range[2])
-    y = map(f, x)
-    Linear(x, y, mark=mark, style=style, legendentry=legendentry)
+function Plots.Linear(f::Function, range::RealRange; xbins=100, mark="none", style=nothing, legendentry=nothing)
+    x = linspace(range[1], range[2], xbins)
+    Linear(x, f.(x), mark=mark, style=style, legendentry=legendentry)
 end
 
 plot(f::Function, range::RealRange; kwargs...) = plot(Linear(f, range; kwargs...))
