@@ -660,7 +660,7 @@ plot{A<:Real,B<:Real,C<:Real}(x::AbstractVector{A}, y::AbstractVector{B}, z::Abs
 
 function Plots.Linear(f::Function, range::RealRange; xbins=100, mark="none", style=nothing, legendentry=nothing)
     x = linspace(range[1], range[2], xbins)
-    Linear(x, f.(x), mark=mark, style=style, legendentry=legendentry)
+    Linear(x, map(f, x), mark=mark, style=style, legendentry=legendentry)
 end
 
 plot(f::Function, range::RealRange; kwargs...) = plot(Linear(f, range; kwargs...))
