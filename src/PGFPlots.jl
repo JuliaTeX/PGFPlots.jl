@@ -681,7 +681,7 @@ cleanup(p::Contour) = nothing
 
 axisOptions(p::Plot) = nothing
 
-function colormapOptions(cm::ColorMaps.Gray)
+function colormapOptions(cm::ColorMaps.GrayMap)
     if cm.invert
         return "colormap={wb}{gray(0cm)=(1); gray(1cm)=(0)}"
     else
@@ -689,7 +689,7 @@ function colormapOptions(cm::ColorMaps.Gray)
     end
 end
 
-function colormapOptions(cm::ColorMaps.RGBArray)
+function colormapOptions(cm::ColorMaps.RGBArrayMap)
     o = IOBuffer()
     print(o, "colormap={mycolormap}{ ")
     n = length(cm.colors)
