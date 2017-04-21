@@ -7,11 +7,11 @@ using Compat
 using Discretizers
 using StatsBase
 
-typealias RealRange @compat Tuple{Real,Real}
+const RealRange = @compat Tuple{Real,Real}
 
 include("ndgrid.jl")
 
-abstract Plot
+@compat abstract type Plot end
 
 type Linear <: Plot
     data::AbstractMatrix{Real}
@@ -204,7 +204,7 @@ type Image <: Plot
             zmin -= 1.
             zmax += 1.
         end
-        A = clamp(A, zmin, zmax)
+        A = clamp.(A, zmin, zmax)
         A = A .- zmin
         A = A ./ (zmax - zmin)
         if isa(colormap, ColorMaps.ColorMap)
@@ -260,7 +260,7 @@ function Histogram2{A<:Real, B<:Real, C<:Real}(x::Vector{A}, y::Vector{B}, edges
     n = length(ey)-1
     scale =  m*n / ((ex[end]-ex[1]) * (ey[end]-ey[1]) * sum(M))
 
-    patchdata = Array(Float64, 3, 4*n*m)
+    patchdata = Array{Float64}(3, 4*n*m)
     patchidx = 0
     for i in 1 : m
         x₁, x₂ = ex[i], ex[i+1]
