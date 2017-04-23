@@ -5,8 +5,9 @@ import Images: colorview, save, Gray, ImageMeta
 import Colors: RGB, distinguishable_colors, colormap
 import ColorBrewer: palette
 import IndirectArrays: IndirectArray
+using Compat
 
-abstract ColorMap
+@compat abstract type ColorMap end
 
 type GrayMap <: ColorMap
     invert::Bool
@@ -61,7 +62,7 @@ end
 Base.write(colormap::ColorMap, data, filename) = error("Not supported")
 
 function Base.write(colormap::RGBArrayMap, data, filename)
-    img = ImageMeta(IndirectArray(round(UInt8, 1.+(length(colormap.colors)-1).*(data)), colormap.colors))
+    img = ImageMeta(IndirectArray([round(UInt8, v) for v in 1.+(length(colormap.colors)-1).*(data)], colormap.colors))
     save(filename, img)
 end
 

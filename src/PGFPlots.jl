@@ -1,4 +1,4 @@
-VERSION >= v"0.4.0-dev+6521" && __precompile__(true)
+__precompile__(true)
 
 module PGFPlots
 
@@ -168,8 +168,8 @@ patch2DMap = Dict(
 using .Plots
 using .ColorMaps
 
-typealias IntegerRange @compat Tuple{Integer,Integer}
-typealias RealRange @compat Tuple{Real,Real}
+const IntegerRange = @compat Tuple{Integer,Integer}
+const RealRange = @compat Tuple{Real,Real}
 
 type Axis
     plots::Vector{Plot}
@@ -216,7 +216,7 @@ end
 
 PolarAxis(args...; kwargs...) = Axis(args...; kwargs..., axisKeyword = "polaraxis")
 
-typealias Axes Vector{Axis}
+const Axes = Vector{Axis}
 
 function Base.push!(g::Axis, p::Plot)
     push!(g.plots, p)
@@ -612,7 +612,7 @@ function plot(axis::Axis)
     print(o, "\\begin{$(axis.axisKeyword)}")
     plotHelper(o, axis)
     println(o, "\\end{$(axis.axisKeyword)}")
-    TikzPicture(takebuf_string(o), options=pgfplotsoptions(), preamble=pgfplotspreamble())
+    TikzPicture(String(take!(o)), options=pgfplotsoptions(), preamble=pgfplotspreamble())
 end
 
 function plot(axes::Axes)
@@ -623,7 +623,7 @@ function plot(axes::Axes)
         plotHelper(o, axis)
         println(o, "\\end{$(axis.axisKeyword)}")
     end
-    TikzPicture(takebuf_string(o), options=pgfplotsoptions(), preamble=pgfplotspreamble())
+    TikzPicture(String(take!(o)), options=pgfplotsoptions(), preamble=pgfplotspreamble())
 end
 
 function plot(p::GroupPlot)
@@ -643,10 +643,10 @@ function plot(p::GroupPlot)
     end
     println(o, "\\end{groupplot}")
     mypreamble = pgfplotspreamble() * "\\usepgfplotslibrary{groupplots}"
-    TikzPicture(takebuf_string(o), options=pgfplotsoptions(), preamble=mypreamble)
+    TikzPicture(String(take!(o)), options=pgfplotsoptions(), preamble=mypreamble)
 end
 
-typealias Plottable Union{Plot,GroupPlot,Axis,Axes,TikzPicture}
+const Plottable = Union{Plot,GroupPlot,Axis,Axes,TikzPicture}
 
 plot(p::Plot) = plot(Axis(p))
 
@@ -698,7 +698,7 @@ function colormapOptions(cm::ColorMaps.RGBArrayMap)
         print(o, "rgb($(i-1)cm)=($(c.r),$(c.g),$(c.b)) ")
     end
     print(o, "}")
-    takebuf_string(o)
+    String(take!(o))
 end
 
 function axisOptions(p::Image)
