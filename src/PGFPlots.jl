@@ -1,5 +1,3 @@
-__precompile__(true)
-
 module PGFPlots
 
 export LaTeXString, @L_str, @L_mstr
