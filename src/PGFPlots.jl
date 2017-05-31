@@ -51,7 +51,7 @@ Plots.Quiver(df::DataFrame; x::Symbol=:x, y::Symbol=:y, u::Symbol=:u, v::Symbol=
 Plots.Histogram2(df::DataFrame; x::Symbol=:x, y::Symbol=:y, kwargs...) = Plots.Histogram2(convert(Vector, df[x]), convert(Vector, df[y]); kwargs...)
 Plots.Histogram2{C<:Real}(df::DataFrame, edges_x::AbstractVector{C}, edges_y::AbstractVector{C}; x::Symbol=:x, y::Symbol=:y, kwargs...) = Plots.Histogram2(convert(Vector, df[x]), convert(Vector, df[y]), edges_x, edges_y; kwargs...)
 
-import TikzPictures: TikzPicture, PDF, TEX, SVG, save, LaTeXString, @L_str, @L_mstr
+import TikzPictures: TikzPicture, PDF, TEX, TIKZ, SVG, save, LaTeXString, @L_str, @L_mstr
 
 _pgfplotsoptions = Any[""]
 
@@ -723,6 +723,8 @@ function save(filename::AbstractString, o::Plottable; include_preamble::Bool=tru
         save(SVG(filename), plot(o))
     elseif ext == ".tex"
         save(TEX(filename, include_preamble=include_preamble), plot(o))
+    elseif ext == ".tikz"
+        save(TIKZ(filename), plot(o))
     elseif ext == "." || ext == ""
         error("You must specify a file extension.")
     else
