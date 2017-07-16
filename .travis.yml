@@ -3,6 +3,7 @@ sudo: required
 dist: trusty
 julia:
   - 0.5
+  - 0.6
   - nightly
 matrix:
   allow_failures:
