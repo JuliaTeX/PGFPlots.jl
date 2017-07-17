@@ -63,20 +63,21 @@ end
 Base.write(colormap::ColorMap, data, filename) = error("Not supported")
 
 function interpolate_RGBArrayMap(colormap::RGBArrayMap)
-    colors = colormap.colors
     levels = colormap.interpolation_levels
     if levels == 0
-        return colors
+        return colormap.colors
     end
-    n = length(colors)
-    C = Vector{RGB{Float64}}(levels)
-    for (i, x) in enumerate(linspace(0, 1, levels))
-        l = floor(UInt, 1 + x * (n-1))
-        u = ceil(UInt, 1 + x * (n-1))
-        α = 2*(1 + x * (n-1) - l)/(n-1)
-        C[i] = (1-α)*colors[l] + (α)*colors[u]
+
+    n = length(colormap.colors)
+    colors = Vector{RGB{Float64}}(levels)
+    for (i,x) in enumerate(linspace(0.0,1.0,levels))
+        t = 1 + x*(n-1)
+        a = colormap.colors[floor(Int, t)]
+        b = colormap.colors[ceil(Int, t)]
+        α = ceil(Int, t) - t
+        colors[i] = α*a + (1-α)*b
     end
-    C
+    return colors
 end
 
 function Base.write(colormap::RGBArrayMap, data, filename)
