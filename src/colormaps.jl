@@ -1,6 +1,6 @@
 module ColorMaps
 
-export ColorMap, GrayMap, Brew, RGBArray, Distinguishable, SparseDistinguishable, write
+export ColorMap, GrayMap, Brew, RGBArrayMap, Distinguishable, SparseDistinguishable, write
 import Images: colorview, save, Gray, ImageMeta
 import Colors: RGB, distinguishable_colors, colormap
 import ColorBrewer: palette
@@ -15,12 +15,13 @@ type GrayMap <: ColorMap
 end
 
 type RGBArrayMap <: ColorMap
-    colors::Array{RGB{Float64},1}
-    function RGBArrayMap(colors; invert=false)
+    colors::Vector{RGB{Float64}}
+    interpolation_levels::UInt
+    function RGBArrayMap(colors; invert=false, interpolation_levels=0)
         if invert
             colors = flipdim(colors, 1)
         end
-        new(colors)
+        new(colors, interpolation_levels)
     end
 end
 
@@ -61,9 +62,38 @@ end
 
 Base.write(colormap::ColorMap, data, filename) = error("Not supported")
 
+function interpolate_RGBArrayMap(colormap::RGBArrayMap)
+    colors = colormap.colors
+    levels = colormap.interpolation_levels
+    if levels == 0
+        return colors
+    end
+    n = length(colors)
+    C = Vector{RGB{Float64}}(levels)
+    for (i, x) in enumerate(linspace(0, 1, levels))
+        l = floor(UInt, 1 + x * (n-1))
+        u = ceil(UInt, 1 + x * (n-1))
+        α = 2*(1 + x * (n-1) - l)/(n-1)
+        C[i] = (1-α)*colors[l] + (α)*colors[u]
+    end
+    C
+end
+
 function Base.write(colormap::RGBArrayMap, data, filename)
-    img = ImageMeta(IndirectArray([round(UInt8, v) for v in 1.+(length(colormap.colors)-1).*(data)], colormap.colors))
-    save(filename, img)
+    colors = interpolate_RGBArrayMap(colormap)
+    n = length(colors)
+    if n <= 2^8
+        img = ImageMeta(IndirectArray([round(UInt8, v) for v in 1.+(n-1).*(data)], colors))
+        save(filename, img)
+    elseif n <= 2^16
+        img = ImageMeta(IndirectArray([round(UInt16, v) for v in 1.+(n-1).*(data)], colors))
+        save(filename, img)
+    elseif n <= 2^32
+        img = ImageMeta(IndirectArray([round(UInt32, v) for v in 1.+(n-1).*(data)], colors))
+        save(filename, img)
+    else
+        error("ColorMap has too many colors")
+    end
 end
 
 end

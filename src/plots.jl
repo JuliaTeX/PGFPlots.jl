@@ -240,7 +240,7 @@ Patch2D{R<:Real}(data::Matrix{R}; style="patch", patch_type=nothing, shader=noth
 function Histogram2{A<:Real, B<:Real}(x::Vector{A}, y::Vector{B}; xmin=minimum(x), xmax=maximum(x), ymin=minimum(y), ymax=maximum(y), xbins=50, ybins=50, density=false, filename=nothing, colorbar=true, colormap=ColorMaps.GrayMap(), zmin=nothing, zmax=nothing, style=nothing)
     ex = linspace(xmin, xmax, xbins+1)
     ey = linspace(ymin, ymax, ybins+1)
-    h = fit(StatsBase.Histogram, (y, x), (ey, ex))
+    h = fit(StatsBase.Histogram, (y, x), (ey, ex), closed=:left)
     ex, ey, M = h.edges[1], h.edges[2], h.weights
     M = flipdim(M, 1)
     if density
@@ -254,7 +254,7 @@ function Histogram2{A<:Real, B<:Real, C<:Real}(x::Vector{A}, y::Vector{B}, edges
     style=nothing,
     )
 
-    h = fit(StatsBase.Histogram, (x, y), (edges_x, edges_y))
+    h = fit(StatsBase.Histogram, (x, y), (edges_x, edges_y), closed=:left)
     ex, ey, M = h.edges[1], h.edges[2], h.weights
     m = length(ex)-1
     n = length(ey)-1
