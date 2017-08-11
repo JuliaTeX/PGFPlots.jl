@@ -13,7 +13,7 @@ using Compat
 using Discretizers
 using DataFrames
 
-type ErrorBars
+mutable struct ErrorBars
     data::AbstractMatrix{Real}
     style
     mark
@@ -132,6 +132,10 @@ linearMap = Dict(
     :onlyMarks => "only marks"
     )
 
+barMap = Dict(
+    :style => "",
+    )
+
 scatterMap = Dict(
     :mark => "mark",
     :markSize => "mark size",
@@ -169,7 +173,7 @@ using .ColorMaps
 const IntegerRange = @compat Tuple{Integer,Integer}
 const RealRange = @compat Tuple{Real,Real}
 
-type Axis
+mutable struct Axis
     plots::Vector{Plot}
     title
     xlabel
@@ -249,7 +253,7 @@ axisMap = Dict(
     :axisLines => "axis lines"
     )
 
-type GroupPlot
+mutable struct GroupPlot
     axes::AbstractArray{Axis,1}
     dimensions::IntegerRange
     style
@@ -381,6 +385,35 @@ function plotHelper(o::IOBuffer, p::Plots.Histogram)
         end
         plotHelper(o, linear)
     end
+end
+
+function plotHelper(o::IOBuffer, p::BarChart)
+    print(o, "\\addplot+ ")
+
+    optionHelper(o, barMap, p, brackets=true)
+    println(o, "coordinates {")
+    for (k,v) in zip(p.keys, p.values)
+        println(o, "($k, $v)")
+    end
+    println(o, "};")
+    plotLegend(o, p.legendentry)
+end
+function PGFPlots.Axis(p::BarChart; kwargs...)
+
+    style = "ybar=0pt, bar width=18pt, xtick=data, symbolic x coords={$(Plots.symbolic_x_coords(p))},"
+    i = findfirst(tup->tup[1] == :style, kwargs)
+    if i != 0
+        kwargs[i] = (:style, style * kwargs[i][2])
+    else
+        push!(kwargs, (:style, style))
+    end
+
+    i = findfirst(tup->tup[1] == :ymin, kwargs)
+    if i == 0
+        push!(kwargs, (:ymin, 0))
+    end
+
+    return Axis(Plots.Plot[p]; kwargs...)
 end
 
 plotLegend(o::IOBuffer, entry) = nothing
