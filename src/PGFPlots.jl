@@ -13,7 +13,7 @@ using Compat
 using Discretizers
 using DataFrames
 
-mutable struct ErrorBars
+type ErrorBars
     data::AbstractMatrix{Real}
     style
     mark
@@ -173,7 +173,7 @@ using .ColorMaps
 const IntegerRange = @compat Tuple{Integer,Integer}
 const RealRange = @compat Tuple{Real,Real}
 
-mutable struct Axis
+type Axis
     plots::Vector{Plot}
     title
     xlabel
@@ -253,7 +253,7 @@ axisMap = Dict(
     :axisLines => "axis lines"
     )
 
-mutable struct GroupPlot
+type GroupPlot
     axes::AbstractArray{Axis,1}
     dimensions::IntegerRange
     style

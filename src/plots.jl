@@ -13,7 +13,7 @@ include("ndgrid.jl")
 
 @compat abstract type Plot end
 
-mutable struct Linear <: Plot
+type Linear <: Plot
     data::AbstractMatrix{Real}
     mark
     markSize
@@ -26,7 +26,7 @@ end
 Linear{A<:Real, B<:Real}(x::AbstractVector{A}, y::AbstractVector{B}; kwargs...) = Linear(hcat(x, y)'; kwargs...)
 Linear{A<:Real}(data::AbstractVector{A}; kwargs...) = Linear(collect(1:length(data)), data; kwargs...)
 
-mutable struct Linear3 <: Plot
+type Linear3 <: Plot
     data::AbstractMatrix{Real}
     mark
     markSize
@@ -62,7 +62,7 @@ function _construct_histogram_linear_data{Q<:Real,R<:Real}(
 
     Linear(hcat(arr_x, arr_y)', style="ybar interval,fill=blue!10, draw=blue", mark="none")
 end
-mutable struct Histogram <: Plot
+type Histogram <: Plot
     data::AbstractVector{Real}
     bins::Integer
     density::Bool
@@ -72,7 +72,7 @@ mutable struct Histogram <: Plot
     Histogram(data; bins=10, discretization=:default, density=false, cumulative=false, style="fill=blue!10") = new(data,bins,density,cumulative,style,discretization)
 end
 
-mutable struct BarChart <: Plot
+type BarChart <: Plot
     keys # symbolic x coords
     values
     style
@@ -125,7 +125,7 @@ function symbolic_x_coords(keys::AbstractVector)
 end
 symbolic_x_coords(p::BarChart) = symbolic_x_coords(p.keys)
 
-mutable struct Contour <: Plot
+type Contour <: Plot
     data::AbstractMatrix
     xbins
     ybins
@@ -148,7 +148,7 @@ mutable struct Contour <: Plot
     end
 end
 
-mutable struct Scatter <: Plot
+type Scatter <: Plot
     data::AbstractMatrix{Any}
     mark
     markSize
@@ -170,7 +170,7 @@ Scatter{A<:Real, B<:Real, C<:Any}(x::AbstractVector{A}, y::AbstractVector{B}, f:
 Scatter{A<:Real, B<:Real}(x::A, y::B; kwargs...) = Scatter(hcat(x, y)'; kwargs...)
 Scatter{A<:Real, B<:Real}(x::A, y::B, f; kwargs...) = Scatter(hcat(x, y, f)'; kwargs...)
 
-mutable struct Quiver <: Plot
+type Quiver <: Plot
     data::Matrix{Real}
     style
     legendentry
@@ -196,7 +196,7 @@ function Quiver(f::Function, xrange::RealRange, yrange::RealRange; style=nothing
 end
 Quiver{A<:Real,B<:Real,C<:Real,D<:Real}(x::Vector{A}, y::Vector{B}, u::Vector{C}, v::Vector{D}; kwargs...) = Quiver(hcat(x, y, u, v)'; kwargs...)
 
-mutable struct Node <: Plot
+type Node <: Plot
     data
     style
     x
@@ -205,7 +205,7 @@ mutable struct Node <: Plot
     Node(data, x, y; style=nothing, axis=nothing) = new(data, style, x, y, axis)
 end
 
-mutable struct Circle <: Plot
+type Circle <: Plot
     xc
     yc
     radius
@@ -213,7 +213,7 @@ mutable struct Circle <: Plot
     Circle(xc=0,yc=0,radius=1;style=nothing) = new(xc,yc,radius,style)
 end
 
-mutable struct Ellipse <: Plot
+type Ellipse <: Plot
     xc
     yc
     xradius
@@ -222,14 +222,14 @@ mutable struct Ellipse <: Plot
     Ellipse(xc=0,yc=0,xradius=1,yradius=1;style=nothing) = new(xc,yc,xradius,yradius,style)
 end
 
-mutable struct Command <: Plot
+type Command <: Plot
     cmd::AbstractString
     Command(cmd::AbstractString) = new(cmd)
 end
 
 global _imgid = 1
 
-mutable struct Image <: Plot
+type Image <: Plot
     filename::AbstractString
     xmin::Real
     xmax::Real
@@ -277,7 +277,7 @@ mutable struct Image <: Plot
     end
 end
 
-mutable struct Patch2D{R<:Real} <: Plots.Plot
+type Patch2D{R<:Real} <: Plots.Plot
     data::Matrix{R} # d × m⋅n
                     # where m = 4 for rect and m = 3 for triangle (defaults to triangle)
                     #   and n = number of patches
