@@ -3,17 +3,16 @@ module Plots
 export Plot, Histogram, Histogram2, BarChart, Linear, Linear3, Image, Patch2D, Contour, Scatter, Quiver, Node, Circle, Ellipse, Command
 
 using ..ColorMaps
-using Compat
 using Discretizers
 using StatsBase
 
-const RealRange = @compat Tuple{Real,Real}
+const RealRange = Tuple{Real,Real}
 
 include("ndgrid.jl")
 
-@compat abstract type Plot end
+abstract type Plot end
 
-type Linear <: Plot
+mutable struct Linear <: Plot
     data::AbstractMatrix{Real}
     mark
     markSize
@@ -26,7 +25,7 @@ end
 Linear{A<:Real, B<:Real}(x::AbstractVector{A}, y::AbstractVector{B}; kwargs...) = Linear(hcat(x, y)'; kwargs...)
 Linear{A<:Real}(data::AbstractVector{A}; kwargs...) = Linear(collect(1:length(data)), data; kwargs...)
 
-type Linear3 <: Plot
+mutable struct Linear3 <: Plot
     data::AbstractMatrix{Real}
     mark
     markSize
@@ -62,7 +61,7 @@ function _construct_histogram_linear_data{Q<:Real,R<:Real}(
 
     Linear(hcat(arr_x, arr_y)', style="ybar interval,fill=blue!10, draw=blue", mark="none")
 end
-type Histogram <: Plot
+mutable struct Histogram <: Plot
     data::AbstractVector{Real}
     bins::Integer
     density::Bool
@@ -72,7 +71,7 @@ type Histogram <: Plot
     Histogram(data; bins=10, discretization=:default, density=false, cumulative=false, style="fill=blue!10") = new(data,bins,density,cumulative,style,discretization)
 end
 
-type BarChart <: Plot
+mutable struct BarChart <: Plot
     keys # symbolic x coords
     values
     style
@@ -125,7 +124,7 @@ function symbolic_x_coords(keys::AbstractVector)
 end
 symbolic_x_coords(p::BarChart) = symbolic_x_coords(p.keys)
 
-type Contour <: Plot
+mutable struct Contour <: Plot
     data::AbstractMatrix
     xbins
     ybins
@@ -148,7 +147,7 @@ type Contour <: Plot
     end
 end
 
-type Scatter <: Plot
+mutable struct Scatter <: Plot
     data::AbstractMatrix{Any}
     mark
     markSize
@@ -170,7 +169,7 @@ Scatter{A<:Real, B<:Real, C<:Any}(x::AbstractVector{A}, y::AbstractVector{B}, f:
 Scatter{A<:Real, B<:Real}(x::A, y::B; kwargs...) = Scatter(hcat(x, y)'; kwargs...)
 Scatter{A<:Real, B<:Real}(x::A, y::B, f; kwargs...) = Scatter(hcat(x, y, f)'; kwargs...)
 
-type Quiver <: Plot
+mutable struct Quiver <: Plot
     data::Matrix{Real}
     style
     legendentry
@@ -196,7 +195,7 @@ function Quiver(f::Function, xrange::RealRange, yrange::RealRange; style=nothing
 end
 Quiver{A<:Real,B<:Real,C<:Real,D<:Real}(x::Vector{A}, y::Vector{B}, u::Vector{C}, v::Vector{D}; kwargs...) = Quiver(hcat(x, y, u, v)'; kwargs...)
 
-type Node <: Plot
+mutable struct Node <: Plot
     data
     style
     x
@@ -205,7 +204,7 @@ type Node <: Plot
     Node(data, x, y; style=nothing, axis=nothing) = new(data, style, x, y, axis)
 end
 
-type Circle <: Plot
+mutable struct Circle <: Plot
     xc
     yc
     radius
@@ -213,7 +212,7 @@ type Circle <: Plot
     Circle(xc=0,yc=0,radius=1;style=nothing) = new(xc,yc,radius,style)
 end
 
-type Ellipse <: Plot
+mutable struct Ellipse <: Plot
     xc
     yc
     xradius
@@ -222,14 +221,14 @@ type Ellipse <: Plot
     Ellipse(xc=0,yc=0,xradius=1,yradius=1;style=nothing) = new(xc,yc,xradius,yradius,style)
 end
 
-type Command <: Plot
+mutable struct Command <: Plot
     cmd::AbstractString
     Command(cmd::AbstractString) = new(cmd)
 end
 
 global _imgid = 1
 
-type Image <: Plot
+mutable struct Image <: Plot
     filename::AbstractString
     xmin::Real
     xmax::Real
@@ -277,7 +276,7 @@ type Image <: Plot
     end
 end
 
-type Patch2D{R<:Real} <: Plots.Plot
+mutable struct Patch2D{R<:Real} <: Plots.Plot
     data::Matrix{R} # d × m⋅n
                     # where m = 4 for rect and m = 3 for triangle (defaults to triangle)
                     #   and n = number of patches
