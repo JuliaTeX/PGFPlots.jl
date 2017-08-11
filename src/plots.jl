@@ -105,7 +105,7 @@ function BarChart{S<:AbstractString}(
 
     return BarChart(keys, values; kwargs...)
 end
-function BarChart{N,D,V<:N}(
+function BarChart{N,D,V}( # {N,D,V<:N}
     values::AbstractVector{V},
     disc::CategoricalDiscretizer{N,D}; kwargs...)
 
