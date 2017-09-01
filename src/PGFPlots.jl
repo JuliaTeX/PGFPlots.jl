@@ -160,7 +160,7 @@ contourMap = Dict(
 
 patch2DMap = Dict(
     :style => "",
-    :patch_type => "patch mutable struct",
+    :patch_type => "patch type",
     :shader => "shader",
     :legendentry => "legendentry"
     )
@@ -583,45 +583,33 @@ function plotHelper(o::IOBuffer, p::Image)
     end
 end
 
-function plotHelper{R<:Real}(o::IOBuffer, p::Patch2D{R})
+function plotHelper(o::IOBuffer, p::Patch2D)
     print(o, "\\addplot")
 
     optionHelper(o, patch2DMap, p, brackets=true)
     println(o)
 
     m = p.patch_type == "rectangle" ? 4 : 3
-
-    if R <: AbstractFloat
+    if size(p.data, 1) == 3 # include color
         println(o, "table[point meta=\\thisrow{c}] {")
         println(o, "\tx y c")
-        for i in 1 : size(p.data, 2)
-            @printf(o, "\t %.6e %.6e", convert(Float64, p.data[1,i]), # x
-                                       convert(Float64, p.data[2,i])) # y
-            if size(p.data, 1) > 2
-                @printf(o, " %.6e\n", convert(Float64, p.data[3,i])) # color
-            else
-                println(o, "")
-            end
-
-            if mod(i, m) == 0
-                println(o) # extra space between patches (trainges or rectangles)
-            end
-        end
-    else
+    elseif size(p.data, 1) == 2
         println(o, "table {")
         println(o, "\tx y")
-        for i in 1 : size(p.data, 2)
-            @printf(o, "\t %d %d", p.data[1,i], # x
+    else
+        error("Incorrect dimensions of matrix passed to Patch2D")
+    end
+    for i in 1 : size(p.data, 2)
+        @printf(o, "\t %g %g", p.data[1,i], # x
                                    p.data[2,i]) # y
-            if size(p.data, 1) > 2
-                @printf(o, " %d\n", p.data[3,i]) # color
-            else
-                println(o, "")
-            end
+        if size(p.data, 1) > 2
+            @printf(o, " %g\n", p.data[3,i]) # color
+        else
+            println(o, "")
+        end
 
-            if mod(i, m) == 0
-                println(o) # extra space between patches (trainges or rectangles)
-            end
+        if mod(i, m) == 0
+            println(o) # extra space between patches (trainges or rectangles)
         end
     end
     println(o, "};")

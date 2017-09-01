@@ -276,8 +276,8 @@ mutable struct Image <: Plot
     end
 end
 
-mutable struct Patch2D{R<:Real} <: Plots.Plot
-    data::Matrix{R} # d × m⋅n
+mutable struct Patch2D <: Plots.Plot
+    data::AbstractMatrix{Real} # d × m⋅n
                     # where m = 4 for rect and m = 3 for triangle (defaults to triangle)
                     #   and n = number of patches
                     #   and d = {x,y,color} or {x,y}
@@ -286,7 +286,7 @@ mutable struct Patch2D{R<:Real} <: Plots.Plot
     shader
     legendentry
 end
-Patch2D{R<:Real}(data::Matrix{R}; style="patch", patch_type=nothing, shader=nothing, legendentry=nothing) = Patch2D{R}(data, style, patch_type, shader, legendentry)
+Patch2D(data::Matrix; style="patch", patch_type=nothing, shader=nothing, legendentry=nothing) = Patch2D(data, style, patch_type, shader, legendentry)
 
 
 function Histogram2{A<:Real, B<:Real}(x::Vector{A}, y::Vector{B}; xmin=minimum(x), xmax=maximum(x), ymin=minimum(y), ymax=maximum(y), xbins=50, ybins=50, density=false, filename=nothing, colorbar=true, colormap=ColorMaps.GrayMap(), zmin=nothing, zmax=nothing, style=nothing)
