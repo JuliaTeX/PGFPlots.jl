@@ -9,6 +9,5 @@ ImageMagick 0.2.3
 Discretizers
 StatsBase 0.9.0
 DataFrames 0.8.0
-Reel 0.1.0
 IndirectArrays 0.1.1
 
