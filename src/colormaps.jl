@@ -5,9 +5,8 @@ import Images: colorview, save, Gray, ImageMeta
 import Colors: RGB, distinguishable_colors, colormap
 import ColorBrewer: palette
 import IndirectArrays: IndirectArray
-using Compat
 
-@compat abstract type ColorMap end
+abstract type ColorMap end
 
 type GrayMap <: ColorMap
     invert::Bool

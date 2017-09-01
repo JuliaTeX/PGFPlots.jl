@@ -8,11 +8,10 @@ export pushPGFPlots, popPGFPlots
 import Colors: RGB
 import Contour: contours, levels
 
-using Compat
 using Discretizers
 using DataFrames
 
-type ErrorBars
+mutable struct ErrorBars
     data::AbstractMatrix{Real}
     style
     mark
@@ -131,6 +130,10 @@ linearMap = Dict(
     :onlyMarks => "only marks"
     )
 
+barMap = Dict(
+    :style => "",
+    )
+
 scatterMap = Dict(
     :mark => "mark",
     :markSize => "mark size",
@@ -157,7 +160,7 @@ contourMap = Dict(
 
 patch2DMap = Dict(
     :style => "",
-    :patch_type => "patch type",
+    :patch_type => "patch mutable struct",
     :shader => "shader",
     :legendentry => "legendentry"
     )
@@ -165,10 +168,10 @@ patch2DMap = Dict(
 using .Plots
 using .ColorMaps
 
-const IntegerRange = @compat Tuple{Integer,Integer}
-const RealRange = @compat Tuple{Real,Real}
+const IntegerRange = Tuple{Integer,Integer}
+const RealRange = Tuple{Real,Real}
 
-type Axis
+mutable struct Axis
     plots::Vector{Plot}
     title
     xlabel
@@ -248,7 +251,7 @@ axisMap = Dict(
     :axisLines => "axis lines"
     )
 
-type GroupPlot
+mutable struct GroupPlot
     axes::AbstractArray{Axis,1}
     dimensions::IntegerRange
     style
@@ -382,6 +385,35 @@ function plotHelper(o::IOBuffer, p::Plots.Histogram)
     end
 end
 
+function plotHelper(o::IOBuffer, p::BarChart)
+    print(o, "\\addplot+ ")
+
+    optionHelper(o, barMap, p, brackets=true)
+    println(o, "coordinates {")
+    for (k,v) in zip(p.keys, p.values)
+        println(o, "($k, $v)")
+    end
+    println(o, "};")
+    plotLegend(o, p.legendentry)
+end
+function PGFPlots.Axis(p::BarChart; kwargs...)
+
+    style = "ybar=0pt, bar width=18pt, xtick=data, symbolic x coords={$(Plots.symbolic_x_coords(p))},"
+    i = findfirst(tup->tup[1] == :style, kwargs)
+    if i != 0
+        kwargs[i] = (:style, style * kwargs[i][2])
+    else
+        push!(kwargs, (:style, style))
+    end
+
+    i = findfirst(tup->tup[1] == :ymin, kwargs)
+    if i == 0
+        push!(kwargs, (:ymin, 0))
+    end
+
+    return Axis(Plots.Plot[p]; kwargs...)
+end
+
 plotLegend(o::IOBuffer, entry) = nothing
 plotLegend(o::IOBuffer, entry::AbstractString) = println(o, "\\addlegendentry{$entry}")
 function plotLegend{T <: AbstractString}(o::IOBuffer, entries::Vector{T})
@@ -438,7 +470,7 @@ function plotHelper(o::IOBuffer, p::Scatter)
     plotLegend(o, p.legendentry)
 end
 
-# Specific version for Linear3 type
+# Specific version for Linear3 mutable struct
 # Changes are addplot3 (vs addplot) and iterate over all 3 columns
 function plotHelper(o::IOBuffer, p::Linear3)
     print(o, "\\addplot3+ ")
@@ -707,7 +739,7 @@ function axisOptions(p::Image)
     end
 end
 
-@compat function Base.show(f::IO, a::MIME"image/svg+xml", p::Plottable)
+function Base.show(f::IO, a::MIME"image/svg+xml", p::Plottable)
     r = Base.show(f, a, plot(p))
     cleanup(p)
     r
