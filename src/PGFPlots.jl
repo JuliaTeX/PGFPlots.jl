@@ -278,7 +278,7 @@ function Base.append!{T<:Union{Plot,Axis}}(g::GroupPlot, arr::AbstractVector{T})
     g
 end
 
-function printList{T}(o::IOBuffer, a::AbstractArray{T,1}; brackets=false)
+function printList{T}(o::IO, a::AbstractArray{T,1}; brackets=false)
     first = true
     for elem in a
         if first
@@ -296,10 +296,10 @@ function printList{T}(o::IOBuffer, a::AbstractArray{T,1}; brackets=false)
     end
 end
 
-printObject(o::IOBuffer, object) = print(o, "$(object)")
-printObject{T}(o::IOBuffer, object::AbstractArray{T,1}) = printList(o, object, brackets = true)
+printObject(o::IO, object) = print(o, "$(object)")
+printObject{T}(o::IO, object::AbstractArray{T,1}) = printList(o, object, brackets = true)
 
-function optionHelper(o::IOBuffer, m, object; brackets=false, otherOptions=Dict{AbstractString,AbstractString}[], otherText=nothing)
+function optionHelper(o::IO, m, object; brackets=false, otherOptions=Dict{AbstractString,AbstractString}[], otherText=nothing)
     first = true
     for (sym, str) in m
         if getfield(object,sym) != nothing
@@ -351,7 +351,7 @@ function optionHelper(o::IOBuffer, m, object; brackets=false, otherOptions=Dict{
     end
 end
 
-function plotHelper(o::IOBuffer, p::Plots.Histogram)
+function plotHelper(o::IO, p::Plots.Histogram)
     if (p.discretization == :pgfplots && p.bins > 0) ||
        (p.discretization == :default && length(p.data) ≤ Plots.THRESHOLD_NSAMPLES_DISC_OURSELVES)
 
@@ -385,7 +385,7 @@ function plotHelper(o::IOBuffer, p::Plots.Histogram)
     end
 end
 
-function plotHelper(o::IOBuffer, p::BarChart)
+function plotHelper(o::IO, p::BarChart)
     print(o, "\\addplot+ ")
 
     optionHelper(o, barMap, p, brackets=true)
@@ -414,16 +414,16 @@ function PGFPlots.Axis(p::BarChart; kwargs...)
     return Axis(Plots.Plot[p]; kwargs...)
 end
 
-plotLegend(o::IOBuffer, entry) = nothing
-plotLegend(o::IOBuffer, entry::AbstractString) = println(o, "\\addlegendentry{$entry}")
-function plotLegend{T <: AbstractString}(o::IOBuffer, entries::Vector{T})
+plotLegend(o::IO, entry) = nothing
+plotLegend(o::IO, entry::AbstractString) = println(o, "\\addlegendentry{$entry}")
+function plotLegend{T <: AbstractString}(o::IO, entries::Vector{T})
     for entry in entries
         plotLegend(o, entry)
     end
 end
 
 # todo: add error bars style
-function plotHelperErrorBars(o::IOBuffer, p::Linear)
+function plotHelperErrorBars(o::IO, p::Linear)
     println(o, "[")
     optionHelper(o, linearMap, p, brackets=false)
     println(o, ", error bars/.cd, ")
@@ -440,12 +440,12 @@ function plotHelperErrorBars(o::IOBuffer, p::Linear)
     println(o, "};")
 end
 
-function plotHelper(o::IOBuffer, p::Linear)
+function plotHelper(o::IO, p::Linear)
     print(o, "\\addplot+ ")
     if p.errorBars == nothing
         optionHelper(o, linearMap, p, brackets=true)
         println(o, "coordinates {")
-        for i = 1:size(p.data,2)
+        for i in 1:size(p.data,2)
             println(o, "($(p.data[1,i]), $(p.data[2,i]))")
         end
         println(o, "};")
@@ -455,16 +455,24 @@ function plotHelper(o::IOBuffer, p::Linear)
     plotLegend(o, p.legendentry)
 end
 
-function plotHelper(o::IOBuffer, p::Scatter)
-    if p.scatterClasses == nothing
+function plotHelper(o::IO, p::Scatter)
+    if size(p.data,1) == 2
+        print(o, "\\addplot+[scatter, ")
+    elseif p.scatterClasses == nothing
         print(o, "\\addplot+[scatter, scatter src=explicit, ")
     else
         print(o, "\\addplot+[scatter, scatter src=explicit symbolic, ")
     end
     optionHelper(o, scatterMap, p)
     println(o, "] coordinates {")
-    for i = 1:size(p.data,2)
-        println(o, "($(p.data[1,i]), $(p.data[2,i])) [$(p.data[3,i])]")
+    if size(p.data,1) == 2
+        for i in 1:size(p.data,2)
+            println(o, "($(p.data[1,i]), $(p.data[2,i]))")
+        end
+    else
+        for i in 1:size(p.data,2)
+            println(o, "($(p.data[1,i]), $(p.data[2,i])) [$(p.data[3,i])]")
+        end
     end
     println(o, "};")
     plotLegend(o, p.legendentry)
@@ -472,7 +480,7 @@ end
 
 # Specific version for Linear3 mutable struct
 # Changes are addplot3 (vs addplot) and iterate over all 3 columns
-function plotHelper(o::IOBuffer, p::Linear3)
+function plotHelper(o::IO, p::Linear3)
     print(o, "\\addplot3+ ")
     optionHelper(o, linearMap, p, brackets=true)
     println(o, "coordinates {")
@@ -483,7 +491,7 @@ function plotHelper(o::IOBuffer, p::Linear3)
     plotLegend(o, p.legendentry)
 end
 
-function plotHelper(o::IOBuffer, p::Node)
+function plotHelper(o::IO, p::Node)
 
     axis = p.axis != nothing ? p.axis : "axis cs"
 
@@ -495,7 +503,7 @@ function plotHelper(o::IOBuffer, p::Node)
 end
 
 
-function plotHelper(o::IOBuffer, p::ErrorBars)
+function plotHelper(o::IO, p::ErrorBars)
     print(o, "\\addplot+ [")
     optionHelper(o, errorbarsMap, p)
     print(o, ",error bars/.cd, x dir=both, x explicit, y dir=both, y explicit")
@@ -508,7 +516,7 @@ function plotHelper(o::IOBuffer, p::ErrorBars)
     plotLegend(o, p.legendentry)
 end
 
-function plotHelper(o::IOBuffer, p::Quiver)
+function plotHelper(o::IO, p::Quiver)
     print(o, "\\addplot+ ")
     optionHelper(o, quiverMap, p, brackets=true, otherOptions=Dict("quiver"=>"{u=\\thisrow{u},v=\\thisrow{v}}"))
     println(o, "table {")
@@ -520,7 +528,7 @@ function plotHelper(o::IOBuffer, p::Quiver)
     plotLegend(o, p.legendentry)
 end
 
-function plotHelper(o::IOBuffer, p::Contour)
+function plotHelper(o::IO, p::Contour)
     arg = 5
     if p.number != nothing
         arg = p.number
@@ -552,7 +560,7 @@ function plotHelper(o::IOBuffer, p::Contour)
     println(o, "};")
 end
 
-function plotHelper(o::IOBuffer, p::Circle)
+function plotHelper(o::IO, p::Circle)
     if p.style != nothing
         println(o, "\\draw[$(p.style)] (axis cs:$(p.xc), $(p.yc)) circle[radius=$(p.radius)];")
     else
@@ -560,7 +568,7 @@ function plotHelper(o::IOBuffer, p::Circle)
     end
 end
 
-function plotHelper(o::IOBuffer, p::Ellipse)
+function plotHelper(o::IO, p::Ellipse)
     if p.style != nothing
         println(o, "\\draw[$(p.style)] (axis cs:$(p.xc), $(p.yc)) ellipse[x radius=$(p.xradius), y radius=$(p.yradius)];")
     else
@@ -568,11 +576,11 @@ function plotHelper(o::IOBuffer, p::Ellipse)
     end
 end
 
-function plotHelper(o::IOBuffer, p::Command)
+function plotHelper(o::IO, p::Command)
     println(o, p.cmd*";") #PGFPlots expects commands to be terminated with a ;
 end
 
-function plotHelper(o::IOBuffer, p::Image)
+function plotHelper(o::IO, p::Image)
     if p.zmin == p.zmax
         error("Your colorbar range limits must not be equal to each other.")
     end
@@ -583,7 +591,7 @@ function plotHelper(o::IOBuffer, p::Image)
     end
 end
 
-function plotHelper(o::IOBuffer, p::Patch2D)
+function plotHelper(o::IO, p::Patch2D)
     print(o, "\\addplot")
 
     optionHelper(o, patch2DMap, p, brackets=true)
@@ -617,7 +625,7 @@ function plotHelper(o::IOBuffer, p::Patch2D)
 end
 
 # plot option string and contents; no \begin{axis} or \nextgroupplot
-function plotHelper(o::IOBuffer, axis::Axis)
+function plotHelper(o::IO, axis::Axis)
     optionHelper(o, axisMap, axis, brackets=true, otherText=[axisOptions(p) for p in axis.plots])
     for p in axis.plots
         plotHelper(o, p)

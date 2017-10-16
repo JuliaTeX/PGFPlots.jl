@@ -157,11 +157,7 @@ mutable struct Scatter <: Plot
     scatterClasses
 
     function Scatter{T<:Any}(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, onlyMarks=true, legendentry=nothing, scatterClasses=nothing)
-        if size(data,1) == 2
-            return Linear(data, mark=mark, markSize=markSize, style=style, onlyMarks=onlyMarks, legendentry=legendentry)
-        else
-            return new(data, mark, markSize, style, legendentry, onlyMarks, scatterClasses)
-        end
+        new(data, mark, markSize, style, legendentry, onlyMarks, scatterClasses)
     end
 end
 Scatter{A<:Real, B<:Real}(x::AbstractVector{A}, y::AbstractVector{B}; kwargs...) = Scatter(hcat(x, y)'; kwargs...)
