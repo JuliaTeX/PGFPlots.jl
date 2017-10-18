@@ -457,7 +457,8 @@ end
 
 function plotHelper(o::IO, p::Scatter)
     if size(p.data,1) == 2
-        print(o, "\\addplot+[scatter, ")
+        print(o, "\\addplot+[draw=none, ")
+        p.onlyMarks = nothing
     elseif p.scatterClasses == nothing
         print(o, "\\addplot+[scatter, scatter src=explicit, ")
     else
