@@ -15,7 +15,7 @@ mutable struct ErrorBars
     data::AbstractMatrix{Real}
     style
     mark
-    ErrorBars{T <: Real}(data::AbstractMatrix{T}; style=nothing, mark=nothing) = new(data, style, mark)
+    ErrorBars(data::AbstractMatrix{T}; style=nothing, mark=nothing) where {T <: Real} = new(data, style, mark)
 end
 
 mylength(x) = (x == nothing) ? 0 : length(x)
