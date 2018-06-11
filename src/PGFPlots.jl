@@ -91,7 +91,7 @@ end
 
 define_color(name::AbstractString, color) = define_color(name, convert(RGB, color))
 
-function define_color{T<:AbstractFloat}(name::AbstractString, color::Vector{T})
+function define_color(name::AbstractString, color::Vector{T}) where {T<:AbstractFloat}
     if length(color) == 3
         r, g, b = color[1], color[2], color[3]
         _pgfplotspreamble[end] = _pgfplotspreamble[end] * "\n\\definecolor{$name}{rgb}{$r, $g, $b}"
@@ -103,7 +103,7 @@ function define_color{T<:AbstractFloat}(name::AbstractString, color::Vector{T})
     end
 end
 
-function define_color{T<:Integer}(name::AbstractString, color::Vector{T})
+function define_color(name::AbstractString, color::Vector{T}) where {T<:Integer}
     @assert(length(color) == 3, "Color must have three components")
     r, g, b = color[1], color[2], color[3]
     _pgfplotspreamble[end] = _pgfplotspreamble[end] * "\n\\definecolor{$name}{RGB}{$r, $g, $b}"
@@ -271,14 +271,14 @@ function Base.push!(g::GroupPlot, a::Axis)
     g
 end
 Base.push!(g::GroupPlot, p::Plot) = push!(g, Axis(p))
-function Base.append!{T<:Union{Plot,Axis}}(g::GroupPlot, arr::AbstractVector{T})
+function Base.append!(g::GroupPlot, arr::AbstractVector{T}) where {T<:Union{Plot,Axis}}
     for a in arr
         push!(g, a)
     end
     g
 end
 
-function printList{T}(o::IO, a::AbstractArray{T,1}; brackets=false)
+function printList(o::IO, a::AbstractVector; brackets=false)
     first = true
     for elem in a
         if first
@@ -297,7 +297,7 @@ function printList{T}(o::IO, a::AbstractArray{T,1}; brackets=false)
 end
 
 printObject(o::IO, object) = print(o, "$(object)")
-printObject{T}(o::IO, object::AbstractArray{T,1}) = printList(o, object, brackets = true)
+printObject(o::IO, object::AbstractVector) = printList(o, object, brackets=true)
 
 function optionHelper(o::IO, m, object; brackets=false, otherOptions=Dict{AbstractString,AbstractString}[], otherText=nothing)
     first = true
@@ -416,7 +416,7 @@ end
 
 plotLegend(o::IO, entry) = nothing
 plotLegend(o::IO, entry::AbstractString) = println(o, "\\addlegendentry{$entry}")
-function plotLegend{T <: AbstractString}(o::IO, entries::Vector{T})
+function plotLegend(o::IO, entries::Vector{T}) where {T <: AbstractString}
     for entry in entries
         plotLegend(o, entry)
     end
@@ -680,9 +680,24 @@ function plot(p::Contour)
     plot(Axis(p, xmin=p.xbins[1], xmax=p.xbins[end], ymin=p.ybins[1], ymax=p.ybins[end]))
 end
 
-plot{A<:Real,B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}; kwargs...) = plot(Linear(x, y; kwargs...))
+function plot(
+    x::AbstractArray{A,1},
+    ::AbstractArray{B,1};
+    kwargs...,
+    ) where {A<:Real,B<:Real}
 
-plot{A<:Real,B<:Real,C<:Real}(x::AbstractVector{A}, y::AbstractVector{B}, z::AbstractVector{C}; kwargs...) = plot(Linear3(x, y, z; kwargs...))
+    return plot(Linear(x, y; kwargs...))
+end
+
+function plot(
+    x::AbstractVector{A},
+    y::AbstractVector{B},
+    z::AbstractVector{C};
+    kwargs...,
+    ) where {A<:Real,B<:Real,C<:Real}
+
+    return plot(Linear3(x, y, z; kwargs...))
+end
 
 function Plots.Linear(f::Function, range::RealRange; xbins=100, mark="none", style=nothing, legendentry=nothing)
     x = linspace(range[1], range[2], xbins)
