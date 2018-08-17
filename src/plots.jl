@@ -76,8 +76,9 @@ mutable struct BarChart <: Plot
     values
     style
     legendentry
+    errorBars
 
-    BarChart{R<:Real}(keys::AbstractVector, values::AbstractVector{R}; style=nothing, legendentry=nothing) = new(keys, values, style, legendentry)
+    BarChart{R<:Real}(keys::AbstractVector, values::AbstractVector{R}; style=nothing, legendentry=nothing, errorBars=nothing) = new(keys, values, style, legendentry, errorBars)
 end
 function BarChart{R<:Real}(
     values::AbstractVector{R};
