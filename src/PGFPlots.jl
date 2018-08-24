@@ -719,6 +719,7 @@ cleanup(p::Ellipse) = nothing
 cleanup(p::Command) = nothing
 cleanup(p::Image) = rm(p.filename)
 cleanup(p::Contour) = nothing
+cleanup(p::TikzPicture) = nothing
 
 axisOptions(p::Plot) = nothing
 
