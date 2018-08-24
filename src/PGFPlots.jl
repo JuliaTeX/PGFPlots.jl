@@ -702,7 +702,7 @@ function plot(
 end
 
 function Plots.Linear(f::Function, range::RealRange; xbins=100, mark="none", style=nothing, legendentry=nothing)
-    x = linspace(range[1], range[2], xbins)
+    x = range(range[1], stop=range[2], length=xbins)
     Linear(x, map(f, x), mark=mark, style=style, legendentry=legendentry)
 end
 
@@ -710,7 +710,7 @@ plot(f::Function, range::RealRange; kwargs...) = plot(Linear(f, range; kwargs...
 
 plot(tkz::TikzPicture) = tkz # tikz pic doesn't need plot, here for convenience
 
-Base.mimewritable(::MIME"image/svg+xml", p::Plottable) = true
+Base.showable(::MIME"image/svg+xml", p::Plottable) = true
 
 cleanup(p::Axis) = map(cleanup, p.plots)
 cleanup(axes::Axes) = map(cleanup, axes)
