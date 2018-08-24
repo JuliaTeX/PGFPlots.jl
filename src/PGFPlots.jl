@@ -10,6 +10,7 @@ import Contour: contours, levels
 
 using Discretizers
 using DataFrames
+using Printf
 
 mutable struct ErrorBars
     data::AbstractMatrix{Real}
@@ -47,7 +48,7 @@ Plots.Histogram(df::DataFrame; x::Symbol=:x, kwargs...) = Plots.Histogram(df[x];
 Plots.Scatter(df::DataFrame; x::Symbol=:x, y::Symbol=:y, kwargs...) = Plots.Scatter(df[x], df[y]; kwargs...)
 Plots.Quiver(df::DataFrame; x::Symbol=:x, y::Symbol=:y, u::Symbol=:u, v::Symbol=:v, kwargs...) = Plots.Quiver(convert(Vector, df[x]), convert(Vector, df[y]), convert(Vector, df[u]), convert(Vector, df[v]); kwargs...)
 Plots.Histogram2(df::DataFrame; x::Symbol=:x, y::Symbol=:y, kwargs...) = Plots.Histogram2(convert(Vector, df[x]), convert(Vector, df[y]); kwargs...)
-Plots.Histogram2{C<:Real}(df::DataFrame, edges_x::AbstractVector{C}, edges_y::AbstractVector{C}; x::Symbol=:x, y::Symbol=:y, kwargs...) = Plots.Histogram2(convert(Vector, df[x]), convert(Vector, df[y]), edges_x, edges_y; kwargs...)
+Plots.Histogram2(df::DataFrame, edges_x::AbstractVector{C}, edges_y::AbstractVector{C}; x::Symbol=:x, y::Symbol=:y, kwargs...) where {C<:Real} = Plots.Histogram2(convert(Vector, df[x]), convert(Vector, df[y]), edges_x, edges_y; kwargs...)
 
 import TikzPictures: TikzPicture, PDF, TEX, TIKZ, SVG, save, LaTeXString, @L_str, @L_mstr
 
@@ -73,7 +74,8 @@ end
 
 pgfplotsoptions() = join(_pgfplotsoptions, ",\n")
 
-_pgfplotspreamble = Any[readstring(joinpath(dirname(@__FILE__), "preamble.tex"))]
+_pgfplotspreamble = Any[read(joinpath(dirname(@__FILE__), "preamble.tex"),String)]
+
 
 pushPGFPlotsPreamble(preamble::AbstractString) = push!(_pgfplotspreamble, preamble)
 function popPGFPlotsPreamble()
@@ -201,9 +203,9 @@ mutable struct Axis
     axisLines
     axisKeyword
 
-    Axis{P <: Plot}(plots::Vector{P};title=nothing, xlabel=nothing, xlabelStyle=nothing, ylabel=nothing, ylabelStyle=nothing, zlabel=nothing, zlabelStyle=nothing, xmin=nothing, xmax=nothing,
+    Axis(plots::Vector{P};title=nothing, xlabel=nothing, xlabelStyle=nothing, ylabel=nothing, ylabelStyle=nothing, zlabel=nothing, zlabelStyle=nothing, xmin=nothing, xmax=nothing,
                     ymin=nothing, ymax=nothing, axisEqual=nothing, axisEqualImage=nothing, enlargelimits=nothing, axisOnTop=nothing, view=nothing, width=nothing,
-                    height=nothing, style=nothing, legendPos=nothing, legendStyle=nothing, xmode=nothing, ymode=nothing, colorbar=nothing, hideAxis=nothing, axisLines=nothing, axisKeyword="axis") =
+                    height=nothing, style=nothing, legendPos=nothing, legendStyle=nothing, xmode=nothing, ymode=nothing, colorbar=nothing, hideAxis=nothing, axisLines=nothing, axisKeyword="axis") where {P <: Plot} =
         new(plots, title, xlabel, xlabelStyle, ylabel, ylabelStyle, zlabel, zlabelStyle, xmin, xmax, ymin, ymax, axisEqual, axisEqualImage, enlargelimits, axisOnTop, view, width, height, style, legendPos, legendStyle, xmode, ymode, colorbar, hideAxis, axisLines, axisKeyword
             )
 

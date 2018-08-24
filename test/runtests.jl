@@ -1,5 +1,5 @@
 using PGFPlots
-using Base.Test
+using Test
 
 @assert success(`lualatex -v`)
 using NBInclude
