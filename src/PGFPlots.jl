@@ -701,12 +701,12 @@ function plot(
     return plot(Linear3(x, y, z; kwargs...))
 end
 
-function Plots.Linear(f::Function, range::RealRange; xbins=100, mark="none", style=nothing, legendentry=nothing)
-    x = range(range[1], stop=range[2], length=xbins)
+function Plots.Linear(f::Function, arg_range::RealRange; xbins=100, mark="none", style=nothing, legendentry=nothing)
+    x = range(arg_range[1], stop=arg_range[2], length=xbins)
     Linear(x, map(f, x), mark=mark, style=style, legendentry=legendentry)
 end
 
-plot(f::Function, range::RealRange; kwargs...) = plot(Linear(f, range; kwargs...))
+plot(f::Function, arg_range::RealRange; kwargs...) = plot(Linear(f, arg_range; kwargs...))
 
 plot(tkz::TikzPicture) = tkz # tikz pic doesn't need plot, here for convenience
 
