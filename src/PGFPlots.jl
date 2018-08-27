@@ -402,14 +402,14 @@ function PGFPlots.Axis(p::BarChart; kwargs...)
 
     style = "ybar=0pt, bar width=18pt, xtick=data, symbolic x coords={$(Plots.symbolic_x_coords(p))},"
     i = findfirst(tup->tup[1] == :style, kwargs)
-    if i != 0
+    if i != nothing
         kwargs[i] = (:style, style * kwargs[i][2])
     else
         push!(kwargs, (:style, style))
     end
 
     i = findfirst(tup->tup[1] == :ymin, kwargs)
-    if i == 0
+    if i == nothing
         push!(kwargs, (:ymin, 0))
     end
 
@@ -684,7 +684,7 @@ end
 
 function plot(
     x::AbstractArray{A,1},
-    ::AbstractArray{B,1};
+    y::AbstractArray{B,1};
     kwargs...,
     ) where {A<:Real,B<:Real}
 

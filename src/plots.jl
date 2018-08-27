@@ -5,6 +5,7 @@ export Plot, Histogram, Histogram2, BarChart, Linear, Linear3, Image, Patch2D, C
 using ..ColorMaps
 using Discretizers
 using StatsBase
+using Distributed
 
 const RealRange = Tuple{Real,Real}
 
@@ -135,8 +136,8 @@ mutable struct Contour <: Plot
     labels
     Contour(data, xbins, ybins; style=nothing, contour_style=nothing, number=nothing, levels=nothing, labels=nothing) = new(data, xbins, ybins, style, contour_style, number, levels, labels)
     function Contour(f::Function, xrange::RealRange, yrange::RealRange; xbins=40, ybins=40, style=nothing, contour_style=nothing, number=nothing, levels=nothing, labels=nothing)
-        x = linspace(xrange[1], xrange[2], xbins)
-        y = linspace(yrange[1], yrange[2], ybins)
+        x = range(xrange[1], stop=xrange[2], length=xbins)
+        y = range(yrange[1], stop=yrange[2], length=ybins)
         A = zeros(xbins, ybins)
         try
             A = Float64[f(xi, yi) for xi in x, yi in y]
@@ -166,14 +167,14 @@ Scatter(x::A, y::B; kwargs...) where {A<:Real, B<:Real} = Scatter(hcat(x, y)'; k
 Scatter(x::A, y::B, f; kwargs...) where {A<:Real, B<:Real} = Scatter(hcat(x, y, f)'; kwargs...)
 
 mutable struct Quiver <: Plot
-    data::Matrix{Real}
+    data::AbstractMatrix{Real}
     style
     legendentry
-    Quiver(data::Matrix{T}; style=nothing, legendentry=nothing) where {T<:Real} = new(data, style, legendentry)
+    Quiver(data::AbstractMatrix{T}; style=nothing, legendentry=nothing) where {T<:Real} = new(data, style, legendentry)
 end
 function Quiver(f::Function, xrange::RealRange, yrange::RealRange; style=nothing, legendentry=nothing, samples=15, normalize=true)
-    x = linspace(xrange[1], xrange[2], samples)
-    y = linspace(yrange[1], yrange[2], samples)
+    x = range(xrange[1], stop=xrange[2], length=samples)
+    y = range(yrange[1], stop=yrange[2], length=samples)
     (X, Y) = meshgrid(x, y)
     n = length(X)
     U = zeros(n)
@@ -244,7 +245,7 @@ mutable struct Image <: Plot
     colormap::ColorMaps.ColorMap
     style
     function Image(
-        A::Matrix{T},
+        A::AbstractMatrix{T},
         xrange::RealRange,
         yrange::RealRange;
         filename=nothing,
@@ -282,11 +283,11 @@ mutable struct Image <: Plot
         new(filename, xrange[1], xrange[2], yrange[1], yrange[2], zmin, zmax, colorbar, colormap, style)
     end
     function Image(f::Function, xrange::RealRange, yrange::RealRange; filename=nothing, colorbar=true, colormap=ColorMaps.GrayMap(), zmin=nothing, zmax=nothing, xbins=100, ybins=100, style=nothing)
-        x = linspace(xrange[1], xrange[2], xbins)
-        y = linspace(yrange[1], yrange[2], ybins)
+        x = range(xrange[1], stop=xrange[2], length=xbins)
+        y = range(yrange[1], stop=yrange[2], length=ybins)
         (X, Y) = meshgrid(x, y)
         A = map(f, X, Y)
-        A = flipdim(A, 1)
+        A = reverse(A, dims=1)
         Image(A, xrange, yrange, filename=filename, colorbar=colorbar, colormap=colormap, zmin=zmin, zmax=zmax, style=style)
     end
 end
@@ -301,7 +302,7 @@ mutable struct Patch2D <: Plots.Plot
     shader
     legendentry
 end
-Patch2D(data::Matrix; style="patch", patch_type=nothing, shader=nothing, legendentry=nothing) = Patch2D(data, style, patch_type, shader, legendentry)
+Patch2D(data::AbstractMatrix; style="patch", patch_type=nothing, shader=nothing, legendentry=nothing) = Patch2D(data, style, patch_type, shader, legendentry)
 
 
 function Histogram2(
@@ -322,11 +323,11 @@ function Histogram2(
     style=nothing,
     ) where {A<:Real, B<:Real}
 
-    ex = linspace(xmin, xmax, xbins+1)
-    ey = linspace(ymin, ymax, ybins+1)
+    ex = range(xmin, stop=xmax, length=xbins+1)
+    ey = range(ymin, stop=ymax, length=ybins+1)
     h = fit(StatsBase.Histogram, (y, x), (ey, ex), closed=:left)
     ex, ey, M = h.edges[1], h.edges[2], h.weights
-    M = flipdim(M, 1)
+    M = reverse(M, dims=1)
     if density
         scale =  xbins * ybins / ((xmax-xmin) * (ymax-ymin) * sum(M))
         M = M * scale
@@ -348,7 +349,7 @@ function Histogram2(
     n = length(ey)-1
     scale =  m*n / ((ex[end]-ex[1]) * (ey[end]-ey[1]) * sum(M))
 
-    patchdata = Array{Float64}(3, 4*n*m)
+    patchdata = Array{Float64}(undef, 3, 4*n*m)
     patchidx = 0
     for i in 1 : m
         x₁, x₂ = ex[i], ex[i+1]
@@ -381,7 +382,7 @@ function Histogram2(
         end
     end
 
-    if isa(style, Void)
+    if isa(style, Nothing)
         style = "patch"
     elseif isa(style, String)
         style = "patch" * (isempty(style) ? "" : (", "*style))

@@ -18,7 +18,7 @@ mutable struct RGBArrayMap <: ColorMap
     interpolation_levels::UInt
     function RGBArrayMap(colors; invert=false, interpolation_levels=0)
         if invert
-            colors = flipdim(colors, 1)
+            colors = reverse(colors, dims=1)
         end
         new(colors, interpolation_levels)
     end
@@ -52,7 +52,7 @@ end
 
 function Base.write(colormap::GrayMap, data, filename)
     if colormap.invert
-        inverteddata = 1. - data
+        inverteddata = 1 .- data
         save(filename, colorview(Gray, inverteddata))
     else
         save(filename, colorview(Gray, data))
@@ -68,8 +68,8 @@ function interpolate_RGBArrayMap(colormap::RGBArrayMap)
     end
 
     n = length(colormap.colors)
-    colors = Vector{RGB{Float64}}(levels)
-    for (i,x) in enumerate(linspace(0.0,1.0,levels))
+    colors = Vector{RGB{Float64}}(undef,levels)
+    for (i,x) in enumerate(range(0.0,stop=1.0,length=levels))
         t = 1 + x*(n-1)
         a = colormap.colors[floor(Int, t)]
         b = colormap.colors[ceil(Int, t)]
