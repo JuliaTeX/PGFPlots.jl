@@ -112,7 +112,7 @@ function define_color(name::AbstractString, color::Vector{T}) where {T<:Integer}
 end
 
 function define_color(name::AbstractString, color::UInt32)
-    _pgfplotspreamble[end] = _pgfplotspreamble[end] * "\n\\definecolor{$name}{HTML}{$(uppercase(hex(color)))}"
+    _pgfplotspreamble[end] = _pgfplotspreamble[end] * "\n\\definecolor{$name}{HTML}{$(uppercase(string(color, base=16)))}"
 end
 
 function define_color(name::AbstractString, color::Real)
@@ -399,21 +399,21 @@ function plotHelper(o::IO, p::BarChart)
     plotLegend(o, p.legendentry)
 end
 function PGFPlots.Axis(p::BarChart; kwargs...)
-
+    # TODO : What's a better way to do this?
     style = "ybar=0pt, bar width=18pt, xtick=data, symbolic x coords={$(Plots.symbolic_x_coords(p))},"
-    i = findfirst(tup->tup[1] == :style, kwargs)
+    kwargs_unsplat = isempty(kwargs) ? Array{Pair{Symbol,Any}}(undef,0) : convert(Array{Pair{Symbol,Any}},collect(kwargs))
+    i = findfirst(tup->tup[1] == :style, kwargs_unsplat)
     if i != nothing
-        kwargs[i] = (:style, style * kwargs[i][2])
+        kwargs_unsplat[i] = :style=>(style * kwargs_unsplat[i][2])
     else
-        push!(kwargs, (:style, style))
+        push!(kwargs_unsplat,:style=>style)
     end
-
-    i = findfirst(tup->tup[1] == :ymin, kwargs)
+    i = findfirst(tup->tup[1] == :ymin, kwargs_unsplat)
     if i == nothing
-        push!(kwargs, (:ymin, 0))
+        push!(kwargs_unsplat, :ymin=>0)
     end
 
-    return Axis(Plots.Plot[p]; kwargs...)
+    return Axis(Plots.Plot[p]; kwargs_unsplat...)
 end
 
 plotLegend(o::IO, entry) = nothing
