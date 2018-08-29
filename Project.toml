@@ -19,6 +19,7 @@ TikzPictures = "37f6aa50-8035-52d0-81c2-5a1d08754b2d"
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 NBInclude = "0db19996-df87-5ea3-a455-e3a50d440464"
+Reel = "71555da5-176e-5e73-a222-aebc6c6e4f2f"
 
 [targets]
-test = ["Test","NBInclude"]
+test = ["Test","NBInclude","Reel"]
