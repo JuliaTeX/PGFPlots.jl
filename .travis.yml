@@ -2,8 +2,8 @@ language: julia
 sudo: required
 dist: trusty
 julia:
-  - 0.6
-  - nightly
+  - 0.7
+  - 1.0
 matrix:
   allow_failures:
     - julia: nightly
