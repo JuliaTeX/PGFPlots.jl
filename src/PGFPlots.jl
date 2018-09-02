@@ -10,12 +10,13 @@ import Contour: contours, levels
 
 using Discretizers
 using DataFrames
+using Printf
 
 mutable struct ErrorBars
     data::AbstractMatrix{Real}
     style
     mark
-    ErrorBars{T <: Real}(data::AbstractMatrix{T}; style=nothing, mark=nothing) = new(data, style, mark)
+    ErrorBars(data::AbstractMatrix{T}; style=nothing, mark=nothing) where {T <: Real} = new(data, style, mark)
 end
 
 mylength(x) = (x == nothing) ? 0 : length(x)
@@ -47,7 +48,7 @@ Plots.Histogram(df::DataFrame; x::Symbol=:x, kwargs...) = Plots.Histogram(df[x];
 Plots.Scatter(df::DataFrame; x::Symbol=:x, y::Symbol=:y, kwargs...) = Plots.Scatter(df[x], df[y]; kwargs...)
 Plots.Quiver(df::DataFrame; x::Symbol=:x, y::Symbol=:y, u::Symbol=:u, v::Symbol=:v, kwargs...) = Plots.Quiver(convert(Vector, df[x]), convert(Vector, df[y]), convert(Vector, df[u]), convert(Vector, df[v]); kwargs...)
 Plots.Histogram2(df::DataFrame; x::Symbol=:x, y::Symbol=:y, kwargs...) = Plots.Histogram2(convert(Vector, df[x]), convert(Vector, df[y]); kwargs...)
-Plots.Histogram2{C<:Real}(df::DataFrame, edges_x::AbstractVector{C}, edges_y::AbstractVector{C}; x::Symbol=:x, y::Symbol=:y, kwargs...) = Plots.Histogram2(convert(Vector, df[x]), convert(Vector, df[y]), edges_x, edges_y; kwargs...)
+Plots.Histogram2(df::DataFrame, edges_x::AbstractVector{C}, edges_y::AbstractVector{C}; x::Symbol=:x, y::Symbol=:y, kwargs...) where {C<:Real} = Plots.Histogram2(convert(Vector, df[x]), convert(Vector, df[y]), edges_x, edges_y; kwargs...)
 
 import TikzPictures: TikzPicture, PDF, TEX, TIKZ, SVG, save, LaTeXString, @L_str, @L_mstr
 
@@ -73,7 +74,8 @@ end
 
 pgfplotsoptions() = join(_pgfplotsoptions, ",\n")
 
-_pgfplotspreamble = Any[readstring(joinpath(dirname(@__FILE__), "preamble.tex"))]
+_pgfplotspreamble = Any[read(joinpath(dirname(@__FILE__), "preamble.tex"),String)]
+
 
 pushPGFPlotsPreamble(preamble::AbstractString) = push!(_pgfplotspreamble, preamble)
 function popPGFPlotsPreamble()
@@ -91,7 +93,7 @@ end
 
 define_color(name::AbstractString, color) = define_color(name, convert(RGB, color))
 
-function define_color{T<:AbstractFloat}(name::AbstractString, color::Vector{T})
+function define_color(name::AbstractString, color::Vector{T}) where {T<:AbstractFloat}
     if length(color) == 3
         r, g, b = color[1], color[2], color[3]
         _pgfplotspreamble[end] = _pgfplotspreamble[end] * "\n\\definecolor{$name}{rgb}{$r, $g, $b}"
@@ -103,14 +105,14 @@ function define_color{T<:AbstractFloat}(name::AbstractString, color::Vector{T})
     end
 end
 
-function define_color{T<:Integer}(name::AbstractString, color::Vector{T})
+function define_color(name::AbstractString, color::Vector{T}) where {T<:Integer}
     @assert(length(color) == 3, "Color must have three components")
     r, g, b = color[1], color[2], color[3]
     _pgfplotspreamble[end] = _pgfplotspreamble[end] * "\n\\definecolor{$name}{RGB}{$r, $g, $b}"
 end
 
 function define_color(name::AbstractString, color::UInt32)
-    _pgfplotspreamble[end] = _pgfplotspreamble[end] * "\n\\definecolor{$name}{HTML}{$(uppercase(hex(color)))}"
+    _pgfplotspreamble[end] = _pgfplotspreamble[end] * "\n\\definecolor{$name}{HTML}{$(uppercase(string(color, base=16)))}"
 end
 
 function define_color(name::AbstractString, color::Real)
@@ -201,9 +203,9 @@ mutable struct Axis
     axisLines
     axisKeyword
 
-    Axis{P <: Plot}(plots::Vector{P};title=nothing, xlabel=nothing, xlabelStyle=nothing, ylabel=nothing, ylabelStyle=nothing, zlabel=nothing, zlabelStyle=nothing, xmin=nothing, xmax=nothing,
+    Axis(plots::Vector{P};title=nothing, xlabel=nothing, xlabelStyle=nothing, ylabel=nothing, ylabelStyle=nothing, zlabel=nothing, zlabelStyle=nothing, xmin=nothing, xmax=nothing,
                     ymin=nothing, ymax=nothing, axisEqual=nothing, axisEqualImage=nothing, enlargelimits=nothing, axisOnTop=nothing, view=nothing, width=nothing,
-                    height=nothing, style=nothing, legendPos=nothing, legendStyle=nothing, xmode=nothing, ymode=nothing, colorbar=nothing, hideAxis=nothing, axisLines=nothing, axisKeyword="axis") =
+                    height=nothing, style=nothing, legendPos=nothing, legendStyle=nothing, xmode=nothing, ymode=nothing, colorbar=nothing, hideAxis=nothing, axisLines=nothing, axisKeyword="axis") where {P <: Plot} =
         new(plots, title, xlabel, xlabelStyle, ylabel, ylabelStyle, zlabel, zlabelStyle, xmin, xmax, ymin, ymax, axisEqual, axisEqualImage, enlargelimits, axisOnTop, view, width, height, style, legendPos, legendStyle, xmode, ymode, colorbar, hideAxis, axisLines, axisKeyword
             )
 
@@ -271,14 +273,14 @@ function Base.push!(g::GroupPlot, a::Axis)
     g
 end
 Base.push!(g::GroupPlot, p::Plot) = push!(g, Axis(p))
-function Base.append!{T<:Union{Plot,Axis}}(g::GroupPlot, arr::AbstractVector{T})
+function Base.append!(g::GroupPlot, arr::AbstractVector{T}) where {T<:Union{Plot,Axis}}
     for a in arr
         push!(g, a)
     end
     g
 end
 
-function printList{T}(o::IO, a::AbstractArray{T,1}; brackets=false)
+function printList(o::IO, a::AbstractVector; brackets=false)
     first = true
     for elem in a
         if first
@@ -297,7 +299,7 @@ function printList{T}(o::IO, a::AbstractArray{T,1}; brackets=false)
 end
 
 printObject(o::IO, object) = print(o, "$(object)")
-printObject{T}(o::IO, object::AbstractArray{T,1}) = printList(o, object, brackets = true)
+printObject(o::IO, object::AbstractVector) = printList(o, object, brackets=true)
 
 function optionHelper(o::IO, m, object; brackets=false, otherOptions=Dict{AbstractString,AbstractString}[], otherText=nothing)
     first = true
@@ -397,26 +399,26 @@ function plotHelper(o::IO, p::BarChart)
     plotLegend(o, p.legendentry)
 end
 function PGFPlots.Axis(p::BarChart; kwargs...)
-
+    # TODO : What's a better way to do this?
     style = "ybar=0pt, bar width=18pt, xtick=data, symbolic x coords={$(Plots.symbolic_x_coords(p))},"
-    i = findfirst(tup->tup[1] == :style, kwargs)
-    if i != 0
-        kwargs[i] = (:style, style * kwargs[i][2])
+    kwargs_unsplat = isempty(kwargs) ? Array{Pair{Symbol,Any}}(undef,0) : convert(Array{Pair{Symbol,Any}},collect(kwargs))
+    i = findfirst(tup->tup[1] == :style, kwargs_unsplat)
+    if i != nothing
+        kwargs_unsplat[i] = :style=>(style * kwargs_unsplat[i][2])
     else
-        push!(kwargs, (:style, style))
+        push!(kwargs_unsplat,:style=>style)
+    end
+    i = findfirst(tup->tup[1] == :ymin, kwargs_unsplat)
+    if i == nothing
+        push!(kwargs_unsplat, :ymin=>0)
     end
 
-    i = findfirst(tup->tup[1] == :ymin, kwargs)
-    if i == 0
-        push!(kwargs, (:ymin, 0))
-    end
-
-    return Axis(Plots.Plot[p]; kwargs...)
+    return Axis(Plots.Plot[p]; kwargs_unsplat...)
 end
 
 plotLegend(o::IO, entry) = nothing
 plotLegend(o::IO, entry::AbstractString) = println(o, "\\addlegendentry{$entry}")
-function plotLegend{T <: AbstractString}(o::IO, entries::Vector{T})
+function plotLegend(o::IO, entries::Vector{T}) where {T <: AbstractString}
     for entry in entries
         plotLegend(o, entry)
     end
@@ -680,20 +682,35 @@ function plot(p::Contour)
     plot(Axis(p, xmin=p.xbins[1], xmax=p.xbins[end], ymin=p.ybins[1], ymax=p.ybins[end]))
 end
 
-plot{A<:Real,B<:Real}(x::AbstractArray{A,1}, y::AbstractArray{B,1}; kwargs...) = plot(Linear(x, y; kwargs...))
+function plot(
+    x::AbstractArray{A,1},
+    y::AbstractArray{B,1};
+    kwargs...,
+    ) where {A<:Real,B<:Real}
 
-plot{A<:Real,B<:Real,C<:Real}(x::AbstractVector{A}, y::AbstractVector{B}, z::AbstractVector{C}; kwargs...) = plot(Linear3(x, y, z; kwargs...))
+    return plot(Linear(x, y; kwargs...))
+end
 
-function Plots.Linear(f::Function, range::RealRange; xbins=100, mark="none", style=nothing, legendentry=nothing)
-    x = linspace(range[1], range[2], xbins)
+function plot(
+    x::AbstractVector{A},
+    y::AbstractVector{B},
+    z::AbstractVector{C};
+    kwargs...,
+    ) where {A<:Real,B<:Real,C<:Real}
+
+    return plot(Linear3(x, y, z; kwargs...))
+end
+
+function Plots.Linear(f::Function, arg_range::RealRange; xbins=100, mark="none", style=nothing, legendentry=nothing)
+    x = range(arg_range[1], stop=arg_range[2], length=xbins)
     Linear(x, map(f, x), mark=mark, style=style, legendentry=legendentry)
 end
 
-plot(f::Function, range::RealRange; kwargs...) = plot(Linear(f, range; kwargs...))
+plot(f::Function, arg_range::RealRange; kwargs...) = plot(Linear(f, arg_range; kwargs...))
 
 plot(tkz::TikzPicture) = tkz # tikz pic doesn't need plot, here for convenience
 
-Base.mimewritable(::MIME"image/svg+xml", p::Plottable) = true
+Base.showable(::MIME"image/svg+xml", p::Plottable) = true
 
 cleanup(p::Axis) = map(cleanup, p.plots)
 cleanup(axes::Axes) = map(cleanup, axes)

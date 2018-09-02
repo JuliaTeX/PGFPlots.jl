@@ -8,17 +8,17 @@ import IndirectArrays: IndirectArray
 
 abstract type ColorMap end
 
-type GrayMap <: ColorMap
+mutable struct GrayMap <: ColorMap
     invert::Bool
     GrayMap(;invert = false) = new(invert)
 end
 
-type RGBArrayMap <: ColorMap
+mutable struct RGBArrayMap <: ColorMap
     colors::Vector{RGB{Float64}}
     interpolation_levels::UInt
     function RGBArrayMap(colors; invert=false, interpolation_levels=0)
         if invert
-            colors = flipdim(colors, 1)
+            colors = reverse(colors, dims=1)
         end
         new(colors, interpolation_levels)
     end
@@ -52,7 +52,7 @@ end
 
 function Base.write(colormap::GrayMap, data, filename)
     if colormap.invert
-        inverteddata = 1. - data
+        inverteddata = 1 .- data
         save(filename, colorview(Gray, inverteddata))
     else
         save(filename, colorview(Gray, data))
@@ -68,8 +68,8 @@ function interpolate_RGBArrayMap(colormap::RGBArrayMap)
     end
 
     n = length(colormap.colors)
-    colors = Vector{RGB{Float64}}(levels)
-    for (i,x) in enumerate(linspace(0.0,1.0,levels))
+    colors = Vector{RGB{Float64}}(undef,levels)
+    for (i,x) in enumerate(range(0.0,stop=1.0,length=levels))
         t = 1 + x*(n-1)
         a = colormap.colors[floor(Int, t)]
         b = colormap.colors[ceil(Int, t)]
@@ -83,13 +83,13 @@ function Base.write(colormap::RGBArrayMap, data, filename)
     colors = interpolate_RGBArrayMap(colormap)
     n = length(colors)
     if n <= 2^8
-        img = ImageMeta(IndirectArray([round(UInt8, v) for v in 1.+(n-1).*(data)], colors))
+        img = ImageMeta(IndirectArray([round(UInt8, (n-1)*v + 1) for v in data], colors))
         save(filename, img)
     elseif n <= 2^16
-        img = ImageMeta(IndirectArray([round(UInt16, v) for v in 1.+(n-1).*(data)], colors))
+        img = ImageMeta(IndirectArray([round(UInt16, (n-1)*v + 1) for v in data], colors))
         save(filename, img)
     elseif n <= 2^32
-        img = ImageMeta(IndirectArray([round(UInt32, v) for v in 1.+(n-1).*(data)], colors))
+        img = ImageMeta(IndirectArray([round(UInt32, (n-1)*v + 1) for v in data], colors))
         save(filename, img)
     else
         error("ColorMap has too many colors")

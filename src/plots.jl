@@ -5,6 +5,7 @@ export Plot, Histogram, Histogram2, BarChart, Linear, Linear3, Image, Patch2D, C
 using ..ColorMaps
 using Discretizers
 using StatsBase
+using Distributed
 
 const RealRange = Tuple{Real,Real}
 
@@ -20,10 +21,10 @@ mutable struct Linear <: Plot
     legendentry
     onlyMarks
     errorBars
-    Linear{T <: Real}(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing, errorBars=nothing) = new(data, mark, markSize, style, legendentry, onlyMarks, errorBars)
+    Linear(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing, errorBars=nothing) where {T <: Real} = new(data, mark, markSize, style, legendentry, onlyMarks, errorBars)
 end
-Linear{A<:Real, B<:Real}(x::AbstractVector{A}, y::AbstractVector{B}; kwargs...) = Linear(hcat(x, y)'; kwargs...)
-Linear{A<:Real}(data::AbstractVector{A}; kwargs...) = Linear(collect(1:length(data)), data; kwargs...)
+Linear(x::AbstractVector{A}, y::AbstractVector{B}; kwargs...) where {A<:Real, B<:Real} = Linear(hcat(x, y)'; kwargs...)
+Linear(data::AbstractVector{A}; kwargs...) where {A<:Real} = Linear(collect(1:length(data)), data; kwargs...)
 
 mutable struct Linear3 <: Plot
     data::AbstractMatrix{Real}
@@ -32,17 +33,17 @@ mutable struct Linear3 <: Plot
     style
     legendentry
     onlyMarks
-    Linear3{T<:Real}(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) = new(data, mark, markSize, style, legendentry, onlyMarks)
+    Linear3(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) where {T<:Real} = new(data, mark, markSize, style, legendentry, onlyMarks)
 end
-Linear3{A<:Real, B<:Real, C<:Real}(x::AbstractVector{A}, y::AbstractVector{B}, z::AbstractVector{C}; kwargs...) = Linear3(hcat(x, y, z)'; kwargs...)
+Linear3(x::AbstractVector{A}, y::AbstractVector{B}, z::AbstractVector{C}; kwargs...) where {A<:Real, B<:Real, C<:Real} = Linear3(hcat(x, y, z)'; kwargs...)
 
 const THRESHOLD_NSAMPLES_DISC_OURSELVES = 1000 # if we have more samples than this we discretize ourselves
-function _construct_histogram_linear_data{Q<:Real,R<:Real}(
+function _construct_histogram_linear_data(
     data::Vector{Q},
     binedges::Vector{R},
     density::Bool, # If true, the bar height will be based on the probability density - otherwise directly on counts
     cumulative::Bool, # A cumulative histogram uses the sum of all previous bins and the current one as final value.
-    )
+    ) where {Q<:Real,R<:Real}
 
     n = length(binedges)
     disc = LinearDiscretizer(binedges)
@@ -77,18 +78,18 @@ mutable struct BarChart <: Plot
     style
     legendentry
 
-    BarChart{R<:Real}(keys::AbstractVector, values::AbstractVector{R}; style=nothing, legendentry=nothing) = new(keys, values, style, legendentry)
+    BarChart(keys::AbstractVector, values::AbstractVector{R}; style=nothing, legendentry=nothing) where {R<:Real} = new(keys, values, style, legendentry)
 end
-function BarChart{R<:Real}(
+function BarChart(
     values::AbstractVector{R};
-    kwargs...)
+    kwargs...) where {R<:Real}
 
     keys = [string(i) for i in 1 : length(values)]
     return BarChart(keys, values; kwargs...)
 end
-function BarChart{S<:AbstractString}(
+function BarChart(
     values::AbstractVector{S};
-    kwargs...)
+    kwargs...) where {S<:AbstractString}
 
     dict = Dict{S,Int}()
     for v in values
@@ -104,9 +105,9 @@ function BarChart{S<:AbstractString}(
 
     return BarChart(keys, values; kwargs...)
 end
-function BarChart{N,D,V}( # {N,D,V<:N}
+function BarChart(
     values::AbstractVector{V},
-    disc::CategoricalDiscretizer{N,D}; kwargs...)
+    disc::CategoricalDiscretizer{N,D}; kwargs...) where {N,D,V}
 
     subkeys = collect(keys(disc.n2d))
     subvalues = encode(disc, values)
@@ -135,8 +136,8 @@ mutable struct Contour <: Plot
     labels
     Contour(data, xbins, ybins; style=nothing, contour_style=nothing, number=nothing, levels=nothing, labels=nothing) = new(data, xbins, ybins, style, contour_style, number, levels, labels)
     function Contour(f::Function, xrange::RealRange, yrange::RealRange; xbins=40, ybins=40, style=nothing, contour_style=nothing, number=nothing, levels=nothing, labels=nothing)
-        x = linspace(xrange[1], xrange[2], xbins)
-        y = linspace(yrange[1], yrange[2], ybins)
+        x = range(xrange[1], stop=xrange[2], length=xbins)
+        y = range(yrange[1], stop=yrange[2], length=ybins)
         A = zeros(xbins, ybins)
         try
             A = Float64[f(xi, yi) for xi in x, yi in y]
@@ -156,24 +157,24 @@ mutable struct Scatter <: Plot
     onlyMarks
     scatterClasses
 
-    function Scatter{T<:Any}(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, onlyMarks=true, legendentry=nothing, scatterClasses=nothing)
+    function Scatter(data::AbstractMatrix; mark=nothing, markSize=nothing, style=nothing, onlyMarks=true, legendentry=nothing, scatterClasses=nothing)
         new(data, mark, markSize, style, legendentry, onlyMarks, scatterClasses)
     end
 end
-Scatter{A<:Real, B<:Real}(x::AbstractVector{A}, y::AbstractVector{B}; kwargs...) = Scatter(hcat(x, y)'; kwargs...)
-Scatter{A<:Real, B<:Real, C<:Any}(x::AbstractVector{A}, y::AbstractVector{B}, f::AbstractVector{C}; kwargs...) = Scatter(permutedims(hcat(x, y, f), [2,1]); kwargs...)
-Scatter{A<:Real, B<:Real}(x::A, y::B; kwargs...) = Scatter(hcat(x, y)'; kwargs...)
-Scatter{A<:Real, B<:Real}(x::A, y::B, f; kwargs...) = Scatter(hcat(x, y, f)'; kwargs...)
+Scatter(x::AbstractVector{A}, y::AbstractVector{B}; kwargs...) where {A<:Real, B<:Real} = Scatter(hcat(x, y)'; kwargs...)
+Scatter(x::AbstractVector{A}, y::AbstractVector{B}, f::AbstractVector{C}; kwargs...) where {A<:Real, B<:Real, C<:Any} = Scatter(permutedims(hcat(x, y, f), [2,1]); kwargs...)
+Scatter(x::A, y::B; kwargs...) where {A<:Real, B<:Real} = Scatter(hcat(x, y)'; kwargs...)
+Scatter(x::A, y::B, f; kwargs...) where {A<:Real, B<:Real} = Scatter(hcat(x, y, f)'; kwargs...)
 
 mutable struct Quiver <: Plot
-    data::Matrix{Real}
+    data::AbstractMatrix{Real}
     style
     legendentry
-    Quiver{T<:Real}(data::Matrix{T}; style=nothing, legendentry=nothing) = new(data, style, legendentry)
+    Quiver(data::AbstractMatrix{T}; style=nothing, legendentry=nothing) where {T<:Real} = new(data, style, legendentry)
 end
 function Quiver(f::Function, xrange::RealRange, yrange::RealRange; style=nothing, legendentry=nothing, samples=15, normalize=true)
-    x = linspace(xrange[1], xrange[2], samples)
-    y = linspace(yrange[1], yrange[2], samples)
+    x = range(xrange[1], stop=xrange[2], length=samples)
+    y = range(yrange[1], stop=yrange[2], length=samples)
     (X, Y) = meshgrid(x, y)
     n = length(X)
     U = zeros(n)
@@ -189,7 +190,15 @@ function Quiver(f::Function, xrange::RealRange, yrange::RealRange; style=nothing
     end
     Quiver(X[:], Y[:], U, V, style=style, legendentry=legendentry)
 end
-Quiver{A<:Real,B<:Real,C<:Real,D<:Real}(x::Vector{A}, y::Vector{B}, u::Vector{C}, v::Vector{D}; kwargs...) = Quiver(hcat(x, y, u, v)'; kwargs...)
+function Quiver(
+    x::Vector{A},
+    y::Vector{B},
+    u::Vector{C},
+    v::Vector{D};
+    kwargs...
+    ) where {A<:Real,B<:Real,C<:Real,D<:Real}
+    return Quiver(hcat(x, y, u, v)'; kwargs...)
+end
 
 mutable struct Node <: Plot
     data
@@ -235,7 +244,18 @@ mutable struct Image <: Plot
     colorbar::Bool
     colormap::ColorMaps.ColorMap
     style
-    function Image{T <: Real}(A::Matrix{T}, xrange::RealRange, yrange::RealRange; filename=nothing, colorbar=true, colormap=ColorMaps.GrayMap(), zmin=nothing, zmax=nothing, style=nothing)
+    function Image(
+        A::AbstractMatrix{T},
+        xrange::RealRange,
+        yrange::RealRange;
+        filename=nothing,
+        colorbar=true,
+        colormap=ColorMaps.GrayMap(),
+        zmin=nothing,
+        zmax=nothing,
+        style=nothing,
+        ) where {T <: Real}
+
         global _imgid
         if filename == nothing
             id=myid()*10000000000000+_imgid
@@ -263,11 +283,11 @@ mutable struct Image <: Plot
         new(filename, xrange[1], xrange[2], yrange[1], yrange[2], zmin, zmax, colorbar, colormap, style)
     end
     function Image(f::Function, xrange::RealRange, yrange::RealRange; filename=nothing, colorbar=true, colormap=ColorMaps.GrayMap(), zmin=nothing, zmax=nothing, xbins=100, ybins=100, style=nothing)
-        x = linspace(xrange[1], xrange[2], xbins)
-        y = linspace(yrange[1], yrange[2], ybins)
+        x = range(xrange[1], stop=xrange[2], length=xbins)
+        y = range(yrange[1], stop=yrange[2], length=ybins)
         (X, Y) = meshgrid(x, y)
         A = map(f, X, Y)
-        A = flipdim(A, 1)
+        A = reverse(A, dims=1)
         Image(A, xrange, yrange, filename=filename, colorbar=colorbar, colormap=colormap, zmin=zmin, zmax=zmax, style=style)
     end
 end
@@ -282,25 +302,46 @@ mutable struct Patch2D <: Plots.Plot
     shader
     legendentry
 end
-Patch2D(data::Matrix; style="patch", patch_type=nothing, shader=nothing, legendentry=nothing) = Patch2D(data, style, patch_type, shader, legendentry)
+Patch2D(data::AbstractMatrix; style="patch", patch_type=nothing, shader=nothing, legendentry=nothing) = Patch2D(data, style, patch_type, shader, legendentry)
 
 
-function Histogram2{A<:Real, B<:Real}(x::Vector{A}, y::Vector{B}; xmin=minimum(x), xmax=maximum(x), ymin=minimum(y), ymax=maximum(y), xbins=50, ybins=50, density=false, filename=nothing, colorbar=true, colormap=ColorMaps.GrayMap(), zmin=nothing, zmax=nothing, style=nothing)
-    ex = linspace(xmin, xmax, xbins+1)
-    ey = linspace(ymin, ymax, ybins+1)
+function Histogram2(
+    x::Vector{A},
+    y::Vector{B};
+    xmin=minimum(x),
+    xmax=maximum(x),
+    ymin=minimum(y),
+    ymax=maximum(y),
+    xbins=50,
+    ybins=50,
+    density=false,
+    filename=nothing,
+    colorbar=true,
+    colormap=ColorMaps.GrayMap(),
+    zmin=nothing,
+    zmax=nothing,
+    style=nothing,
+    ) where {A<:Real, B<:Real}
+
+    ex = range(xmin, stop=xmax, length=xbins+1)
+    ey = range(ymin, stop=ymax, length=ybins+1)
     h = fit(StatsBase.Histogram, (y, x), (ey, ex), closed=:left)
     ex, ey, M = h.edges[1], h.edges[2], h.weights
-    M = flipdim(M, 1)
+    M = reverse(M, dims=1)
     if density
         scale =  xbins * ybins / ((xmax-xmin) * (ymax-ymin) * sum(M))
         M = M * scale
     end
     Image(M, (xmin, xmax), (ymin, ymax), filename=filename, colorbar=colorbar, colormap=colormap, zmin=zmin, zmax=zmax, style=style)
 end
-function Histogram2{A<:Real, B<:Real, C<:Real}(x::Vector{A}, y::Vector{B}, edges_x::AbstractVector{C}, edges_y::AbstractVector{C};
+function Histogram2(
+    x::Vector{A},
+    y::Vector{B},
+    edges_x::AbstractVector{C},
+    edges_y::AbstractVector{C};
     density=false,
     style=nothing,
-    )
+    ) where {A<:Real, B<:Real, C<:Real}
 
     h = fit(StatsBase.Histogram, (x, y), (edges_x, edges_y), closed=:left)
     ex, ey, M = h.edges[1], h.edges[2], h.weights
@@ -308,7 +349,7 @@ function Histogram2{A<:Real, B<:Real, C<:Real}(x::Vector{A}, y::Vector{B}, edges
     n = length(ey)-1
     scale =  m*n / ((ex[end]-ex[1]) * (ey[end]-ey[1]) * sum(M))
 
-    patchdata = Array{Float64}(3, 4*n*m)
+    patchdata = Array{Float64}(undef, 3, 4*n*m)
     patchidx = 0
     for i in 1 : m
         x₁, x₂ = ex[i], ex[i+1]
@@ -341,7 +382,7 @@ function Histogram2{A<:Real, B<:Real, C<:Real}(x::Vector{A}, y::Vector{B}, edges
         end
     end
 
-    if isa(style, Void)
+    if isa(style, Nothing)
         style = "patch"
     elseif isa(style, String)
         style = "patch" * (isempty(style) ? "" : (", "*style))
