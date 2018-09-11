@@ -122,8 +122,7 @@ end
 histogramMap = Dict(
     :bins => "bins",
     :density => "density",
-    :cumulative => "cumulative",
-    :style => ""
+    :cumulative => "cumulative"
     )
 
 linearMap = Dict(
