@@ -122,7 +122,8 @@ end
 histogramMap = Dict(
     :bins => "bins",
     :density => "density",
-    :cumulative => "cumulative"
+    :cumulative => "cumulative",
+    :style => ""
     )
 
 linearMap = Dict(
@@ -133,7 +134,7 @@ linearMap = Dict(
     )
 
 barMap = Dict(
-    :style => "",
+    :style => ""
     )
 
 scatterMap = Dict(
@@ -379,7 +380,7 @@ function plotHelper(o::IO, p::Plots.Histogram)
         linear = Plots._construct_histogram_linear_data(p.data, edges, p.density, p.cumulative)
         if p.style != "fill=blue!10"
             linear.style = p.style
-            if !contains(linear.style, "ybar interval")
+            if !occursin("ybar interval", linear.style)
                 linear.style = "ybar interval," * linear.style
             end
         end
