@@ -771,10 +771,8 @@ function save(filename::AbstractString, o::Plottable; include_preamble::Bool=tru
         cleanup(o)
     elseif ext == ".tex"
         save(TEX(filename, include_preamble=include_preamble), plot(o))
-        cleanup(o)
     elseif ext == ".tikz"
         save(TIKZ(filename), plot(o))
-        cleanup(o)
     elseif ext == "." || ext == ""
         error("You must specify a file extension.")
     else
