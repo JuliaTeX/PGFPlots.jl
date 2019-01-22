@@ -389,13 +389,16 @@ end
 
 function plotHelper(o::IO, p::BarChart)
     print(o, "\\addplot+ ")
-
-    optionHelper(o, barMap, p, brackets=true)
-    println(o, "coordinates {")
-    for (k,v) in zip(p.keys, p.values)
-        println(o, "($k, $v)")
+    if p.errorBars == nothing
+        optionHelper(o, barMap, p, brackets=true)
+        println(o, "coordinates {")
+        for (k,v) in zip(p.keys, p.values)
+            println(o, "($k, $v)")
+        end
+        println(o, "};")
+    else
+        plotHelperErrorBars(o, p)
     end
-    println(o, "};")
     plotLegend(o, p.legendentry)
 end
 function PGFPlots.Axis(p::BarChart; kwargs...)
@@ -431,13 +434,30 @@ function plotHelperErrorBars(o::IO, p::Linear)
     println(o, ", error bars/.cd, ")
     optionHelper(o, errorbarsMap, p.errorBars, otherText=["x dir=both", "x explicit", "y dir=both", "y explicit"])
     println(o, "]")
-    x = vcat(p.data, p.errorBars.data)
     println(o, "table [")
     println(o, "x error plus=ex+, x error minus=ex-, y error plus=ey+, y error minus=ey-")
     println(o, "] {")
     println(o, "x y ex+ ex- ey+ ey-")
+    x = vcat(p.data, p.errorBars.data)
     for i = 1:size(p.data, 2)
         println(o, "$(x[1,i]) $(x[2,i]) $(x[3,i]) $(x[4,i]) $(x[5,i]) $(x[6,i])")
+    end
+    println(o, "};")
+end
+# todo there is a lot of code redundancy
+function plotHelperErrorBars(o::IO, p::BarChart)
+    println(o, "[")
+    optionHelper(o, barMap, p, brackets=false)
+    println(o, ", error bars/.cd, ")
+    optionHelper(o, errorbarsMap, p.errorBars, otherText=["x dir=both", "x explicit", "y dir=both", "y explicit"])
+    println(o, "]")
+    println(o, "table [")
+    println(o, "x error plus=ex+, x error minus=ex-, y error plus=ey+, y error minus=ey-")
+    println(o, "] {")
+    println(o, "x y ex+ ex- ey+ ey-")
+    x = p.errorBars.data
+    for i = 1:length(p.values)
+        println(o, "$(p.keys[i]) $(p.values[i]) $(x[1,i]) $(x[2,i]) $(x[3,i]) $(x[4,i])")
     end
     println(o, "};")
 end
