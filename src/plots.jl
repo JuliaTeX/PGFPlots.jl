@@ -316,6 +316,7 @@ function Histogram2(
     xbins=50,
     ybins=50,
     density=false,
+    logscale=false,
     filename=nothing,
     colorbar=true,
     colormap=ColorMaps.GrayMap(),
@@ -332,6 +333,10 @@ function Histogram2(
     if density
         scale =  xbins * ybins / ((xmax-xmin) * (ymax-ymin) * sum(M))
         M = M * scale
+    end
+    if logscale 
+        M = M .+ 1
+        M = log.(M)
     end
     Image(M, (xmin, xmax), (ymin, ymax), filename=filename, colorbar=colorbar, colormap=colormap, zmin=zmin, zmax=zmax, style=style)
 end
