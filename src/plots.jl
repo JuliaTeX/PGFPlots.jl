@@ -243,6 +243,7 @@ mutable struct Image <: Plot
     zmin::Real
     zmax::Real
     colorbar::Bool
+    colorbarStyle::String
     colormap::ColorMaps.ColorMap
     style
     function Image(
@@ -251,6 +252,7 @@ mutable struct Image <: Plot
         yrange::RealRange;
         filename=nothing,
         colorbar=true,
+        colorbarStyle="{}",
         colormap=ColorMaps.GrayMap(),
         zmin=nothing,
         zmax=nothing,
@@ -281,15 +283,15 @@ mutable struct Image <: Plot
         else
             write(ColorMaps.RGBArrayMap(colormap), A, filename)
         end
-        new(filename, xrange[1], xrange[2], yrange[1], yrange[2], zmin, zmax, colorbar, colormap, style)
+        new(filename, xrange[1], xrange[2], yrange[1], yrange[2], zmin, zmax, colorbar, colorbarStyle, colormap, style)
     end
-    function Image(f::Function, xrange::RealRange, yrange::RealRange; filename=nothing, colorbar=true, colormap=ColorMaps.GrayMap(), zmin=nothing, zmax=nothing, xbins=100, ybins=100, style=nothing)
+    function Image(f::Function, xrange::RealRange, yrange::RealRange; filename=nothing, colorbar=true, colorbarStyle="{}", colormap=ColorMaps.GrayMap(), zmin=nothing, zmax=nothing, xbins=100, ybins=100, style=nothing)
         x = range(xrange[1], stop=xrange[2], length=xbins)
         y = range(yrange[1], stop=yrange[2], length=ybins)
         (X, Y) = meshgrid(x, y)
         A = map(f, X, Y)
         A = reverse(A, dims=1)
-        Image(A, xrange, yrange, filename=filename, colorbar=colorbar, colormap=colormap, zmin=zmin, zmax=zmax, style=style)
+        Image(A, xrange, yrange, filename=filename, colorbar=colorbar, colorbarStyle=colorbarStyle, colormap=colormap, zmin=zmin, zmax=zmax, style=style)
     end
 end
 
@@ -319,6 +321,7 @@ function Histogram2(
     zmode=nothing,
     filename=nothing,
     colorbar=true,
+    colorbarStyle="{}",
     colormap=ColorMaps.GrayMap(),
     zmin=nothing,
     zmax=nothing,
@@ -337,8 +340,9 @@ function Histogram2(
     if zmode == "log" 
         M = M .+ 1
         M = log10.(M)
+        return Image(M, (xmin, xmax), (ymin, ymax), filename=filename, colorbar=colorbar, colorbarStyle="log", colormap=colormap, zmin=zmin, zmax=zmax, style=style)
     end
-    Image(M, (xmin, xmax), (ymin, ymax), filename=filename, colorbar=colorbar, colormap=colormap, zmin=zmin, zmax=zmax, style=style)
+    Image(M, (xmin, xmax), (ymin, ymax), filename=filename, colorbar=colorbar, colorbarStyle=colorbarStyle, colormap=colormap, zmin=zmin, zmax=zmax, style=style)
 end
 function Histogram2(
     x::Vector{A},
