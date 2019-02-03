@@ -283,6 +283,10 @@ mutable struct Image <: Plot
         else
             write(ColorMaps.RGBArrayMap(colormap), A, filename)
         end
+        if colorbarStyle == "{ymode=log, scaled ticks = false}"
+            zmin = 10^zmin
+            zmax = 10^zmax
+        end
         new(filename, xrange[1], xrange[2], yrange[1], yrange[2], zmin, zmax, colorbar, colorbarStyle, colormap, style)
     end
     function Image(f::Function, xrange::RealRange, yrange::RealRange; filename=nothing, colorbar=true, colorbarStyle=nothing, colormap=ColorMaps.GrayMap(), zmin=nothing, zmax=nothing, xbins=100, ybins=100, style=nothing)
@@ -341,15 +345,17 @@ function Histogram2(
         if zmin == nothing
             if minimum(M) == 0
                 nonzeromin = minimum(M[findall(x->x!=0, M)])
-                replace!(Float64.(M), 0. =>nonzeromin/2)
+                M = replace!(Float64.(M), 0. =>nonzeromin/2)
+                M = log10.(M)
             end
         elseif zmin <= 0
             error("zmin must be > 0 for a valid log10 output")
         else
-            replace!(Float64.(M), 0., zmin)
+            M = replace!(Float64.(M), 0., zmin)
+            zmin = log10(zmin)
+            M = log10.(M)
         end
-        M = log10.(M)
-        return Image(M, (xmin, xmax), (ymin, ymax), filename=filename, colorbar=colorbar, colorbarStyle="yticklabel=\$10^{\\pgfmathprintnumber{\\tick}}\$", colormap=colormap, zmin=zmin, zmax=zmax, style=style)
+        return Image(M, (xmin, xmax), (ymin, ymax), filename=filename, colorbar=colorbar, colorbarStyle="{ymode=log, scaled ticks = false}", colormap=colormap, zmin=zmin, zmax=zmax, style=style)
     end
     Image(M, (xmin, xmax), (ymin, ymax), filename=filename, colorbar=colorbar, colorbarStyle=colorbarStyle, colormap=colormap, zmin=zmin, zmax=zmax, style=style)
 end
