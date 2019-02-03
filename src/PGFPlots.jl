@@ -773,7 +773,7 @@ function axisOptions(p::Image)
         if p.colorbarStyle == nothing
             return "enlargelimits = false, axis on top, $cmOpt, colorbar"
         else
-            return "enlargelimits = false, axis on top, $cmOpt, colorbar, colorbar style = {$(p.colorbarStyle)}" ## EDIT HERE
+            return "enlargelimits = false, axis on top, $cmOpt, colorbar, colorbar style = {$(p.colorbarStyle)}"
         end
     else
         return "enlargelimits = false, axis on top"
