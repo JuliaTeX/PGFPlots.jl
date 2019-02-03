@@ -341,12 +341,12 @@ function Histogram2(
         if zmin == nothing
             if minimum(M) == 0
                 nonzeromin = minimum(M[findall(x->x!=0, M)])
-                M = replace!(Float64.(M), 0. =>nonzeromin/2)
+                replace!(Float64.(M), 0. =>nonzeromin/2)
             end
         elseif zmin <= 0
             error("zmin must be > 0 for a valid log10 output")
         else
-            M = replace!(Float64.(M), 0., zmin)
+            replace!(Float64.(M), 0., zmin)
         end
         M = log10.(M)
         return Image(M, (xmin, xmax), (ymin, ymax), filename=filename, colorbar=colorbar, colorbarStyle="yticklabel=\$10^{\\pgfmathprintnumber{\\tick}}\$", colormap=colormap, zmin=zmin, zmax=zmax, style=style)
