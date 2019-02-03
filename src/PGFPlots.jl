@@ -770,10 +770,10 @@ end
 function axisOptions(p::Image)
     if p.colorbar
         cmOpt = colormapOptions(p.colormap)
-        if p.colorbarStyle == "log"
-            return "enlargelimits = false, axis on top, $cmOpt, colorbar, colorbar style = {}" ## EDIT HERE
-        else
+        if p.colorbarStyle == nothing
             return "enlargelimits = false, axis on top, $cmOpt, colorbar"
+        else
+            return "enlargelimits = false, axis on top, $cmOpt, colorbar, colorbar style = {$(p.colorbarStyle)}" ## EDIT HERE
         end
     else
         return "enlargelimits = false, axis on top"
