@@ -353,7 +353,7 @@ function Histogram2(
         elseif zmin <= 0
             error("zmin must be > 0 for a valid log10 output")
         else
-            M = replace!(Float64.(M), 0., zmin)
+            M = replace!(Float64.(M), 0. =>zmin)
             zmin = log10(zmin)
             M = log10.(M)
         end
