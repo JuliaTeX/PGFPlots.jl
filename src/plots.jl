@@ -242,7 +242,9 @@ mutable struct Image <: Plot
     ymax::Real
     zmin::Real
     zmax::Real
+    zmode
     colorbar::Bool
+    colorbarStyle
     colormap::ColorMaps.ColorMap
     style
     function Image(
@@ -251,9 +253,11 @@ mutable struct Image <: Plot
         yrange::RealRange;
         filename=nothing,
         colorbar=true,
+        colorbarStyle=nothing,
         colormap=ColorMaps.GrayMap(),
         zmin=nothing,
         zmax=nothing,
+        zmode=nothing,
         style=nothing,
         ) where {T <: Real}
 
@@ -281,15 +285,19 @@ mutable struct Image <: Plot
         else
             write(ColorMaps.RGBArrayMap(colormap), A, filename)
         end
-        new(filename, xrange[1], xrange[2], yrange[1], yrange[2], zmin, zmax, colorbar, colormap, style)
+        if zmode == "log"
+            zmin = 10^zmin
+            zmax = 10^zmax
+        end
+        new(filename, xrange[1], xrange[2], yrange[1], yrange[2], zmin, zmax, zmode, colorbar, colorbarStyle, colormap, style)
     end
-    function Image(f::Function, xrange::RealRange, yrange::RealRange; filename=nothing, colorbar=true, colormap=ColorMaps.GrayMap(), zmin=nothing, zmax=nothing, xbins=100, ybins=100, style=nothing)
+    function Image(f::Function, xrange::RealRange, yrange::RealRange; filename=nothing, colorbar=true, colorbarStyle=nothing, colormap=ColorMaps.GrayMap(), zmin=nothing, zmax=nothing, zmode=nothing, xbins=100, ybins=100, style=nothing)
         x = range(xrange[1], stop=xrange[2], length=xbins)
         y = range(yrange[1], stop=yrange[2], length=ybins)
         (X, Y) = meshgrid(x, y)
         A = map(f, X, Y)
         A = reverse(A, dims=1)
-        Image(A, xrange, yrange, filename=filename, colorbar=colorbar, colormap=colormap, zmin=zmin, zmax=zmax, style=style)
+        Image(A, xrange, yrange, filename=filename, colorbar=colorbar, colorbarStyle=colorbarStyle, colormap=colormap, zmin=zmin, zmax=zmax, zmode=zmode, style=style)
     end
 end
 
@@ -318,9 +326,11 @@ function Histogram2(
     density=false,
     filename=nothing,
     colorbar=true,
+    colorbarStyle=nothing,
     colormap=ColorMaps.GrayMap(),
     zmin=nothing,
     zmax=nothing,
+    zmode=nothing,
     style=nothing,
     ) where {A<:Real, B<:Real}
 
@@ -333,7 +343,23 @@ function Histogram2(
         scale =  xbins * ybins / ((xmax-xmin) * (ymax-ymin) * sum(M))
         M = M * scale
     end
-    Image(M, (xmin, xmax), (ymin, ymax), filename=filename, colorbar=colorbar, colormap=colormap, zmin=zmin, zmax=zmax, style=style)
+    if zmode == "log"
+        if zmin == nothing
+            if minimum(M) == 0
+                nonzeromin = minimum(M[findall(x->x!=0, M)])
+                M = replace!(Float64.(M), 0. =>nonzeromin/2)
+                M = log10.(M)
+            end
+        elseif zmin <= 0
+            error("zmin must be > 0 for a valid log10 output")
+        else
+            M = replace!(Float64.(M), 0. =>zmin)
+            zmin = log10(zmin)
+            M = log10.(M)
+        end
+        return Image(M, (xmin, xmax), (ymin, ymax), filename=filename, colorbar=colorbar, colorbarStyle="{ymode=log, scaled ticks = false}", colormap=colormap, zmin=zmin, zmax=zmax, zmode=zmode, style=style)
+    end
+    Image(M, (xmin, xmax), (ymin, ymax), filename=filename, colorbar=colorbar, colorbarStyle=colorbarStyle, colormap=colormap, zmin=zmin, zmax=zmax, zmode=zmode, style=style)
 end
 function Histogram2(
     x::Vector{A},

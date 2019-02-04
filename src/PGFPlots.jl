@@ -199,14 +199,15 @@ mutable struct Axis
     xmode
     ymode
     colorbar
+    colorbarStyle
     hideAxis
     axisLines
     axisKeyword
 
     Axis(plots::Vector{P};title=nothing, xlabel=nothing, xlabelStyle=nothing, ylabel=nothing, ylabelStyle=nothing, zlabel=nothing, zlabelStyle=nothing, xmin=nothing, xmax=nothing,
                     ymin=nothing, ymax=nothing, axisEqual=nothing, axisEqualImage=nothing, enlargelimits=nothing, axisOnTop=nothing, view=nothing, width=nothing,
-                    height=nothing, style=nothing, legendPos=nothing, legendStyle=nothing, xmode=nothing, ymode=nothing, colorbar=nothing, hideAxis=nothing, axisLines=nothing, axisKeyword="axis") where {P <: Plot} =
-        new(plots, title, xlabel, xlabelStyle, ylabel, ylabelStyle, zlabel, zlabelStyle, xmin, xmax, ymin, ymax, axisEqual, axisEqualImage, enlargelimits, axisOnTop, view, width, height, style, legendPos, legendStyle, xmode, ymode, colorbar, hideAxis, axisLines, axisKeyword
+                    height=nothing, style=nothing, legendPos=nothing, legendStyle=nothing, xmode=nothing, ymode=nothing, colorbar=nothing, colorbarStyle=nothing, hideAxis=nothing, axisLines=nothing, axisKeyword="axis") where {P <: Plot} =
+        new(plots, title, xlabel, xlabelStyle, ylabel, ylabelStyle, zlabel, zlabelStyle, xmin, xmax, ymin, ymax, axisEqual, axisEqualImage, enlargelimits, axisOnTop, view, width, height, style, legendPos, legendStyle, xmode, ymode, colorbar, colorbarStyle, hideAxis, axisLines, axisKeyword
             )
 
     Axis(;kwargs...) = Axis(Plot[]; kwargs...)
@@ -249,6 +250,7 @@ axisMap = Dict(
     :xmode => "xmode",
     :ymode => "ymode",
     :colorbar => "colorbar",
+    :colorbarStyle => "colorbar style",
     :hideAxis => "hide axis",
     :axisLines => "axis lines"
     )
@@ -768,7 +770,11 @@ end
 function axisOptions(p::Image)
     if p.colorbar
         cmOpt = colormapOptions(p.colormap)
-        return "enlargelimits = false, axis on top, $cmOpt, colorbar"
+        if p.colorbarStyle == nothing
+            return "enlargelimits = false, axis on top, $cmOpt, colorbar"
+        else
+            return "enlargelimits = false, axis on top, $cmOpt, colorbar, colorbar style = {$(p.colorbarStyle)}"
+        end
     else
         return "enlargelimits = false, axis on top"
     end
