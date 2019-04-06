@@ -21,4 +21,4 @@ TikzPictures = "37f6aa50-8035-52d0-81c2-5a1d08754b2d"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [targets]
-test = ["Test"]
+test = ["Random"]
