@@ -1,5 +1,6 @@
 module ColorMaps
 
+using ColorSchemes
 export ColorMap, GrayMap, Brew, RGBArrayMap, Distinguishable, SparseDistinguishable, write
 import Images: colorview, save, Gray, ImageMeta
 import Colors: RGB, distinguishable_colors, colormap
@@ -16,11 +17,14 @@ end
 mutable struct RGBArrayMap <: ColorMap
     colors::Vector{RGB{Float64}}
     interpolation_levels::UInt
-    function RGBArrayMap(colors; invert=false, interpolation_levels=0)
+    function RGBArrayMap(colors::AbstractVector{RGB{Float64}}; invert=false, interpolation_levels=0)
         if invert
-            colors = reverse(colors, dims=1)
+            colors = reverse(colors)
         end
         new(colors, interpolation_levels)
+    end
+    function RGBArrayMap(colors::ColorScheme; invert=false, interpolation_levels=0)
+        return RGBArrayMap(colors.colors, invert=invert, interpolation_levels=interpolation_levels)
     end
 end
 
