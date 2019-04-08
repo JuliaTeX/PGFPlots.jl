@@ -2,8 +2,6 @@ language: julia
 sudo: required
 dist: trusty
 julia:
-  - 0.7
-  - 1.0
   - 1.1
 matrix:
   allow_failures:
@@ -17,8 +15,11 @@ before_install:
   - sudo apt-get install -y texlive-binaries
   - sudo apt-get install -y texlive-pictures
   - sudo apt-get install -y texlive-latex-extra
-#script: # use the default script section which is equivalent to the following
-#  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-#  - julia --check-bounds=yes -e 'Pkg.clone(pwd()); Pkg.build("PGFPlots"); Pkg.test("PGFPlots"; coverage=true)'
+
+script:
+  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+  - julia --project --check-bounds=yes -e 'using UUIDs; write("Project.toml", replace(read("Project.toml", String), r"uuid = .*?\n" =>"uuid = \"$(uuid4())\"\n"));
+                                           import Pkg; Pkg.build(); Pkg.add("Test"); Pkg.test(; coverage=true)'
+
 after_success:
-  - julia -e 'cd(Pkg.dir("PGFPlots")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
+  - julia --project -e 'import Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
