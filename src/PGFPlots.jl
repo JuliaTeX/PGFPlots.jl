@@ -780,10 +780,23 @@ function axisOptions(p::Image)
     end
 end
 
+canPlot(p::Axis) = all(map(canPlot, p.plots))
+canPlot(axes::Axes) = all(map(canPlot, axes))
+canPlot(p::GroupPlot) = all(map(canPlot, p.axes))
+canPlot(p::Plot) = true
+canPlot(p::Circle) = true
+canPlot(p::Ellipse) = true
+canPlot(p::Command) = true
+canPlot(p::Image) = isfile(p.filename)
+canPlot(p::Contour) = true
+canPlot(p::TikzPicture) = true
+
 function Base.show(f::IO, a::MIME"image/svg+xml", p::Plottable)
-    r = Base.show(f, a, plot(p))
-    cleanup(p)
-    r
+    if canPlot(p)
+        r = Base.show(f, a, plot(p))
+        cleanup(p)
+        r
+    end
 end
 
 function save(filename::AbstractString, o::Plottable; include_preamble::Bool=true)
