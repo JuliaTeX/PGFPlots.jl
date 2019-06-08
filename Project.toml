@@ -1,7 +1,7 @@
 name = "PGFPlots"
 uuid = "3b7a836e-365b-5785-a47d-02c71176b4aa"
 repo = "https://github.com/JuliaTeX/PGFPlots.jl.git"
-version = "3.1.1"
+version = "3.1.2"
 
 [deps]
 ColorBrewer = "a2cac450-b92f-5266-8821-25eda20663c8"
