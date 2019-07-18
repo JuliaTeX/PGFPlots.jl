@@ -656,6 +656,17 @@ function plotHelper(o::IO, p::Patch2D)
     plotLegend(o, p.legendentry)
 end
 
+function plotHelper(o::IO, p::MatrixPlot)
+    if p.zmin == p.zmax
+        error("Your colorbar range limits must not be equal to each other.")
+    end
+    if p.style != nothing
+        println(o, "\\addplot [matrix plot* $(p.style), point meta=explicit, point meta min=$(p.zmin), point meta max=$(p.zmax), mesh/cols=$(p.xsize), mesh/rows=$(p.ysize)] table[meta=data] {$p.data};")
+    else
+        println(o, "\\addplot [matrix plot*, point meta=explicit, point meta min=$(p.zmin), point meta max=$(p.zmax), mesh/cols=$(p.xsize), mesh/rows=$(p.ysize)] table[meta=data] {$p.data};")
+    end
+end
+
 # plot option string and contents; no \begin{axis} or \nextgroupplot
 function plotHelper(o::IO, axis::Axis)
     optionHelper(o, axisMap, axis, brackets=true, otherText=[axisOptions(p) for p in axis.plots])
@@ -775,6 +786,19 @@ function colormapOptions(cm::ColorMaps.RGBArrayMap)
 end
 
 function axisOptions(p::Image)
+    if p.colorbar
+        cmOpt = colormapOptions(p.colormap)
+        if p.colorbarStyle == nothing
+            return "enlargelimits = false, axis on top, $cmOpt, colorbar"
+        else
+            return "enlargelimits = false, axis on top, $cmOpt, colorbar, colorbar style = {$(p.colorbarStyle)}"
+        end
+    else
+        return "enlargelimits = false, axis on top"
+    end
+end
+
+function axisOptions(p::MatrixPlot)
     if p.colorbar
         cmOpt = colormapOptions(p.colormap)
         if p.colorbarStyle == nothing
