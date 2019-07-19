@@ -6,6 +6,7 @@ using ..ColorMaps
 using Discretizers
 using StatsBase
 using Distributed
+using DelimitedFiles
 
 const RealRange = Tuple{Real,Real}
 
@@ -447,12 +448,13 @@ mutable struct MatrixPlot <: Plot
         style=nothing,
         ) where {T <: Real}
 		
-		global _imgid
+		global _imgid # Define temp dat file for matrix coordinates
         if filename == nothing
             id=myid()*10000000000000+_imgid
             filename = "tmp_$(id).dat"
             _imgid += 1
         end
+		# Set X, Y, and Z lims if not defined
 		(rows,cols) = size(A)
 		if xrange == nothing
 			xrange = (0,cols)
@@ -466,11 +468,19 @@ mutable struct MatrixPlot <: Plot
         if zmax == nothing
             zmax = maximum(A[.!isnan.(A)])
         end
-
         if zmin == zmax
             zmin -= 1.
             zmax += 1.
         end
+		# Format matrix into 3 column format and write to file
+		out = Array{Any}(undef,length(A)+1,3)
+		out[1,:] = ['x', 'y', "data"]
+		for i in 1:rows
+			for j in 1:cols
+				out[j+(i-1)*cols+1,:] = [j,i,A[i,j]]
+			end
+		end
+		writedlm(filename,out)
         #A = clamp.(A, zmin, zmax)
         #A = A .- zmin
         #A = A ./ (zmax - zmin)
