@@ -1,6 +1,6 @@
 module Plots
 
-export Plot, Histogram, Histogram2, BarChart, Linear, Linear3, Image, Patch2D, Contour, Scatter, Quiver, Node, Circle, Ellipse, Command
+export Plot, Histogram, Histogram2, BarChart, Linear, Linear3, Image, Patch2D, Contour, Scatter, Quiver, Node, Circle, Ellipse, Command, MatrixPlot
 
 using ..ColorMaps
 using Discretizers
@@ -416,6 +416,76 @@ function Histogram2(
     end
 
     Patch2D(patchdata, style=style, patch_type="rectangle")
+end
+
+mutable struct MatrixPlot <: Plot
+    filename::AbstractString
+    xmin::Real
+    xmax::Real
+    ymin::Real
+    ymax::Real
+    zmin::Real
+    zmax::Real
+	rows::Real
+	cols::Real
+    zmode
+    colorbar::Bool
+    colorbarStyle
+    colormap::ColorMaps.ColorMap
+    style
+    function MatrixPlot(
+        A::AbstractMatrix{T},
+        xrange::Union{Nothing,RealRange}=nothing,
+        yrange::Union{Nothing,RealRange}=nothing;
+        filename=nothing,
+        colorbar=true,
+        colorbarStyle=nothing,
+        colormap=ColorMaps.GrayMap(),
+        zmin=nothing,
+        zmax=nothing,
+        zmode=nothing,
+        style=nothing,
+        ) where {T <: Real}
+		
+		global _imgid
+        if filename == nothing
+            id=myid()*10000000000000+_imgid
+            filename = "tmp_$(id).dat"
+            _imgid += 1
+        end
+		(rows,cols) = size(A)
+		if xrange == nothing
+			xrange = (0,cols)
+		end		
+		if yrange == nothing
+			yrange = (0,rows)
+		end
+        if zmin == nothing
+            zmin = minimum(A[.!isnan.(A)])
+        end
+        if zmax == nothing
+            zmax = maximum(A[.!isnan.(A)])
+        end
+
+        if zmin == zmax
+            zmin -= 1.
+            zmax += 1.
+        end
+        #A = clamp.(A, zmin, zmax)
+        #A = A .- zmin
+        #A = A ./ (zmax - zmin)
+        # if isa(colormap, ColorMaps.ColorMap)
+            # write(colormap, A, filename)
+        # else
+            # write(ColorMaps.RGBArrayMap(colormap), A, filename)
+        # end
+		# x = range(xrange[1], stop=xrange[2], length=xbins)
+        # y = range(yrange[1], stop=yrange[2], length=ybins)
+        # (X, Y) = meshgrid(x, y)
+        # A = map(f, X, Y)
+        # A = reverse(A, dims=1)
+        new(filename, xrange[1], xrange[2], yrange[1], yrange[2], zmin, zmax,rows,cols, zmode, colorbar, colorbarStyle, colormap, style)
+    end
 end
 
 end # end plot module
