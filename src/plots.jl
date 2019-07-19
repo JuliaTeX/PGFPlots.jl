@@ -481,19 +481,6 @@ mutable struct MatrixPlot <: Plot
 			end
 		end
 		writedlm(filename,out)
-        #A = clamp.(A, zmin, zmax)
-        #A = A .- zmin
-        #A = A ./ (zmax - zmin)
-        # if isa(colormap, ColorMaps.ColorMap)
-            # write(colormap, A, filename)
-        # else
-            # write(ColorMaps.RGBArrayMap(colormap), A, filename)
-        # end
-		# x = range(xrange[1], stop=xrange[2], length=xbins)
-        # y = range(yrange[1], stop=yrange[2], length=ybins)
-        # (X, Y) = meshgrid(x, y)
-        # A = map(f, X, Y)
-        # A = reverse(A, dims=1)
         new(filename, xrange[1], xrange[2], yrange[1], yrange[2], zmin, zmax,rows,cols, zmode, colorbar, colorbarStyle, colormap, style)
     end
 end
