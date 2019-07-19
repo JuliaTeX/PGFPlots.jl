@@ -430,6 +430,7 @@ mutable struct MatrixPlot <: Plot
 	rows::Real
 	cols::Real
     zmode
+	raster
     colorbar::Bool
     colorbarStyle
     colormap::ColorMaps.ColorMap
@@ -445,6 +446,7 @@ mutable struct MatrixPlot <: Plot
         zmin=nothing,
         zmax=nothing,
         zmode=nothing,
+		raster=nothing,
         style=nothing,
         ) where {T <: Real}
 		
@@ -457,10 +459,10 @@ mutable struct MatrixPlot <: Plot
 		# Set X, Y, and Z lims if not defined
 		(rows,cols) = size(A)
 		if xrange == nothing
-			xrange = (0,cols)
+			xrange = (0.5,cols+0.5)
 		end		
 		if yrange == nothing
-			yrange = (0,rows)
+			yrange = (0.5,rows+0.5)
 		end
         if zmin == nothing
             zmin = minimum(A[.!isnan.(A)])
@@ -472,16 +474,30 @@ mutable struct MatrixPlot <: Plot
             zmin -= 1.
             zmax += 1.
         end
-		# Format matrix into 3 column format and write to file
-		out = Array{Any}(undef,length(A)+1,3)
-		out[1,:] = ['x', 'y', "data"]
-		for i in 1:rows
-			for j in 1:cols
-				out[j+(i-1)*cols+1,:] = [j,i,A[i,j]]
-			end
+		# Check for matrix being too large
+		if length(A) <= 1e4
+			raster = false
+		elseif raster == nothing
+			@warn "Matrix is too large for vector plotting, consider switching to raster mode."
+			raster = true			
 		end
-		writedlm(filename,out)
-        new(filename, xrange[1], xrange[2], yrange[1], yrange[2], zmin, zmax,rows,cols, zmode, colorbar, colorbarStyle, colormap, style)
+		
+		# Format matrix into 3 column format and write to file
+		if raster
+			#todo Generate rastered file
+			file, _ = splitext(filename)
+			filename = string(file,".png")
+		else
+			out = Array{Any}(undef,length(A)+1,3)
+			out[1,:] = ['x', 'y', "data"]
+			for i in 1:rows
+				for j in 1:cols
+					out[j+(i-1)*cols+1,:] = [j,i,A[i,j]]
+				end
+			end
+			writedlm(filename,out)	
+		end
+        new(filename, xrange[1], xrange[2], yrange[1], yrange[2], zmin, zmax,rows,cols, zmode, raster, colorbar, colorbarStyle, colormap, style)
     end
 end
 
