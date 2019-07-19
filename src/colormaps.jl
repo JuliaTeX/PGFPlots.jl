@@ -2,7 +2,7 @@ module ColorMaps
 
 using ColorSchemes
 export ColorMap, GrayMap, Brew, RGBArrayMap, Distinguishable, SparseDistinguishable, write
-import Images: colorview, save, Gray, ImageMeta
+import Images: colorview, save, Gray, ImageMeta, clamp01nan 
 import Colors: RGB, distinguishable_colors, colormap
 import ColorBrewer: palette
 import IndirectArrays: IndirectArray

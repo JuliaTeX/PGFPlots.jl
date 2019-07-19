@@ -459,10 +459,10 @@ mutable struct MatrixPlot <: Plot
 		
 		(rows,cols) = size(A)
 		if xrange == nothing
-			xrange = (0.5,cols+0.5)
-		end		
+			xrange = (1,cols)
+		end	
 		if yrange == nothing
-			yrange = (0.5,rows+0.5)
+			yrange = (1,rows)
 		end
         if zmin == nothing
             zmin = minimum(A[.!isnan.(A)])
@@ -495,10 +495,14 @@ mutable struct MatrixPlot <: Plot
 			end
 		else
 			out = Array{Any}(undef,length(A)+1,3)
+			x = range(xrange[1], stop=xrange[2], length=cols)
+			y = range(yrange[1], stop=yrange[2], length=rows)
+			x = x .- 0.5*step(x)
+			y = y .- 0.5*step(y)
 			out[1,:] = ['x', 'y', "data"]
 			for i in 1:rows
 				for j in 1:cols
-					out[j+(i-1)*cols+1,:] = [j,i,A[i,j]]
+					out[j+(i-1)*cols+1,:] = [x[j],y[i],A[i,j]]
 				end
 			end
 			writedlm(filename,out)	

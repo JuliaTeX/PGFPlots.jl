@@ -828,6 +828,7 @@ canPlot(p::Circle) = true
 canPlot(p::Ellipse) = true
 canPlot(p::Command) = true
 canPlot(p::Image) = isfile(p.filename)
+canPlot(p::MatrixPlot) = isfile(p.filename)
 canPlot(p::Contour) = true
 canPlot(p::TikzPicture) = true
 
