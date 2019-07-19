@@ -427,10 +427,10 @@ mutable struct MatrixPlot <: Plot
     ymax::Real
     zmin::Real
     zmax::Real
-	rows::Real
-	cols::Real
+    rows::Real
+    cols::Real
     zmode
-	raster
+    raster
     colorbar::Bool
     colorbarStyle
     colormap::ColorMaps.ColorMap
@@ -446,24 +446,24 @@ mutable struct MatrixPlot <: Plot
         zmin=nothing,
         zmax=nothing,
         zmode=nothing,
-		raster=nothing,
+        raster=nothing,
         style=nothing,
         ) where {T <: Real}
-		
-		global _imgid
+        
+        global _imgid
         if filename == nothing
             id=myid()*10000000000000+_imgid
             filename = "tmp_$(id).dat"
             _imgid += 1
         end
-		
-		(rows,cols) = size(A)
-		if xrange == nothing
-			xrange = (1,cols)
-		end	
-		if yrange == nothing
-			yrange = (1,rows)
-		end
+        
+        (rows,cols) = size(A)
+        if xrange == nothing
+            xrange = (1,cols)
+        end 
+        if yrange == nothing
+            yrange = (1,rows)
+        end
         if zmin == nothing
             zmin = minimum(A[.!isnan.(A)])
         end
@@ -471,42 +471,42 @@ mutable struct MatrixPlot <: Plot
             zmax = maximum(A[.!isnan.(A)])
         end
         if zmin == zmax
-            zmin -= 1.
-            zmax += 1.
+            zmin -= 1.0
+            zmax += 1.0
         end
 
-		if length(A) <= 1e4
-			raster = false
-		elseif raster == nothing
-			@warn "Matrix is too large for vector plotting, consider switching to raster mode."
-			raster = true			
-		end
-		
-		if raster
-			file, _ = splitext(filename)
-			filename = string(file,".png")
-			A = clamp.(A, zmin, zmax)
-			A = A .- zmin
-			A = A ./ (zmax - zmin)
-			if isa(colormap, ColorMaps.ColorMap)
-				write(colormap, A, filename)
-			else
-				write(ColorMaps.RGBArrayMap(colormap), A, filename)
-			end
-		else
-			out = Array{Any}(undef,length(A)+1,3)
-			x = range(xrange[1], stop=xrange[2], length=cols)
-			y = range(yrange[1], stop=yrange[2], length=rows)
-			x = x .- 0.5*step(x)
-			y = y .- 0.5*step(y)
-			out[1,:] = ['x', 'y', "data"]
-			for i in 1:rows
-				for j in 1:cols
-					out[j+(i-1)*cols+1,:] = [x[j],y[i],A[i,j]]
-				end
-			end
-			writedlm(filename,out)	
-		end
+        if length(A) <= 1e4
+            raster = false
+        elseif raster == nothing
+            @warn "Matrix is too large for vector plotting, consider switching to raster mode."
+            raster = true           
+        end
+        
+        if raster
+            file, _ = splitext(filename)
+            filename = string(file,".png")
+            A = clamp.(A, zmin, zmax)
+            A .-= zmin
+            A ./= (zmax - zmin)
+            if isa(colormap, ColorMaps.ColorMap)
+                write(colormap, A, filename)
+            else
+                write(ColorMaps.RGBArrayMap(colormap), A, filename)
+            end
+        else
+            out = Array{Any}(undef,length(A)+1,3)
+            x = range(xrange[1], stop=xrange[2], length=cols)
+            y = range(yrange[1], stop=yrange[2], length=rows)
+            x = x .- step(x)/2
+            y = y .- step(y)/2
+            out[1,:] = ['x', 'y', "data"]
+            for i in 1:rows
+                for j in 1:cols
+                    out[j+(i-1)*cols+1,:] = [x[j],y[i],A[i,j]]
+                end
+            end
+            writedlm(filename,out)  
+        end
         new(filename, xrange[1], xrange[2], yrange[1], yrange[2], zmin, zmax,rows,cols, zmode, raster, colorbar, colorbarStyle, colormap, style)
     end
 end

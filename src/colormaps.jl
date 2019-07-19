@@ -86,7 +86,7 @@ end
 function Base.write(colormap::RGBArrayMap, data, filename)
     colors = interpolate_RGBArrayMap(colormap)
     n = length(colors)
-	data = clamp01nan.(data)
+    data = clamp01nan.(data)
     if n <= 2^8
         img = ImageMeta(IndirectArray([round(UInt8, (n-1)*v + 1) for v in data], colors))
         save(filename, img)

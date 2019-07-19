@@ -657,22 +657,22 @@ function plotHelper(o::IO, p::Patch2D)
 end
 
 function plotHelper(o::IO, p::MatrixPlot)
-    if p.zmin == p.zmax
+    if p.zmin >= p.zmax
         error("Your colorbar range limits must not be equal to each other.")
     end
-	if p.raster
-		if p.style != nothing
-			println(o, "\\addplot [$(p.style), point meta min=$(p.zmin), point meta max=$(p.zmax)] graphics[xmin=$(p.xmin), xmax=$(p.xmax), ymin=$(p.ymin), ymax=$(p.ymax)] {$(p.filename)};")
-		else
-			println(o, "\\addplot [point meta min=$(p.zmin), point meta max=$(p.zmax)] graphics[xmin=$(p.xmin), xmax=$(p.xmax), ymin=$(p.ymin), ymax=$(p.ymax)]{$(p.filename)};")
-		end
-	else
-		if p.style != nothing
-			println(o, "\\addplot [matrix plot* $(p.style), point meta=explicit, point meta min=$(p.zmin), point meta max=$(p.zmax), mesh/cols=$(p.cols), mesh/rows=$(p.rows)] table[meta=data] {$(p.filename)};")
-		else
-			println(o, "\\addplot [matrix plot*, point meta=explicit, point meta min=$(p.zmin), point meta max=$(p.zmax), mesh/cols=$(p.cols), mesh/rows=$(p.rows)] table[meta=data] {$(p.filename)};")
-		end
-	end
+    if p.raster
+        if p.style != nothing
+            println(o, "\\addplot [$(p.style), point meta min=$(p.zmin), point meta max=$(p.zmax)] graphics[xmin=$(p.xmin), xmax=$(p.xmax), ymin=$(p.ymin), ymax=$(p.ymax)] {$(p.filename)};")
+        else
+            println(o, "\\addplot [point meta min=$(p.zmin), point meta max=$(p.zmax)] graphics[xmin=$(p.xmin), xmax=$(p.xmax), ymin=$(p.ymin), ymax=$(p.ymax)]{$(p.filename)};")
+        end
+    else
+        if p.style != nothing
+            println(o, "\\addplot [matrix plot* $(p.style), point meta=explicit, point meta min=$(p.zmin), point meta max=$(p.zmax), mesh/cols=$(p.cols), mesh/rows=$(p.rows)] table[meta=data] {$(p.filename)};")
+        else
+            println(o, "\\addplot [matrix plot*, point meta=explicit, point meta min=$(p.zmin), point meta max=$(p.zmax), mesh/cols=$(p.cols), mesh/rows=$(p.rows)] table[meta=data] {$(p.filename)};")
+        end
+    end
 end
 
 # plot option string and contents; no \begin{axis} or \nextgroupplot
@@ -810,11 +810,11 @@ end
 function axisOptions(p::MatrixPlot)
     if p.colorbar
         cmOpt = colormapOptions(p.colormap)
-        if p.colorbarStyle == nothing
-            return "enlargelimits = false, axis on top, $cmOpt, colorbar,xmin=$(p.xmin), xmax=$(p.xmax), ymin=$(p.ymin), ymax=$(p.ymax)"
-        else
-            return "enlargelimits = false, axis on top, $cmOpt, colorbar, colorbar,xmin=$(p.xmin), xmax=$(p.xmax), ymin=$(p.ymin), ymax=$(p.ymax), style = {$(p.colorbarStyle)}"
+        option_string = "enlargelimits = false, axis on top, $cmOpt, colorbar, xmin=$(p.xmin), xmax=$(p.xmax), ymin=$(p.ymin), ymax=$(p.ymax)"
+        if p.colorbarStyle != nothing
+            option_string *= ", style = {$(p.colorbarStyle)}"
         end
+        return option_string
     else
         return "enlargelimits = false, axis on top"
     end
