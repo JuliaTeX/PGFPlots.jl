@@ -450,13 +450,13 @@ mutable struct MatrixPlot <: Plot
         style=nothing,
         ) where {T <: Real}
 		
-		global _imgid # Define temp dat file for matrix coordinates
+		global _imgid
         if filename == nothing
             id=myid()*10000000000000+_imgid
             filename = "tmp_$(id).dat"
             _imgid += 1
         end
-		# Set X, Y, and Z lims if not defined
+		
 		(rows,cols) = size(A)
 		if xrange == nothing
 			xrange = (0.5,cols+0.5)
@@ -474,7 +474,7 @@ mutable struct MatrixPlot <: Plot
             zmin -= 1.
             zmax += 1.
         end
-		# Check for matrix being too large
+
 		if length(A) <= 1e4
 			raster = false
 		elseif raster == nothing
@@ -482,11 +482,17 @@ mutable struct MatrixPlot <: Plot
 			raster = true			
 		end
 		
-		# Format matrix into 3 column format and write to file
 		if raster
-			#todo Generate rastered file
 			file, _ = splitext(filename)
 			filename = string(file,".png")
+			A = clamp.(A, zmin, zmax)
+			A = A .- zmin
+			A = A ./ (zmax - zmin)
+			if isa(colormap, ColorMaps.ColorMap)
+				write(colormap, A, filename)
+			else
+				write(ColorMaps.RGBArrayMap(colormap), A, filename)
+			end
 		else
 			out = Array{Any}(undef,length(A)+1,3)
 			out[1,:] = ['x', 'y', "data"]

@@ -660,11 +660,19 @@ function plotHelper(o::IO, p::MatrixPlot)
     if p.zmin == p.zmax
         error("Your colorbar range limits must not be equal to each other.")
     end
-    if p.style != nothing
-        println(o, "\\addplot [matrix plot* $(p.style), point meta=explicit, point meta min=$(p.zmin), point meta max=$(p.zmax), mesh/cols=$(p.cols), mesh/rows=$(p.rows)] table[meta=data] {$(p.filename)};")
-    else
-        println(o, "\\addplot [matrix plot*, point meta=explicit, point meta min=$(p.zmin), point meta max=$(p.zmax), mesh/cols=$(p.cols), mesh/rows=$(p.rows)] table[meta=data] {$(p.filename)};")
-    end
+	if p.raster
+		if p.style != nothing
+			println(o, "\\addplot [$(p.style), point meta min=$(p.zmin), point meta max=$(p.zmax)] graphics[xmin=$(p.xmin), xmax=$(p.xmax), ymin=$(p.ymin), ymax=$(p.ymax)] {$(p.filename)};")
+		else
+			println(o, "\\addplot [point meta min=$(p.zmin), point meta max=$(p.zmax)] graphics[xmin=$(p.xmin), xmax=$(p.xmax), ymin=$(p.ymin), ymax=$(p.ymax)]{$(p.filename)};")
+		end
+	else
+		if p.style != nothing
+			println(o, "\\addplot [matrix plot* $(p.style), point meta=explicit, point meta min=$(p.zmin), point meta max=$(p.zmax), mesh/cols=$(p.cols), mesh/rows=$(p.rows)] table[meta=data] {$(p.filename)};")
+		else
+			println(o, "\\addplot [matrix plot*, point meta=explicit, point meta min=$(p.zmin), point meta max=$(p.zmax), mesh/cols=$(p.cols), mesh/rows=$(p.rows)] table[meta=data] {$(p.filename)};")
+		end
+	end
 end
 
 # plot option string and contents; no \begin{axis} or \nextgroupplot
