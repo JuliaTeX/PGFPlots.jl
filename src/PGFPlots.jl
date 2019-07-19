@@ -661,9 +661,9 @@ function plotHelper(o::IO, p::MatrixPlot)
         error("Your colorbar range limits must not be equal to each other.")
     end
     if p.style != nothing
-        println(o, "\\addplot [matrix plot* $(p.style), point meta=explicit, point meta min=$(p.zmin), point meta max=$(p.zmax), mesh/cols=$(p.xsize), mesh/rows=$(p.ysize)] table[meta=data] {$p.data};")
+        println(o, "\\addplot [matrix plot* $(p.style), point meta=explicit, point meta min=$(p.zmin), point meta max=$(p.zmax), mesh/cols=$(p.xsize), mesh/rows=$(p.ysize)] table[meta=data] {$p.filename};")
     else
-        println(o, "\\addplot [matrix plot*, point meta=explicit, point meta min=$(p.zmin), point meta max=$(p.zmax), mesh/cols=$(p.xsize), mesh/rows=$(p.ysize)] table[meta=data] {$p.data};")
+        println(o, "\\addplot [matrix plot*, point meta=explicit, point meta min=$(p.zmin), point meta max=$(p.zmax), mesh/cols=$(p.xsize), mesh/rows=$(p.ysize)] table[meta=data] {$p.filename};")
     end
 end
 
@@ -760,6 +760,7 @@ cleanup(p::Circle) = nothing
 cleanup(p::Ellipse) = nothing
 cleanup(p::Command) = nothing
 cleanup(p::Image) = rm(p.filename)
+cleanup(p::MatrixPlot) = rm(p.filename)
 cleanup(p::Contour) = nothing
 cleanup(p::TikzPicture) = nothing
 
@@ -802,9 +803,9 @@ function axisOptions(p::MatrixPlot)
     if p.colorbar
         cmOpt = colormapOptions(p.colormap)
         if p.colorbarStyle == nothing
-            return "enlargelimits = false, axis on top, $cmOpt, colorbar"
+            return "enlargelimits = false, axis on top, $cmOpt, colorbar,xmin=$(p.xmin), xmax=$(p.xmax), ymin=$(p.ymin), ymax=$(p.ymax)"
         else
-            return "enlargelimits = false, axis on top, $cmOpt, colorbar, colorbar style = {$(p.colorbarStyle)}"
+            return "enlargelimits = false, axis on top, $cmOpt, colorbar, colorbar,xmin=$(p.xmin), xmax=$(p.xmax), ymin=$(p.ymin), ymax=$(p.ymax), style = {$(p.colorbarStyle)}"
         end
     else
         return "enlargelimits = false, axis on top"
