@@ -656,6 +656,25 @@ function plotHelper(o::IO, p::Patch2D)
     plotLegend(o, p.legendentry)
 end
 
+function plotHelper(o::IO, p::MatrixPlot)
+    if p.zmin >= p.zmax
+        error("Your colorbar range limits must not be equal to each other.")
+    end
+    if p.raster
+        if p.style != nothing
+            println(o, "\\addplot [$(p.style), point meta min=$(p.zmin), point meta max=$(p.zmax)] graphics[xmin=$(p.xmin), xmax=$(p.xmax), ymin=$(p.ymin), ymax=$(p.ymax)] {$(p.filename)};")
+        else
+            println(o, "\\addplot [point meta min=$(p.zmin), point meta max=$(p.zmax)] graphics[xmin=$(p.xmin), xmax=$(p.xmax), ymin=$(p.ymin), ymax=$(p.ymax)]{$(p.filename)};")
+        end
+    else
+        if p.style != nothing
+            println(o, "\\addplot [matrix plot* $(p.style), point meta=explicit, point meta min=$(p.zmin), point meta max=$(p.zmax), mesh/cols=$(p.cols), mesh/rows=$(p.rows)] table[meta=data] {$(p.filename)};")
+        else
+            println(o, "\\addplot [matrix plot*, point meta=explicit, point meta min=$(p.zmin), point meta max=$(p.zmax), mesh/cols=$(p.cols), mesh/rows=$(p.rows)] table[meta=data] {$(p.filename)};")
+        end
+    end
+end
+
 # plot option string and contents; no \begin{axis} or \nextgroupplot
 function plotHelper(o::IO, axis::Axis)
     optionHelper(o, axisMap, axis, brackets=true, otherText=[axisOptions(p) for p in axis.plots])
@@ -749,6 +768,7 @@ cleanup(p::Circle) = nothing
 cleanup(p::Ellipse) = nothing
 cleanup(p::Command) = nothing
 cleanup(p::Image) = rm(p.filename)
+cleanup(p::MatrixPlot) = rm(p.filename)
 cleanup(p::Contour) = nothing
 cleanup(p::TikzPicture) = nothing
 
@@ -787,6 +807,19 @@ function axisOptions(p::Image)
     end
 end
 
+function axisOptions(p::MatrixPlot)
+    if p.colorbar
+        cmOpt = colormapOptions(p.colormap)
+        option_string = "enlargelimits = false, axis on top, $cmOpt, colorbar, xmin=$(p.xmin), xmax=$(p.xmax), ymin=$(p.ymin), ymax=$(p.ymax)"
+        if p.colorbarStyle != nothing
+            option_string *= ", style = {$(p.colorbarStyle)}"
+        end
+        return option_string
+    else
+        return "enlargelimits = false, axis on top"
+    end
+end
+
 canPlot(p::Axis) = all(map(canPlot, p.plots))
 canPlot(axes::Axes) = all(map(canPlot, axes))
 canPlot(p::GroupPlot) = all(map(canPlot, p.axes))
@@ -795,6 +828,7 @@ canPlot(p::Circle) = true
 canPlot(p::Ellipse) = true
 canPlot(p::Command) = true
 canPlot(p::Image) = isfile(p.filename)
+canPlot(p::MatrixPlot) = isfile(p.filename)
 canPlot(p::Contour) = true
 canPlot(p::TikzPicture) = true
 
