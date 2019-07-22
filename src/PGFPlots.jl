@@ -668,7 +668,7 @@ function plotHelper(o::IO, p::MatrixPlot)
         end
     else
         if p.style != nothing
-            println(o, "\\addplot [matrix plot* $(p.style), point meta=explicit, point meta min=$(p.zmin), point meta max=$(p.zmax), mesh/cols=$(p.cols), mesh/rows=$(p.rows)] table[meta=data] {$(p.filename)};")
+            println(o, "\\addplot [matrix plot*, $(p.style), point meta=explicit, point meta min=$(p.zmin), point meta max=$(p.zmax), mesh/cols=$(p.cols), mesh/rows=$(p.rows)] table[meta=data] {$(p.filename)};")
         else
             println(o, "\\addplot [matrix plot*, point meta=explicit, point meta min=$(p.zmin), point meta max=$(p.zmax), mesh/cols=$(p.cols), mesh/rows=$(p.rows)] table[meta=data] {$(p.filename)};")
         end
