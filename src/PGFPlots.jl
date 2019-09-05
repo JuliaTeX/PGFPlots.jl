@@ -1,7 +1,7 @@
 module PGFPlots
 
 export LaTeXString, @L_str, @L_mstr
-export plot, ErrorBars, Axis, Axes, PolarAxis, TernaryAxis, GroupPlot, Plots, ColorMaps, save, define_color
+export plot, ErrorBars, Axis, Axes, PolarAxis, SmithAxis, TernaryAxis, GroupPlot, Plots, ColorMaps, save, define_color
 export pushPGFPlotsOptions, popPGFPlotsOptions, resetPGFPlotsOptions, pgfplotsoptions
 export pushPGFPlotsPreamble, popPGFPlotsPreamble, resetPGFPlotsPreamble, pgfplotspreamble
 export pushPGFPlots, popPGFPlots
@@ -217,13 +217,28 @@ mutable struct Axis
     Axis(plots::Vector{Contour}; kwargs...) = Axis(Plot[plots...]; kwargs..., view="{0}{90}")
 end
 
-PolarAxis(args...; kwargs...) = Axis(args...; kwargs..., axisKeyword = "polaraxis")
+function PolarAxis(args...; kwargs...)
+    ternary_axis_string = "\\usepgfplotslibrary{polar}"
+    if ternary_axis_string ∉ _pgfplotspreamble
+        pushPGFPlotsPreamble(ternary_axis_string)
+    end
+    return Axis(args...; kwargs..., axisKeyword = "polaraxis")
+end
+
 function TernaryAxis(args...; kwargs...)
     ternary_axis_string = "\\usepgfplotslibrary{ternary}"
     if ternary_axis_string ∉ _pgfplotspreamble
         pushPGFPlotsPreamble(ternary_axis_string)
     end
     return Axis(args...; kwargs..., axisKeyword = "ternaryaxis")
+end
+
+function SmithAxis(args...; kwargs...)
+    ternary_axis_string = "\\usepgfplotslibrary{smithchart}"
+    if ternary_axis_string ∉ _pgfplotspreamble
+        pushPGFPlotsPreamble(ternary_axis_string)
+    end
+    return Axis(args...; kwargs..., axisKeyword = "smithchart")
 end
 
 const Axes = Vector{Axis}
@@ -484,6 +499,25 @@ function plotHelper(o::IO, p::Linear)
         plotHelperErrorBars(o, p)
     end
     plotLegend(o, p.legendentry)
+end
+
+function plotHelper(o::IO, p::SmithData)
+    print(o, "\\addplot+ ")
+    optionHelper(o, linearMap, p, brackets=true)
+    println(o, "coordinates {")
+    for item in p.data
+        print(o, "($(real(item)), $(imag(item))) ")
+    end
+    println(o, "};")
+    plotLegend(o, p.legendentry)
+end
+
+function plotHelper(o::IO, p::SmithCircle)
+    if p.style != nothing
+        println(o, "\\draw[$(p.style)] ($(p.xc), $(p.yc)) circle ($(p.radius)cm);")
+    else
+        println(o, "\\draw ($(p.xc), $(p.yc)) circle ($(p.radius)cm);")
+    end
 end
 
 function plotHelper(o::IO, p::Scatter)

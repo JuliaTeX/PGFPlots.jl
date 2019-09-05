@@ -1,6 +1,6 @@
 module Plots
 
-export Plot, Histogram, Histogram2, BarChart, Linear, Linear3, Image, Patch2D, Contour, Scatter, Quiver, Node, Circle, Ellipse, Command, MatrixPlot
+export Plot, Histogram, Histogram2, BarChart, Linear, Linear3, Image, Patch2D, Contour, Scatter, Quiver, Node, Circle, Ellipse, Command, MatrixPlot, SmithData, SmithCircle
 
 using ..ColorMaps
 using Discretizers
@@ -228,6 +228,27 @@ mutable struct Ellipse <: Plot
     Ellipse(xc=0,yc=0,xradius=1,yradius=1;style=nothing) = new(xc,yc,xradius,yradius,style)
 end
 
+mutable struct SmithData <: Plot
+    data::Array{T,1} where {T <: Complex}
+    mark
+    markSize
+    style
+    legendentry
+    onlyMarks
+end
+SmithData(data::Array{T,1}; mark=nothing,markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) where {T <: Complex} = SmithData(data, mark, markSize, style, legendentry, onlyMarks)
+SmithData(data::Array{T,2}; kwargs...) where {T <: Complex} = SmithData(vec(data); kwargs...)
+SmithData(data::Array{T,2}; kwargs...) where {T <: Real} = SmithData(vec(Complex(data)); kwargs...)
+SmithData(data::Array{T,1}; kwargs...) where {T <: Real} = SmithData(Complex(data); kwargs...)
+
+mutable struct SmithCircle <: Plot
+    xc
+    yc
+    radius
+    style
+    SmithCircle(xc=0,yc=0,radius=1;style=nothing) = new(xc,yc,radius,style)
+end
+
 mutable struct Command <: Plot
     cmd::AbstractString
     Command(cmd::AbstractString) = new(cmd)
@@ -449,18 +470,18 @@ mutable struct MatrixPlot <: Plot
         raster=nothing,
         style=nothing,
         ) where {T <: Real}
-        
+
         global _imgid
         if filename == nothing
             id=myid()*10000000000000+_imgid
             filename = "tmp_$(id).dat"
             _imgid += 1
         end
-        
+
         (rows,cols) = size(A)
         if xrange == nothing
             xrange = (1,cols)
-        end 
+        end
         if yrange == nothing
             yrange = (1,rows)
         end
@@ -479,9 +500,9 @@ mutable struct MatrixPlot <: Plot
             raster = false
         elseif raster == nothing
             @warn "Matrix is too large for vector plotting, consider switching to raster mode."
-            raster = true           
+            raster = true
         end
-        
+
         if raster
             file, _ = splitext(filename)
             filename = string(file,".png")
@@ -505,7 +526,7 @@ mutable struct MatrixPlot <: Plot
                     out[j+(i-1)*cols+1,:] = [x[j],y[i],A[i,j]]
                 end
             end
-            writedlm(filename,out)  
+            writedlm(filename,out)
         end
         new(filename, xrange[1], xrange[2], yrange[1], yrange[2], zmin, zmax,rows,cols, zmode, raster, colorbar, colorbarStyle, colormap, style)
     end
