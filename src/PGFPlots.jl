@@ -712,8 +712,11 @@ end
 # plot option string and contents; no \begin{axis} or \nextgroupplot
 function plotHelper(o::IO, axis::Axis)
     optionHelper(o, axisMap, axis, brackets=true, otherText=[axisOptions(p) for p in axis.plots])
-    for p in axis.plots
+    for (i,p) in enumerate(axis.plots)
         plotHelper(o, p)
+        println(o, "\\label{pgfplots:$(
+            p.legendentry === nothing ? string("p",i) : p.legendentry
+        )}")
     end
 end
 
