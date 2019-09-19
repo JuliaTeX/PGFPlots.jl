@@ -196,7 +196,7 @@ function Quiver(f::Function, xrange::RealRange, yrange::RealRange; samples=15, n
         U /= r
         V /= r
     end
-    Quiver(X[:], Y[:], U, V, kwargs...)
+    Quiver(X[:], Y[:], U, V; kwargs...)
 end
 function Quiver(
     x::Vector{A},
