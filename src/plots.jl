@@ -20,9 +20,10 @@ mutable struct Linear <: Plot
     markSize
     style
     legendentry
+    texlabel
     onlyMarks
     errorBars
-    Linear(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing, errorBars=nothing) where {T <: Real} = new(data, mark, markSize, style, legendentry, onlyMarks, errorBars)
+    Linear(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing, errorBars=nothing, texlabel=nothing) where {T <: Real} = new(data, mark, markSize, style, legendentry, texlabel, onlyMarks, errorBars)
 end
 Linear(x::AbstractVector{A}, y::AbstractVector{B}; kwargs...) where {A<:Real, B<:Real} = Linear(hcat(x, y)'; kwargs...)
 Linear(data::AbstractVector{A}; kwargs...) where {A<:Real} = Linear(collect(1:length(data)), data; kwargs...)
@@ -33,8 +34,9 @@ mutable struct Linear3 <: Plot
     markSize
     style
     legendentry
+    texlabel
     onlyMarks
-    Linear3(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) where {T<:Real} = new(data, mark, markSize, style, legendentry, onlyMarks)
+    Linear3(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, texlabel=nothing, onlyMarks=nothing) where {T<:Real} = new(data, mark, markSize, style, legendentry, texlabel, onlyMarks)
 end
 Linear3(x::AbstractVector{A}, y::AbstractVector{B}, z::AbstractVector{C}; kwargs...) where {A<:Real, B<:Real, C<:Real} = Linear3(hcat(x, y, z)'; kwargs...)
 
@@ -70,7 +72,8 @@ mutable struct Histogram <: Plot
     cumulative::Bool
     style::AbstractString
     discretization::Symbol
-    Histogram(data; bins=10, discretization=:default, density=false, cumulative=false, style="fill=blue!10") = new(data,bins,density,cumulative,style,discretization)
+    texlabel::Union{Nothing,String}
+    Histogram(data; bins=10, discretization=:default, density=false, cumulative=false, style="fill=blue!10",texlabel=nothing) = new(data,bins,density,cumulative,style,discretization,texlabel)
 end
 
 mutable struct BarChart <: Plot
@@ -78,9 +81,9 @@ mutable struct BarChart <: Plot
     values
     style
     legendentry
+    texlabel
     errorBars
-
-    BarChart(keys::AbstractVector, values::AbstractVector{R}; style=nothing, legendentry=nothing, errorBars=nothing) where {R<:Real} = new(keys, values, style, legendentry, errorBars)
+    BarChart(keys::AbstractVector, values::AbstractVector{R}; style=nothing, legendentry=nothing, texlabel=nothing, errorBars=nothing) where {R<:Real} = new(keys, values, style, legendentry, texlabel, errorBars)
 end
 function BarChart(
     values::AbstractVector{R};
@@ -136,8 +139,9 @@ mutable struct Contour <: Plot
     number
     levels
     labels
-    Contour(data, xbins, ybins; style=nothing, contour_style=nothing, number=nothing, levels=nothing, labels=nothing) = new(data, xbins, ybins, style, contour_style, number, levels, labels)
-    function Contour(f::Function, xrange::RealRange, yrange::RealRange; xbins=40, ybins=40, style=nothing, contour_style=nothing, number=nothing, levels=nothing, labels=nothing)
+    texlabel
+    Contour(data, xbins, ybins; style=nothing, contour_style=nothing, number=nothing, levels=nothing, labels=nothing, texlabel=nothing) = new(data, xbins, ybins, style, contour_style, number, levels, labels, texlabel)
+    function Contour(f::Function, xrange::RealRange, yrange::RealRange; xbins=40, ybins=40, style=nothing, contour_style=nothing, number=nothing, levels=nothing, labels=nothing, texlabel=nothing)
         x = range(xrange[1], stop=xrange[2], length=xbins)
         y = range(yrange[1], stop=yrange[2], length=ybins)
         A = zeros(xbins, ybins)
@@ -146,7 +150,7 @@ mutable struct Contour <: Plot
         catch
             A = Float64[f([xi,yi]) for xi in x, yi in y]
         end
-        new(A, x, y, style, contour_style, number, levels, labels)
+        new(A, x, y, style, contour_style, number, levels, labels, texlabel)
     end
 end
 
@@ -156,11 +160,12 @@ mutable struct Scatter <: Plot
     markSize
     style
     legendentry
+    texlabel
     onlyMarks
     scatterClasses
 
-    function Scatter(data::AbstractMatrix; mark=nothing, markSize=nothing, style=nothing, onlyMarks=true, legendentry=nothing, scatterClasses=nothing)
-        new(data, mark, markSize, style, legendentry, onlyMarks, scatterClasses)
+    function Scatter(data::AbstractMatrix; mark=nothing, markSize=nothing, style=nothing, onlyMarks=true, legendentry=nothing, texlabel=nothing, scatterClasses=nothing)
+        new(data, mark, markSize, style, legendentry, texlabel, onlyMarks, scatterClasses)
     end
 end
 Scatter(x::AbstractVector{A}, y::AbstractVector{B}; kwargs...) where {A<:Real, B<:Real} = Scatter(hcat(x, y)'; kwargs...)
@@ -172,9 +177,10 @@ mutable struct Quiver <: Plot
     data::AbstractMatrix{Real}
     style
     legendentry
-    Quiver(data::AbstractMatrix{T}; style=nothing, legendentry=nothing) where {T<:Real} = new(data, style, legendentry)
+    texlabel
+    Quiver(data::AbstractMatrix{T}; style=nothing, legendentry=nothing, texlabel=nothing) where {T<:Real} = new(data, style, legendentry, texlabel)
 end
-function Quiver(f::Function, xrange::RealRange, yrange::RealRange; style=nothing, legendentry=nothing, samples=15, normalize=true)
+function Quiver(f::Function, xrange::RealRange, yrange::RealRange; samples=15, normalize=true, kwargs...)
     x = range(xrange[1], stop=xrange[2], length=samples)
     y = range(yrange[1], stop=yrange[2], length=samples)
     (X, Y) = meshgrid(x, y)
@@ -190,7 +196,7 @@ function Quiver(f::Function, xrange::RealRange, yrange::RealRange; style=nothing
         U /= r
         V /= r
     end
-    Quiver(X[:], Y[:], U, V, style=style, legendentry=legendentry)
+    Quiver(X[:], Y[:], U, V, kwargs...)
 end
 function Quiver(
     x::Vector{A},
@@ -208,7 +214,8 @@ mutable struct Node <: Plot
     x
     y
     axis # `nothing` will default to "axis cs", other options include "axis description cs", "xticklabel cs", etc.
-    Node(data, x, y; style=nothing, axis=nothing) = new(data, style, x, y, axis)
+    texlabel
+    Node(data, x, y; style=nothing, axis=nothing, texlabel=nothing) = new(data, style, x, y, axis, texlabel)
 end
 
 mutable struct Circle <: Plot
@@ -216,7 +223,8 @@ mutable struct Circle <: Plot
     yc
     radius
     style
-    Circle(xc=0,yc=0,radius=1;style=nothing) = new(xc,yc,radius,style)
+    texlabel
+    Circle(xc=0,yc=0,radius=1;style=nothing,texlabel=nothing) = new(xc,yc,radius,style,texlabel)
 end
 
 mutable struct Ellipse <: Plot
@@ -225,7 +233,8 @@ mutable struct Ellipse <: Plot
     xradius
     yradius
     style
-    Ellipse(xc=0,yc=0,xradius=1,yradius=1;style=nothing) = new(xc,yc,xradius,yradius,style)
+    texlabel
+    Ellipse(xc=0,yc=0,xradius=1,yradius=1;style=nothing,texlabel=nothing) = new(xc,yc,xradius,yradius,style,texlabel)
 end
 
 mutable struct SmithData <: Plot
@@ -234,9 +243,10 @@ mutable struct SmithData <: Plot
     markSize
     style
     legendentry
+    texlabel
     onlyMarks
 end
-SmithData(data::Array{T,1}; mark=nothing,markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing) where {T <: Complex} = SmithData(data, mark, markSize, style, legendentry, onlyMarks)
+SmithData(data::Array{T,1}; mark=nothing,markSize=nothing, style=nothing, legendentry=nothing, texlabel=nothing, onlyMarks=nothing) where {T <: Complex} = SmithData(data, mark, markSize, style, legendentry, texlabel, onlyMarks)
 SmithData(data::Array{T,2}; kwargs...) where {T <: Complex} = SmithData(vec(data); kwargs...)
 SmithData(data::Array{T,2}; kwargs...) where {T <: Real} = SmithData(vec(Complex(data)); kwargs...)
 SmithData(data::Array{T,1}; kwargs...) where {T <: Real} = SmithData(Complex(data); kwargs...)
@@ -246,7 +256,8 @@ mutable struct SmithCircle <: Plot
     yc
     radius
     style
-    SmithCircle(xc=0,yc=0,radius=1;style=nothing) = new(xc,yc,radius,style)
+    texlabel
+    SmithCircle(xc=0,yc=0,radius=1;style=nothing,texlabel=nothing) = new(xc,yc,radius,style,texlabel)
 end
 
 mutable struct Command <: Plot
@@ -269,6 +280,7 @@ mutable struct Image <: Plot
     colorbarStyle
     colormap::ColorMaps.ColorMap
     style
+    texlabel
     function Image(
         A::AbstractMatrix{T},
         xrange::RealRange,
@@ -281,6 +293,7 @@ mutable struct Image <: Plot
         zmax=nothing,
         zmode=nothing,
         style=nothing,
+        texlabel=nothing,
         ) where {T <: Real}
 
         global _imgid
@@ -311,15 +324,15 @@ mutable struct Image <: Plot
             zmin = 10^zmin
             zmax = 10^zmax
         end
-        new(filename, xrange[1], xrange[2], yrange[1], yrange[2], zmin, zmax, zmode, colorbar, colorbarStyle, colormap, style)
+        new(filename, xrange[1], xrange[2], yrange[1], yrange[2], zmin, zmax, zmode, colorbar, colorbarStyle, colormap, style, texlabel)
     end
-    function Image(f::Function, xrange::RealRange, yrange::RealRange; filename=nothing, colorbar=true, colorbarStyle=nothing, colormap=ColorMaps.GrayMap(), zmin=nothing, zmax=nothing, zmode=nothing, xbins=100, ybins=100, style=nothing)
+    function Image(f::Function, xrange::RealRange, yrange::RealRange; filename=nothing, colorbar=true, colorbarStyle=nothing, colormap=ColorMaps.GrayMap(), zmin=nothing, zmax=nothing, zmode=nothing, xbins=100, ybins=100, style=nothing, texlabel=nothing)
         x = range(xrange[1], stop=xrange[2], length=xbins)
         y = range(yrange[1], stop=yrange[2], length=ybins)
         (X, Y) = meshgrid(x, y)
         A = map(f, X, Y)
         A = reverse(A, dims=1)
-        Image(A, xrange, yrange, filename=filename, colorbar=colorbar, colorbarStyle=colorbarStyle, colormap=colormap, zmin=zmin, zmax=zmax, zmode=zmode, style=style)
+        Image(A, xrange, yrange, filename=filename, colorbar=colorbar, colorbarStyle=colorbarStyle, colormap=colormap, zmin=zmin, zmax=zmax, zmode=zmode, style=style, texlabel=texlabel)
     end
 end
 
@@ -332,8 +345,9 @@ mutable struct Patch2D <: Plots.Plot
     patch_type
     shader
     legendentry
+    texlabel
 end
-Patch2D(data::AbstractMatrix; style="patch", patch_type=nothing, shader=nothing, legendentry=nothing) = Patch2D(data, style, patch_type, shader, legendentry)
+Patch2D(data::AbstractMatrix; style="patch", patch_type=nothing, shader=nothing, legendentry=nothing, texlabel=nothing) = Patch2D(data, style, patch_type, shader, legendentry, texlabel)
 
 
 function Histogram2(
@@ -456,6 +470,7 @@ mutable struct MatrixPlot <: Plot
     colorbarStyle
     colormap::ColorMaps.ColorMap
     style
+    texlabel
     function MatrixPlot(
         A::AbstractMatrix{T},
         xrange::Union{Nothing,RealRange}=nothing,
@@ -469,6 +484,7 @@ mutable struct MatrixPlot <: Plot
         zmode=nothing,
         raster=nothing,
         style=nothing,
+        texlabel=nothing,
         ) where {T <: Real}
 
         global _imgid
@@ -528,7 +544,7 @@ mutable struct MatrixPlot <: Plot
             end
             writedlm(filename,out)
         end
-        new(filename, xrange[1], xrange[2], yrange[1], yrange[2], zmin, zmax,rows,cols, zmode, raster, colorbar, colorbarStyle, colormap, style)
+        new(filename, xrange[1], xrange[2], yrange[1], yrange[2], zmin, zmax,rows,cols, zmode, raster, colorbar, colorbarStyle, colormap, style, texlabel)
     end
 end
 
