@@ -22,8 +22,7 @@ mutable struct Linear <: Plot
     legendentry
     onlyMarks
     errorBars
-    closedCycle
-    Linear(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing, errorBars=nothing, closedCycle=false) where {T <: Real} = new(data, mark, markSize, style, legendentry, onlyMarks, errorBars, closedCycle)
+    Linear(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing, errorBars=nothing) where {T <: Real} = new(data, mark, markSize, style, legendentry, onlyMarks, errorBars)
 end
 Linear(x::AbstractVector{A}, y::AbstractVector{B}; kwargs...) where {A<:Real, B<:Real} = Linear(hcat(x, y)'; kwargs...)
 Linear(data::AbstractVector{A}; kwargs...) where {A<:Real} = Linear(collect(1:length(data)), data; kwargs...)
