@@ -466,7 +466,11 @@ function plotHelperErrorBars(o::IO, p::Linear)
     for i = 1:size(p.data, 2)
         println(o, "$(x[1,i]) $(x[2,i]) $(x[3,i]) $(x[4,i]) $(x[5,i]) $(x[6,i])")
     end
-    println(o, "};")
+    if p.closedCycle
+        println(o, "} \\closedcycle;")
+    else
+        println(o, "};")
+    end
 end
 # todo there is a lot of code redundancy
 function plotHelperErrorBars(o::IO, p::BarChart)
@@ -494,7 +498,11 @@ function plotHelper(o::IO, p::Linear)
         for i in 1:size(p.data,2)
             println(o, "($(p.data[1,i]), $(p.data[2,i]))")
         end
-        println(o, "};")
+        if p.closedCycle
+            println(o, "} \\closedcycle;")
+        else
+            println(o, "};")
+        end
     else
         plotHelperErrorBars(o, p)
     end
@@ -783,9 +791,9 @@ function plot(
     return plot(Linear3(x, y, z; kwargs...))
 end
 
-function Plots.Linear(f::Function, arg_range::RealRange; xbins=100, mark="none", style=nothing, legendentry=nothing)
+function Plots.Linear(f::Function, arg_range::RealRange; xbins=100, mark="none", kwargs...)
     x = range(arg_range[1], stop=arg_range[2], length=xbins)
-    Linear(x, map(f, x), mark=mark, style=style, legendentry=legendentry)
+    Linear(x, map(f, x); mark=mark, kwargs...)
 end
 
 plot(f::Function, arg_range::RealRange; kwargs...) = plot(Linear(f, arg_range; kwargs...))
