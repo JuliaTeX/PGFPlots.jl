@@ -23,7 +23,8 @@ mutable struct Linear <: Plot
     texlabel
     onlyMarks
     errorBars
-    Linear(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing, errorBars=nothing, texlabel=nothing) where {T <: Real} = new(data, mark, markSize, style, legendentry, texlabel, onlyMarks, errorBars)
+    closedCycle
+    Linear(data::AbstractMatrix{T}; mark=nothing, markSize=nothing, style=nothing, legendentry=nothing, onlyMarks=nothing, errorBars=nothing, closedCycle=false, texlabel=nothing) where {T <: Real} = new(data, mark, markSize, style, legendentry, texlabel, onlyMarks, errorBars, closedCycle)
 end
 Linear(x::AbstractVector{A}, y::AbstractVector{B}; kwargs...) where {A<:Real, B<:Real} = Linear(hcat(x, y)'; kwargs...)
 Linear(data::AbstractVector{A}; kwargs...) where {A<:Real} = Linear(collect(1:length(data)), data; kwargs...)
@@ -496,10 +497,10 @@ mutable struct MatrixPlot <: Plot
 
         (rows,cols) = size(A)
         if xrange == nothing
-            xrange = (1,cols)
+            xrange = (0.5,cols+0.5)
         end
         if yrange == nothing
-            yrange = (1,rows)
+            yrange = (0.5,rows+0.5)
         end
         if zmin == nothing
             zmin = minimum(A[.!isnan.(A)])
@@ -532,10 +533,10 @@ mutable struct MatrixPlot <: Plot
             end
         else
             out = Array{Any}(undef,length(A)+1,3)
-            x = range(xrange[1], stop=xrange[2], length=cols)
-            y = range(yrange[1], stop=yrange[2], length=rows)
-            x = x .- step(x)/2
-            y = y .- step(y)/2
+            xlength = (xrange[2] - xrange[1]) / cols
+            ylength = (yrange[2] - yrange[1]) / rows
+            x = range(xrange[1]+xlength/2, stop=xrange[2]-xlength/2, length=cols)
+            y = range(yrange[1]+ylength/2, stop=yrange[2]-ylength/2, length=rows)
             out[1,:] = ['x', 'y', "data"]
             for i in 1:rows
                 for j in 1:cols
