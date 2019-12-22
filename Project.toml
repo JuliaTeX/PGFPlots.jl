@@ -1,7 +1,7 @@
 name = "PGFPlots"
 uuid = "3b7a836e-365b-5785-a47d-02c71176b4aa"
 repo = "https://github.com/JuliaTeX/PGFPlots.jl.git"
-version = "3.1.4"
+version = "3.2.0"
 
 [deps]
 ColorBrewer = "a2cac450-b92f-5266-8821-25eda20663c8"
@@ -19,9 +19,14 @@ Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 TikzPictures = "37f6aa50-8035-52d0-81c2-5a1d08754b2d"
 
+[compat]
+ImageMagick = "0.7.3, 1"
+julia = "1"
+
 [extras]
 NBInclude = "0db19996-df87-5ea3-a455-e3a50d440464"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["NBInclude", "Random"]
+test = ["NBInclude", "Random", "Test"]
