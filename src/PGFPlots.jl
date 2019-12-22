@@ -722,8 +722,11 @@ function plotHelper(o::IO, axis::Axis)
     optionHelper(o, axisMap, axis, brackets=true, otherText=[axisOptions(p) for p in axis.plots])
     for p in axis.plots
         plotHelper(o, p)
-        if p.texlabel !== nothing
-            println(o, "\\label{pgfplots:$(p.texlabel)}")
+        try
+            if p.texlabel !== nothing
+                println(o, "\\label{$(p.texlabel)}")
+            end
+        catch
         end
     end
 end
