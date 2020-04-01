@@ -6,9 +6,6 @@ julia:
   - 1.0
   - 1.3
   - 1.4
-matrix:
-  allow_failures:
-    # - julia: nightly
 notifications:
   email: false
 before_install:
@@ -18,8 +15,3 @@ before_install:
   - sudo apt-get install -y texlive-binaries
   - sudo apt-get install -y texlive-pictures
   - sudo apt-get install -y texlive-latex-extra
-
-script:
-  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-  - julia --project --check-bounds=yes -e 'using UUIDs; write("Project.toml", replace(read("Project.toml", String), r"uuid = .*?\n" =>"uuid = \"$(uuid4())\"\n"));
-                                           import Pkg; Pkg.build(); Pkg.add("Test"); Pkg.test(; coverage=true)'
