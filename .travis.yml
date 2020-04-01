@@ -1,11 +1,11 @@
 language: julia
 sudo: required
 dist: trusty
+coveralls: true
 julia:
-  - 1.1
-  - 1.2
+  - 1.0
   - 1.3
-  - nightly
+  - 1.4
 matrix:
   allow_failures:
     # - julia: nightly
@@ -23,6 +23,3 @@ script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
   - julia --project --check-bounds=yes -e 'using UUIDs; write("Project.toml", replace(read("Project.toml", String), r"uuid = .*?\n" =>"uuid = \"$(uuid4())\"\n"));
                                            import Pkg; Pkg.build(); Pkg.add("Test"); Pkg.test(; coverage=true)'
-
-after_success:
-  - julia --project -e 'import Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
