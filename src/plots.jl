@@ -42,6 +42,7 @@ end
 Linear3(x::AbstractVector{A}, y::AbstractVector{B}, z::AbstractVector{C}; kwargs...) where {A<:Real, B<:Real, C<:Real} = Linear3(hcat(x, y, z)'; kwargs...)
 
 const THRESHOLD_NSAMPLES_DISC_OURSELVES = 1000 # if we have more samples than this we discretize ourselves
+
 function _construct_histogram_linear_data(
     data::Vector{Q},
     binedges::Vector{R},
