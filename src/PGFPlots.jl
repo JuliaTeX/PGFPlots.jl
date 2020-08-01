@@ -322,7 +322,17 @@ function printList(o::IO, a::AbstractVector; brackets=false)
     end
 end
 
-printObject(o::IO, object) = print(o, "$(object)")
+function printObject(o::IO, object)
+    string_object = string(object)
+    if length(string_object) > 0
+        print(o, "\n  ")
+    end
+    print(o, join(map(strip, split(string_object, ",")), ",\n  "))
+    if length(string_object) > 0
+        println(o, "")
+    end
+end
+
 printObject(o::IO, object::AbstractVector) = printList(o, object, brackets=true)
 
 function optionHelper(o::IO, m, object; brackets=false, otherOptions=Dict{AbstractString,AbstractString}[], otherText=nothing)
@@ -332,15 +342,15 @@ function optionHelper(o::IO, m, object; brackets=false, otherOptions=Dict{Abstra
             if first
                 first = false
                 if brackets
-                    print(o, "[")
+                    print(o, "[\n  ")
                 end
             else
-                print(o, ", ")
+                print(o, ",\n  ")
             end
             if length(str) > 0
                 print(o, "$str = {")
             end
-            printObject(o, getfield(object,sym))
+            print(o, join(map(strip, split(string(getfield(object,sym)), ",")), ",\n  "))
             if length(str) > 0
                 print(o, "}")
             end
@@ -350,12 +360,12 @@ function optionHelper(o::IO, m, object; brackets=false, otherOptions=Dict{Abstra
         if first
             first = false
             if brackets
-                print(o, "[")
+                println(o, "[")
             end
         else
-            print(o, ", ")
+            println(o, ",")
         end
-        print(o, "$k = $v")
+        print(o, "  $k = $v")
     end
     if otherText != nothing
         for t in otherText
@@ -363,17 +373,17 @@ function optionHelper(o::IO, m, object; brackets=false, otherOptions=Dict{Abstra
                 if first
                     first = false
                     if brackets
-                        print(o, "[")
+                        println(o, "[")
                     end
                 else
-                    print(o, ", ")
+                    println(o, ",")
                 end
-                print(o, "$t")
+                print(o, "  $t")
             end
         end
     end
     if !first && brackets
-        print(o, "]")
+        println(o, "\n]")
     end
 end
 
@@ -491,12 +501,12 @@ function plotHelperErrorBars(o::IO, p::BarChart)
 end
 
 function plotHelper(o::IO, p::Linear)
-    print(o, "\\addplot+ ")
+    print(o, "\n\\addplot+ ")
     if p.errorBars == nothing
         optionHelper(o, linearMap, p, brackets=true)
         println(o, "coordinates {")
         for i in 1:size(p.data,2)
-            println(o, "($(p.data[1,i]), $(p.data[2,i]))")
+            println(o, "  ($(p.data[1,i]), $(p.data[2,i]))")
         end
         if p.closedCycle
             println(o, "} \\closedcycle;")
@@ -650,9 +660,7 @@ function plotHelper(o::IO, p::Ellipse)
     end
 end
 
-function plotHelper(o::IO, p::Command)
-    println(o, p.cmd*";") #PGFPlots expects commands to be terminated with a ;
-end
+plotHelper(o::IO, p::Command) = println(o, "\n" * p.cmd * ";")
 
 function plotHelper(o::IO, p::Image)
     if p.zmin == p.zmax
@@ -735,7 +743,7 @@ function plot(axis::Axis)
     o = IOBuffer()
     print(o, "\\begin{$(axis.axisKeyword)}")
     plotHelper(o, axis)
-    println(o, "\\end{$(axis.axisKeyword)}")
+    print(o, "\n\\end{$(axis.axisKeyword)}")
     TikzPicture(String(take!(o)), options=pgfplotsoptions(), preamble=pgfplotspreamble())
 end
 
