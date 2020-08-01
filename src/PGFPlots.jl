@@ -1,7 +1,7 @@
 module PGFPlots
 
 export LaTeXString, @L_str, @L_mstr
-export plot, ErrorBars, Axis, Axes, PolarAxis, SmithAxis, TernaryAxis, GroupPlot, Plots, ColorMaps, save, define_color
+export plot, tikzCode, ErrorBars, Axis, Axes, PolarAxis, SmithAxis, TernaryAxis, GroupPlot, Plots, ColorMaps, save, define_color
 export pushPGFPlotsOptions, popPGFPlotsOptions, resetPGFPlotsOptions, pgfplotsoptions
 export pushPGFPlotsPreamble, popPGFPlotsPreamble, resetPGFPlotsPreamble, pgfplotspreamble
 export pushPGFPlots, popPGFPlots
@@ -739,26 +739,28 @@ function plotHelper(o::IO, axis::Axis)
     end
 end
 
-function plot(axis::Axis)
+function tikzCode(axis::Axis)
     o = IOBuffer()
     print(o, "\\begin{$(axis.axisKeyword)}")
     plotHelper(o, axis)
     print(o, "\n\\end{$(axis.axisKeyword)}")
-    TikzPicture(String(take!(o)), options=pgfplotsoptions(), preamble=pgfplotspreamble())
+    return String(take!(o))
 end
 
-function plot(axes::Axes)
+function tikzCode(axes::Axes)
     o = IOBuffer()
-
     for axis in axes
         print(o, "\\begin{$(axis.axisKeyword)}")
         plotHelper(o, axis)
         println(o, "\\end{$(axis.axisKeyword)}")
     end
-    TikzPicture(String(take!(o)), options=pgfplotsoptions(), preamble=pgfplotspreamble())
+    return String(take!(o))
 end
 
-function plot(p::GroupPlot)
+plot(ax::Union{Axis,Axes}) =
+    TikzPicture(tikzCode(ax), options=pgfplotsoptions(), preamble=pgfplotspreamble())
+
+function tikzCode(p::GroupPlot)
     o = IOBuffer()
     style = ""
     if p.style != nothing
@@ -774,42 +776,54 @@ function plot(p::GroupPlot)
         plotHelper(o, a)
     end
     println(o, "\\end{groupplot}")
+    return String(take!(o))
+end
+
+function plot(p::GroupPlot)
     mypreamble = pgfplotspreamble() * "\\usepgfplotslibrary{groupplots}"
-    TikzPicture(String(take!(o)), options=pgfplotsoptions(), preamble=mypreamble)
+    TikzPicture(tikzCode(p), options=pgfplotsoptions(), preamble=mypreamble)
 end
 
 const Plottable = Union{Plot,GroupPlot,Axis,Axes,TikzPicture}
 
+tikzCode(p::Plot) = tikzCode(Axis(p))
 plot(p::Plot) = plot(Axis(p))
 
-function plot(p::Contour)
+tikzCode(p::Contour) =
+    tikzCode(Axis(p, xmin=p.xbins[1], xmax=p.xbins[end], ymin=p.ybins[1], ymax=p.ybins[end]))
+plot(p::Contour) =
     plot(Axis(p, xmin=p.xbins[1], xmax=p.xbins[end], ymin=p.ybins[1], ymax=p.ybins[end]))
-end
 
-function plot(
+tikzCode(
     x::AbstractArray{A,1},
     y::AbstractArray{B,1};
     kwargs...,
-    ) where {A<:Real,B<:Real}
+    ) where {A<:Real,B<:Real} = tikzCode(Linear(x, y; kwargs...))
+plot(
+    x::AbstractArray{A,1},
+    y::AbstractArray{B,1};
+    kwargs...,
+    ) where {A<:Real,B<:Real} = plot(Linear(x, y; kwargs...))
 
-    return plot(Linear(x, y; kwargs...))
-end
-
-function plot(
+tikzCode(
     x::AbstractVector{A},
     y::AbstractVector{B},
     z::AbstractVector{C};
     kwargs...,
-    ) where {A<:Real,B<:Real,C<:Real}
-
-    return plot(Linear3(x, y, z; kwargs...))
-end
+    ) where {A<:Real,B<:Real,C<:Real} = tikzCode(Linear3(x, y, z; kwargs...))
+plot(
+    x::AbstractVector{A},
+    y::AbstractVector{B},
+    z::AbstractVector{C};
+    kwargs...,
+    ) where {A<:Real,B<:Real,C<:Real} = plot(Linear3(x, y, z; kwargs...))
 
 function Plots.Linear(f::Function, arg_range::RealRange; xbins=100, mark="none", kwargs...)
     x = range(arg_range[1], stop=arg_range[2], length=xbins)
     Linear(x, map(f, x); mark=mark, kwargs...)
 end
 
+tikzCode(f::Function, arg_range::RealRange; kwargs...) = tikzCode(Linear(f, arg_range; kwargs...))
 plot(f::Function, arg_range::RealRange; kwargs...) = plot(Linear(f, arg_range; kwargs...))
 
 plot(tkz::TikzPicture) = tkz # tikz pic doesn't need plot, here for convenience
