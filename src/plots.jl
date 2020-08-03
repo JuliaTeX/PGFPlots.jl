@@ -65,7 +65,7 @@ function _construct_histogram_linear_data(
     end
     push!(arr_y, arr_y[end])
 
-    Linear(hcat(arr_x, arr_y)', style="ybar interval,fill=blue!10, draw=blue", mark="none")
+    Linear(hcat(arr_x, arr_y)', style="ybar interval, fill=blue!10, draw = blue", mark="none")
 end
 mutable struct Histogram <: Plot
     data::AbstractVector{Real}
@@ -395,7 +395,7 @@ function Histogram2(
             zmin = log10(zmin)
             M = log10.(M)
         end
-        return Image(M, (xmin, xmax), (ymin, ymax), filename=filename, colorbar=colorbar, colorbarStyle="{ymode=log, scaled ticks = false}", colormap=colormap, zmin=zmin, zmax=zmax, zmode=zmode, style=style)
+        return Image(M, (xmin, xmax), (ymin, ymax), filename=filename, colorbar=colorbar, colorbarStyle="ymode = log, scaled ticks = false", colormap=colormap, zmin=zmin, zmax=zmax, zmode=zmode, style=style)
     end
     Image(M, (xmin, xmax), (ymin, ymax), filename=filename, colorbar=colorbar, colorbarStyle=colorbarStyle, colormap=colormap, zmin=zmin, zmax=zmax, zmode=zmode, style=style)
 end
