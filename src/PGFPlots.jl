@@ -322,19 +322,6 @@ function printList(o::IO, a::AbstractVector; brackets=false)
     end
 end
 
-function printObject(o::IO, object)
-    string_object = string(object)
-    if length(string_object) > 0
-        print(o, "\n  ")
-    end
-    print(o, join(map(strip, split(string_object, ",")), ",\n  "))
-    if length(string_object) > 0
-        println(o)
-    end
-end
-
-printObject(o::IO, object::AbstractVector) = printList(o, object, brackets=true)
-
 function nextOptionHelper(o::IO, isFirst::Bool, brackets::Bool, breakLine::Bool=true)
     if isFirst && brackets
         print(o, "[\n  ")
