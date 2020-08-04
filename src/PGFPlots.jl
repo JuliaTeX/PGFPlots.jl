@@ -1,7 +1,7 @@
 module PGFPlots
 
 export LaTeXString, @L_str, @L_mstr
-export plot, ErrorBars, Axis, Axes, PolarAxis, SmithAxis, TernaryAxis, GroupPlot, Plots, ColorMaps, save, define_color
+export plot, tikzCode, ErrorBars, Axis, Axes, PolarAxis, SmithAxis, TernaryAxis, GroupPlot, Plots, ColorMaps, save, define_color
 export pushPGFPlotsOptions, popPGFPlotsOptions, resetPGFPlotsOptions, pgfplotsoptions
 export pushPGFPlotsPreamble, popPGFPlotsPreamble, resetPGFPlotsPreamble, pgfplotspreamble
 export pushPGFPlots, popPGFPlots
@@ -322,58 +322,48 @@ function printList(o::IO, a::AbstractVector; brackets=false)
     end
 end
 
-printObject(o::IO, object) = print(o, "$(object)")
-printObject(o::IO, object::AbstractVector) = printList(o, object, brackets=true)
+function nextOptionHelper(o::IO, isFirst::Bool, brackets::Bool, breakLine::Bool=true)
+    if isFirst && brackets
+        print(o, "[\n  ")
+    elseif !isFirst && breakLine
+        print(o, ",\n  ")
+    elseif !isFirst
+        print(o, ", ")
+    end
+    return false # used to set isFirst=false
+end
 
-function optionHelper(o::IO, m, object; brackets=false, otherOptions=Dict{AbstractString,AbstractString}[], otherText=nothing)
-    first = true
+function optionHelper(o::IO, m, object; brackets::Bool=true, preOptions::Vector{T}=String[], postOptions::Vector{T}=String[], wrapIn::String="") where T <: AbstractString
+    isFirst = true
+    for t in preOptions
+        isFirst = nextOptionHelper(o, isFirst, brackets)
+        print(o, t)
+    end
+    if length(wrapIn) > 0
+        nextOptionHelper(o, isFirst, brackets)
+        print(o, "$wrapIn = {")
+        isFirst = true # temporarily true inside brackets
+    end
     for (sym, str) in m
-        if getfield(object,sym) != nothing
-            if first
-                first = false
-                if brackets
-                    print(o, "[")
-                end
+        if getfield(object, sym) != nothing && getfield(object, sym) != ""
+            isFirst = nextOptionHelper(o, isFirst, length(wrapIn)==0 && brackets, length(wrapIn)==0)
+            if length(str) > 0
+                print(o, "$str = {$(getfield(object, sym))}") # wrap with keyword
             else
-                print(o, ", ")
-            end
-            if length(str) > 0
-                print(o, "$str = {")
-            end
-            printObject(o, getfield(object,sym))
-            if length(str) > 0
-                print(o, "}")
+                print(o, string(getfield(object, sym))) # print directly, without keyword
             end
         end
     end
-    for (k, v) in otherOptions
-        if first
-            first = false
-            if brackets
-                print(o, "[")
-            end
-        else
-            print(o, ", ")
-        end
-        print(o, "$k = $v")
+    if length(wrapIn) > 0
+        print(o, "}")
+        isFirst = false
     end
-    if otherText != nothing
-        for t in otherText
-            if t != nothing
-                if first
-                    first = false
-                    if brackets
-                        print(o, "[")
-                    end
-                else
-                    print(o, ", ")
-                end
-                print(o, "$t")
-            end
-        end
+    for t in postOptions
+        isFirst = nextOptionHelper(o, isFirst, brackets)
+        print(o, t)
     end
-    if !first && brackets
-        print(o, "]")
+    if !isFirst && brackets
+        print(o, "\n]")
     end
 end
 
@@ -381,12 +371,11 @@ function plotHelper(o::IO, p::Plots.Histogram)
     if (p.discretization == :pgfplots && p.bins > 0) ||
        (p.discretization == :default && length(p.data) ≤ Plots.THRESHOLD_NSAMPLES_DISC_OURSELVES)
 
-        print(o, "\\addplot+ [mark=none, $(p.style), hist={")
-        optionHelper(o, histogramMap, p)
-        print(o, "}] table [row sep=\\\\, y index = 0] {")
-        println(o, "data\\\\")
+        print(o, "\\addplot+")
+        optionHelper(o, histogramMap, p; preOptions=["mark = none", p.style], wrapIn="hist")
+        println(o, " table[\n  row sep=\\\\,\n  y index = 0\n] { data \\\\")
         for d in p.data
-            println(o, "$d \\\\ ")
+            println(o, "  $d \\\\ ")
         end
         println(o, "};")
 
@@ -412,12 +401,12 @@ function plotHelper(o::IO, p::Plots.Histogram)
 end
 
 function plotHelper(o::IO, p::BarChart)
-    print(o, "\\addplot+ ")
+    print(o, "\\addplot+")
     if p.errorBars == nothing
-        optionHelper(o, barMap, p, brackets=true)
-        println(o, "coordinates {")
+        optionHelper(o, barMap, p)
+        println(o, " coordinates {")
         for (k,v) in zip(p.keys, p.values)
-            println(o, "($k, $v)")
+            println(o, "  ($k, $v)")
         end
         println(o, "};")
     else
@@ -427,13 +416,13 @@ function plotHelper(o::IO, p::BarChart)
 end
 function PGFPlots.Axis(p::BarChart; kwargs...)
     # TODO : What's a better way to do this?
-    style = "ybar=0pt, bar width=18pt, xtick=data, symbolic x coords={$(Plots.symbolic_x_coords(p))},"
+    style = "ybar = 0pt,\n  bar width = 18pt,\n  xtick = data,\n  symbolic x coords = {$(Plots.symbolic_x_coords(p))}"
     kwargs_unsplat = isempty(kwargs) ? Array{Pair{Symbol,Any}}(undef,0) : convert(Array{Pair{Symbol,Any}},collect(kwargs))
     i = findfirst(tup->tup[1] == :style, kwargs_unsplat)
     if i != nothing
-        kwargs_unsplat[i] = :style=>(style * kwargs_unsplat[i][2])
+        kwargs_unsplat[i] = :style=>(style * ", " * kwargs_unsplat[i][2])
     else
-        push!(kwargs_unsplat,:style=>style)
+        push!(kwargs_unsplat, :style=>style)
     end
     i = findfirst(tup->tup[1] == :ymin, kwargs_unsplat)
     if i == nothing
@@ -453,18 +442,17 @@ end
 
 # todo: add error bars style
 function plotHelperErrorBars(o::IO, p::Linear)
-    println(o, "[")
-    optionHelper(o, linearMap, p, brackets=false)
-    println(o, ", error bars/.cd, ")
-    optionHelper(o, errorbarsMap, p.errorBars, otherText=["x dir=both", "x explicit", "y dir=both", "y explicit"])
-    println(o, "]")
-    x = vcat(p.data, p.errorBars.data)
-    println(o, "table [")
-    println(o, "x error plus=ex+, x error minus=ex-, y error plus=ey+, y error minus=ey-")
+    print(o, "[\n  ")
+    optionHelper(o, linearMap, p; brackets=false)
+    print(o, ",\n  error bars/.cd,\n  ")
+    optionHelper(o, errorbarsMap, p.errorBars; brackets=false, postOptions=["x dir=both", "x explicit", "y dir=both", "y explicit"])
+    println(o, "\n] table[")
+    println(o, "  x error plus=ex+,\n  x error minus=ex-,\n  y error plus=ey+,\n  y error minus=ey-")
     println(o, "] {")
-    println(o, "x y ex+ ex- ey+ ey-")
+    println(o, "  x y ex+ ex- ey+ ey-")
+    x = vcat(p.data, p.errorBars.data)
     for i = 1:size(p.data, 2)
-        println(o, "$(x[1,i]) $(x[2,i]) $(x[3,i]) $(x[4,i]) $(x[5,i]) $(x[6,i])")
+        println(o, "  $(x[1,i]) $(x[2,i]) $(x[3,i]) $(x[4,i]) $(x[5,i]) $(x[6,i])")
     end
     if p.closedCycle
         println(o, "} \\closedcycle;")
@@ -474,29 +462,28 @@ function plotHelperErrorBars(o::IO, p::Linear)
 end
 # todo there is a lot of code redundancy
 function plotHelperErrorBars(o::IO, p::BarChart)
-    println(o, "[")
-    optionHelper(o, barMap, p, brackets=false)
-    println(o, ", error bars/.cd, ")
-    optionHelper(o, errorbarsMap, p.errorBars, otherText=["x dir=both", "x explicit", "y dir=both", "y explicit"])
-    println(o, "]")
-    println(o, "table [")
-    println(o, "x error plus=ex+, x error minus=ex-, y error plus=ey+, y error minus=ey-")
+    print(o, "[\n  ")
+    optionHelper(o, barMap, p; brackets=false)
+    print(o, ",\n  error bars/.cd,\n  ")
+    optionHelper(o, errorbarsMap, p.errorBars; brackets=false, postOptions=["x dir=both", "x explicit", "y dir=both", "y explicit"])
+    println(o, "\n] table[")
+    println(o, "  x error plus=ex+,\n  x error minus=ex-,\n  y error plus=ey+,\n  y error minus=ey-")
     println(o, "] {")
-    println(o, "x y ex+ ex- ey+ ey-")
+    println(o, "  x y ex+ ex- ey+ ey-")
     x = p.errorBars.data
     for i = 1:length(p.values)
-        println(o, "$(p.keys[i]) $(p.values[i]) $(x[1,i]) $(x[2,i]) $(x[3,i]) $(x[4,i])")
+        println(o, "  $(p.keys[i]) $(p.values[i]) $(x[1,i]) $(x[2,i]) $(x[3,i]) $(x[4,i])")
     end
     println(o, "};")
 end
 
 function plotHelper(o::IO, p::Linear)
-    print(o, "\\addplot+ ")
+    print(o, "\\addplot+")
     if p.errorBars == nothing
-        optionHelper(o, linearMap, p, brackets=true)
-        println(o, "coordinates {")
+        optionHelper(o, linearMap, p)
+        println(o, " coordinates {")
         for i in 1:size(p.data,2)
-            println(o, "($(p.data[1,i]), $(p.data[2,i]))")
+            println(o, "  ($(p.data[1,i]), $(p.data[2,i]))")
         end
         if p.closedCycle
             println(o, "} \\closedcycle;")
@@ -510,11 +497,11 @@ function plotHelper(o::IO, p::Linear)
 end
 
 function plotHelper(o::IO, p::SmithData)
-    print(o, "\\addplot+ ")
-    optionHelper(o, linearMap, p, brackets=true)
-    println(o, "coordinates {")
+    print(o, "\\addplot+")
+    optionHelper(o, linearMap, p)
+    println(o, " coordinates {")
     for item in p.data
-        print(o, "($(real(item)), $(imag(item))) ")
+        println(o, "  ($(real(item)), $(imag(item)))")
     end
     println(o, "};")
     plotLegend(o, p.legendentry)
@@ -529,23 +516,23 @@ function plotHelper(o::IO, p::SmithCircle)
 end
 
 function plotHelper(o::IO, p::Scatter)
+    print(o, "\\addplot+")
+    options = ["scatter", "scatter src = explicit symbolic"]
     if size(p.data,1) == 2
-        print(o, "\\addplot+[draw=none, ")
+        options = ["draw = none"]
         p.onlyMarks = nothing
     elseif p.scatterClasses == nothing
-        print(o, "\\addplot+[scatter, scatter src=explicit, ")
-    else
-        print(o, "\\addplot+[scatter, scatter src=explicit symbolic, ")
+        options = ["scatter", "scatter src = explicit"]
     end
-    optionHelper(o, scatterMap, p)
-    println(o, "] coordinates {")
+    optionHelper(o, scatterMap, p; preOptions=options)
+    println(o, " coordinates {")
     if size(p.data,1) == 2
         for i in 1:size(p.data,2)
-            println(o, "($(p.data[1,i]), $(p.data[2,i]))")
+            println(o, "  ($(p.data[1,i]), $(p.data[2,i]))")
         end
     else
         for i in 1:size(p.data,2)
-            println(o, "($(p.data[1,i]), $(p.data[2,i])) [$(p.data[3,i])]")
+            println(o, "  ($(p.data[1,i]), $(p.data[2,i])) [$(p.data[3,i])]")
         end
     end
     println(o, "};")
@@ -555,20 +542,18 @@ end
 # Specific version for Linear3 mutable struct
 # Changes are addplot3 (vs addplot) and iterate over all 3 columns
 function plotHelper(o::IO, p::Linear3)
-    print(o, "\\addplot3+ ")
-    optionHelper(o, linearMap, p, brackets=true)
-    println(o, "coordinates {")
+    print(o, "\\addplot3+")
+    optionHelper(o, linearMap, p)
+    println(o, " coordinates {")
     for i = 1:size(p.data,2)
-        println(o, "($(p.data[1,i]), $(p.data[2,i]), $(p.data[3,i]))")
+        println(o, "  ($(p.data[1,i]), $(p.data[2,i]), $(p.data[3,i]))")
     end
     println(o, "};")
     plotLegend(o, p.legendentry)
 end
 
 function plotHelper(o::IO, p::Node)
-
     axis = p.axis != nothing ? p.axis : "axis cs"
-
     if p.style != nothing
         println(o, "\\node at ($(axis):$(p.x), $(p.y)) [$(p.style)] {$(p.data)};")
     else
@@ -578,25 +563,23 @@ end
 
 
 function plotHelper(o::IO, p::ErrorBars)
-    print(o, "\\addplot+ [")
-    optionHelper(o, errorbarsMap, p)
-    print(o, ",error bars/.cd, x dir=both, x explicit, y dir=both, y explicit")
-    println(o,"]")
-    println(o, "coordinates {")
+    print(o, "\\addplot+")
+    optionHelper(o, errorbarsMap, p; postOptions=["error bars/.cd", "  x dir = both", "  x explicit", "  y dir = both", "  y explicit"])
+    println(o," coordinates {")
     for i = 1:size(p.data,2)
-        println(o, "($(p.data[1,i]), $(p.data[2,i])) +=($(p.data[3,i]),$(p.data[4,i])) -=($(p.data[5,i]),$(p.data[6,i]))")
+        println(o, "  ($(p.data[1,i]), $(p.data[2,i])) +=($(p.data[3,i]),$(p.data[4,i])) -=($(p.data[5,i]),$(p.data[6,i]))")
     end
     println(o, "};")
     plotLegend(o, p.legendentry)
 end
 
 function plotHelper(o::IO, p::Quiver)
-    print(o, "\\addplot+ ")
-    optionHelper(o, quiverMap, p, brackets=true, otherOptions=Dict("quiver"=>"{u=\\thisrow{u},v=\\thisrow{v}}"))
-    println(o, "table {")
-    println(o, "x y u v")
+    print(o, "\\addplot+")
+    optionHelper(o, quiverMap, p; postOptions=["quiver = {u=\\thisrow{u}, v=\\thisrow{v}}"])
+    println(o, " table {")
+    println(o, "  x y u v")
     for i = 1:size(p.data,2)
-        println(o, "$(p.data[1,i]) $(p.data[2,i]) $(p.data[3,i]) $(p.data[4,i])")
+        println(o, "  $(p.data[1,i]) $(p.data[2,i]) $(p.data[3,i]) $(p.data[4,i])")
     end
     println(o, "};")
     plotLegend(o, p.legendentry)
@@ -611,22 +594,22 @@ function plotHelper(o::IO, p::Contour)
     end
     C = contours(convert(Vector{Float64}, p.xbins), convert(Vector{Float64}, p.ybins), convert(Matrix{Float64}, p.data), arg)
 
-    print(o, "\\addplot3[contour prepared")
+    print(o, "\\addplot3[\n  contour prepared")
     if p.contour_style != nothing
         print(o, "={$(p.contour_style)}")
     elseif p.labels == false
         print(o, "={labels=false}")
     end
     if p.style != nothing
-        print(o, ", $(p.style)")
+        print(o, ",\n  $(p.style)")
     end
-    print(o, "] table {")
+    println(o, "\n] table {")
 
     for c in levels(C)
         level = c.level
         for l in c.lines
             for v in l.vertices
-                println(o, "$(v[1]) $(v[2]) $level")
+                println(o, "  $(v[1]) $(v[2]) $level")
             end
             println(o)
         end
@@ -650,44 +633,44 @@ function plotHelper(o::IO, p::Ellipse)
     end
 end
 
-function plotHelper(o::IO, p::Command)
-    println(o, p.cmd*";") #PGFPlots expects commands to be terminated with a ;
-end
+plotHelper(o::IO, p::Command) = println(o, p.cmd * ";")
 
 function plotHelper(o::IO, p::Image)
     if p.zmin == p.zmax
         error("Your colorbar range limits must not be equal to each other.")
     end
+    print(o, "\\addplot[\n  ")
     if p.style != nothing
-        println(o, "\\addplot [$(p.style), point meta min=$(p.zmin), point meta max=$(p.zmax)] graphics [xmin=$(p.xmin), xmax=$(p.xmax), ymin=$(p.ymin), ymax=$(p.ymax)] {$(p.filename)};")
+        println(o, join([p.style, "point meta min = $(p.zmin)", "point meta max = $(p.zmax)"], ",\n  "))
     else
-        println(o, "\\addplot [point meta min=$(p.zmin), point meta max=$(p.zmax)] graphics [xmin=$(p.xmin), xmax=$(p.xmax), ymin=$(p.ymin), ymax=$(p.ymax)] {$(p.filename)};")
+        println(o, join(["point meta min = $(p.zmin)", "point meta max = $(p.zmax)"], ",\n  "))
     end
+    print(o, "] graphics[\n  ")
+    println(o, join(["xmin = $(p.xmin)", "xmax = $(p.xmax)", "ymin = $(p.ymin)", "ymax = $(p.ymax)"], ",\n  "))
+    println(o, "] {$(p.filename)};")
 end
 
 function plotHelper(o::IO, p::Patch2D)
     print(o, "\\addplot")
-
-    optionHelper(o, patch2DMap, p, brackets=true)
-    println(o)
+    optionHelper(o, patch2DMap, p)
 
     m = p.patch_type == "rectangle" ? 4 : 3
     if size(p.data, 1) == 3 # include color
-        println(o, "table[point meta=\\thisrow{c}] {")
-        println(o, "\tx y c")
+        println(o, " table[\n  point meta = \\thisrow{c}\n] {")
+        println(o, "  x y c")
     elseif size(p.data, 1) == 2
-        println(o, "table {")
-        println(o, "\tx y")
+        println(o, " table {")
+        println(o, "  x y")
     else
         error("Incorrect dimensions of matrix passed to Patch2D")
     end
     for i in 1 : size(p.data, 2)
-        @printf(o, "\t %g %g", p.data[1,i], # x
-                                   p.data[2,i]) # y
+        @printf(o, "  %g %g", p.data[1,i], # x
+                              p.data[2,i]) # y
         if size(p.data, 1) > 2
             @printf(o, " %g\n", p.data[3,i]) # color
         else
-            println(o, "")
+            println(o)
         end
 
         if mod(i, m) == 0
@@ -702,24 +685,29 @@ function plotHelper(o::IO, p::MatrixPlot)
     if p.zmin >= p.zmax
         error("Your colorbar range limits must not be equal to each other.")
     end
+    plot_options = String["point meta min = $(p.zmin)", "point meta max = $(p.zmax)"]
+    if !(p.raster)
+        push!(plot_options, "point meta = explicit", "matrix plot*", "mesh/cols = $(p.cols)", "mesh/rows = $(p.rows)")
+    end
+    if p.style != nothing
+        push!(plot_options, p.style)
+    end
+    print(o, "\\addplot[\n  ")
+    print(o, join(plot_options, ",\n  "))
+    print(o, "\n]")
     if p.raster
-        if p.style != nothing
-            println(o, "\\addplot [$(p.style), point meta min=$(p.zmin), point meta max=$(p.zmax)] graphics[xmin=$(p.xmin), xmax=$(p.xmax), ymin=$(p.ymin), ymax=$(p.ymax)] {$(p.filename)};")
-        else
-            println(o, "\\addplot [point meta min=$(p.zmin), point meta max=$(p.zmax)] graphics[xmin=$(p.xmin), xmax=$(p.xmax), ymin=$(p.ymin), ymax=$(p.ymax)]{$(p.filename)};")
-        end
+        print(o, " graphics[\n  ")
+        println(o, join(["xmin = $(p.xmin)", "xmax = $(p.xmax)", "ymin = $(p.ymin)", "ymax = $(p.ymax)"], ",\n  "))
+        println(o, "] {$(p.filename)};")
     else
-        if p.style != nothing
-            println(o, "\\addplot [matrix plot*, $(p.style), point meta=explicit, point meta min=$(p.zmin), point meta max=$(p.zmax), mesh/cols=$(p.cols), mesh/rows=$(p.rows)] table[meta=data] {$(p.filename)};")
-        else
-            println(o, "\\addplot [matrix plot*, point meta=explicit, point meta min=$(p.zmin), point meta max=$(p.zmax), mesh/cols=$(p.cols), mesh/rows=$(p.rows)] table[meta=data] {$(p.filename)};")
-        end
+        println(o, " table[\n  meta = data\n] {$(p.filename)};")
     end
 end
 
 # plot option string and contents; no \begin{axis} or \nextgroupplot
 function plotHelper(o::IO, axis::Axis)
-    optionHelper(o, axisMap, axis, brackets=true, otherText=[axisOptions(p) for p in axis.plots])
+    optionHelper(o, axisMap, axis; postOptions=cat(map(axisOptions, axis.plots)...; dims=1))
+    println(o, "\n") # empty line after options of \begin{axis}
     for p in axis.plots
         plotHelper(o, p)
         try
@@ -728,29 +716,32 @@ function plotHelper(o::IO, axis::Axis)
             end
         catch
         end
+        println(o) # empty line between plots
     end
 end
 
-function plot(axis::Axis)
+function tikzCode(axis::Axis)
     o = IOBuffer()
     print(o, "\\begin{$(axis.axisKeyword)}")
     plotHelper(o, axis)
-    println(o, "\\end{$(axis.axisKeyword)}")
-    TikzPicture(String(take!(o)), options=pgfplotsoptions(), preamble=pgfplotspreamble())
+    print(o, "\\end{$(axis.axisKeyword)}")
+    return String(take!(o))
 end
 
-function plot(axes::Axes)
+function tikzCode(axes::Axes)
     o = IOBuffer()
-
     for axis in axes
         print(o, "\\begin{$(axis.axisKeyword)}")
         plotHelper(o, axis)
         println(o, "\\end{$(axis.axisKeyword)}")
     end
-    TikzPicture(String(take!(o)), options=pgfplotsoptions(), preamble=pgfplotspreamble())
+    return String(take!(o))
 end
 
-function plot(p::GroupPlot)
+plot(ax::Union{Axis,Axes}) =
+    TikzPicture(tikzCode(ax), options=pgfplotsoptions(), preamble=pgfplotspreamble())
+
+function tikzCode(p::GroupPlot)
     o = IOBuffer()
     style = ""
     if p.style != nothing
@@ -762,46 +753,58 @@ function plot(p::GroupPlot)
     end
     println(o, "\\begin{groupplot}[$(style)group style={$(groupStyle)group size=$(p.dimensions[1]) by $(p.dimensions[2])}]")
     for a in p.axes
-        print(o, "\\nextgroupplot ")
+        print(o, "\n\\nextgroupplot ")
         plotHelper(o, a)
     end
-    println(o, "\\end{groupplot}")
+    println(o, "\n\\end{groupplot}")
+    return String(take!(o))
+end
+
+function plot(p::GroupPlot)
     mypreamble = pgfplotspreamble() * "\\usepgfplotslibrary{groupplots}"
-    TikzPicture(String(take!(o)), options=pgfplotsoptions(), preamble=mypreamble)
+    TikzPicture(tikzCode(p), options=pgfplotsoptions(), preamble=mypreamble)
 end
 
 const Plottable = Union{Plot,GroupPlot,Axis,Axes,TikzPicture}
 
+tikzCode(p::Plot) = tikzCode(Axis(p))
 plot(p::Plot) = plot(Axis(p))
 
-function plot(p::Contour)
+tikzCode(p::Contour) =
+    tikzCode(Axis(p, xmin=p.xbins[1], xmax=p.xbins[end], ymin=p.ybins[1], ymax=p.ybins[end]))
+plot(p::Contour) =
     plot(Axis(p, xmin=p.xbins[1], xmax=p.xbins[end], ymin=p.ybins[1], ymax=p.ybins[end]))
-end
 
-function plot(
+tikzCode(
     x::AbstractArray{A,1},
     y::AbstractArray{B,1};
     kwargs...,
-    ) where {A<:Real,B<:Real}
+    ) where {A<:Real,B<:Real} = tikzCode(Linear(x, y; kwargs...))
+plot(
+    x::AbstractArray{A,1},
+    y::AbstractArray{B,1};
+    kwargs...,
+    ) where {A<:Real,B<:Real} = plot(Linear(x, y; kwargs...))
 
-    return plot(Linear(x, y; kwargs...))
-end
-
-function plot(
+tikzCode(
     x::AbstractVector{A},
     y::AbstractVector{B},
     z::AbstractVector{C};
     kwargs...,
-    ) where {A<:Real,B<:Real,C<:Real}
-
-    return plot(Linear3(x, y, z; kwargs...))
-end
+    ) where {A<:Real,B<:Real,C<:Real} = tikzCode(Linear3(x, y, z; kwargs...))
+plot(
+    x::AbstractVector{A},
+    y::AbstractVector{B},
+    z::AbstractVector{C};
+    kwargs...,
+    ) where {A<:Real,B<:Real,C<:Real} = plot(Linear3(x, y, z; kwargs...))
 
 function Plots.Linear(f::Function, arg_range::RealRange; xbins=100, mark="none", kwargs...)
     x = range(arg_range[1], stop=arg_range[2], length=xbins)
     Linear(x, map(f, x); mark=mark, kwargs...)
 end
 
+tikzCode(f::Function, arg_range::RealRange; kwargs...) = tikzCode(Linear(f, arg_range; kwargs...))
 plot(f::Function, arg_range::RealRange; kwargs...) = plot(Linear(f, arg_range; kwargs...))
 
 plot(tkz::TikzPicture) = tkz # tikz pic doesn't need plot, here for convenience
@@ -820,7 +823,7 @@ cleanup(p::MatrixPlot) = rm(p.filename)
 cleanup(p::Contour) = nothing
 cleanup(p::TikzPicture) = nothing
 
-axisOptions(p::Plot) = nothing
+axisOptions(p::Plot) = String[]
 
 function colormapOptions(cm::ColorMaps.GrayMap)
     if cm.invert
@@ -846,25 +849,25 @@ function axisOptions(p::Image)
     if p.colorbar
         cmOpt = colormapOptions(p.colormap)
         if p.colorbarStyle == nothing
-            return "enlargelimits = false, axis on top, $cmOpt, colorbar"
+            return ["enlargelimits = false", "axis on top", cmOpt, "colorbar"]
         else
-            return "enlargelimits = false, axis on top, $cmOpt, colorbar, colorbar style = {$(p.colorbarStyle)}"
+            return ["enlargelimits = false", "axis on top", cmOpt, "colorbar", "colorbar style = {$(p.colorbarStyle)}"]
         end
     else
-        return "enlargelimits = false, axis on top"
+        return ["enlargelimits = false", "axis on top"]
     end
 end
 
 function axisOptions(p::MatrixPlot)
     if p.colorbar
         cmOpt = colormapOptions(p.colormap)
-        option_string = "enlargelimits = false, axis on top, $cmOpt, colorbar, xmin=$(p.xmin), xmax=$(p.xmax), ymin=$(p.ymin), ymax=$(p.ymax)"
+        options = ["enlargelimits = false", "axis on top", cmOpt, "colorbar", "xmin = $(p.xmin)", "xmax = $(p.xmax)", "ymin = $(p.ymin)", "ymax = $(p.ymax)"]
         if p.colorbarStyle != nothing
-            option_string *= ", style = {$(p.colorbarStyle)}"
+            push!(options, "style = {$(p.colorbarStyle)}")
         end
-        return option_string
+        return options
     else
-        return "enlargelimits = false, axis on top"
+        return ["enlargelimits = false", "axis on top"]
     end
 end
 
