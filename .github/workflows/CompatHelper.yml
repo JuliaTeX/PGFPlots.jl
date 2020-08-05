@@ -2,8 +2,10 @@ name: CompatHelper
 
 on:
   schedule:
-    # - cron: '00 00 * * *'
-    - on: push
+    - cron: '00 00 * * *'
+  push: 
+    branches: 
+      - compathelper
 
 jobs:
   CompatHelper:
