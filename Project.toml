@@ -1,7 +1,7 @@
 name = "PGFPlots"
 uuid = "3b7a836e-365b-5785-a47d-02c71176b4aa"
 repo = "https://github.com/JuliaTeX/PGFPlots.jl.git"
-version = "3.2.1"
+version = "3.3.0"
 
 [deps]
 ColorBrewer = "a2cac450-b92f-5266-8821-25eda20663c8"
@@ -20,7 +20,17 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 TikzPictures = "37f6aa50-8035-52d0-81c2-5a1d08754b2d"
 
 [compat]
+Contour = "0.5"
+ColorBrewer = "0.4"
+Colors = "0.12"
+ColorSchemes = "3.9"
+DataFrames = "0.21"
+Discretizers = "3.2"
 ImageMagick = "0.7.3, 1"
+Images = "0.22"
+IndirectArrays = "0.5"
+StatsBase = "0.33"
+TikzPictures = "3.1"
 julia = "1"
 
 [extras]
