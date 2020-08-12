@@ -891,7 +891,7 @@ function Base.show(f::IO, a::MIME"image/svg+xml", p::Plottable)
     end
 end
 
-function save(filename::AbstractString, o::Plottable; include_preamble::Bool=true)
+function save(filename::AbstractString, o::Plottable; include_preamble::Bool=true, limit_to::Symbol=:default)
     _, ext = splitext(filename)
     ext = lowercase(ext)
     if ext == ".pdf"
@@ -901,7 +901,12 @@ function save(filename::AbstractString, o::Plottable; include_preamble::Bool=tru
         save(SVG(filename), plot(o))
         cleanup(o)
     elseif ext == ".tex"
-        save(TEX(filename, include_preamble=include_preamble), plot(o))
+        # limit_to requires TikzPictures v3.2.0; only use if specified
+        if limit_to != :default
+            save(TEX(filename; limit_to=limit_to), plot(o))
+        else
+            save(TEX(filename, include_preamble=include_preamble), plot(o))
+        end
     elseif ext == ".tikz"
         save(TIKZ(filename), plot(o))
     elseif ext == "." || ext == ""
