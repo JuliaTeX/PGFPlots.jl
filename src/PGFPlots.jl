@@ -705,7 +705,7 @@ function plotHelper(o::IO, axis::Axis)
     legendentries = map(p->hasproperty(p, :legendentry) ? p.legendentry : nothing, axis.plots)
     legendentries = vcat(legendentries...) # flatten
     # avoid adding \legend altogether if all entries are `nothing`
-    if !all(isnothing.(legendentries))
+    if !all(legendentries .=== nothing)
         legendentries = replace(legendentries, nothing=>"") # for correct printing
         legendcontent = join(legendentries, ',')
         println(o, "\\legend{$legendcontent}") # add legend
