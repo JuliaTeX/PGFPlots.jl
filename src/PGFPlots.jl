@@ -345,7 +345,7 @@ function optionHelper(o::IO, m, object; brackets::Bool=true, preOptions::Vector{
         isFirst = true # temporarily true inside brackets
     end
     for (sym, str) in m
-        if getfield(object, sym) != nothing && getfield(object, sym) != ""
+        if getfield(object, sym) !== nothing && getfield(object, sym) != ""
             isFirst = nextOptionHelper(o, isFirst, length(wrapIn)==0 && brackets, length(wrapIn)==0)
             if length(str) > 0
                 print(o, "$str = {$(getfield(object, sym))}") # wrap with keyword
@@ -402,7 +402,7 @@ end
 
 function plotHelper(o::IO, p::BarChart)
     print(o, "\\addplot+")
-    if p.errorBars == nothing
+    if p.errorBars === nothing
         optionHelper(o, barMap, p)
         println(o, " coordinates {")
         for (k,v) in zip(p.keys, p.values)
@@ -412,32 +412,23 @@ function plotHelper(o::IO, p::BarChart)
     else
         plotHelperErrorBars(o, p)
     end
-    plotLegend(o, p.legendentry)
 end
 function PGFPlots.Axis(p::BarChart; kwargs...)
     # TODO : What's a better way to do this?
     style = "ybar = 0pt,\n  bar width = 18pt,\n  xtick = data,\n  symbolic x coords = {$(Plots.symbolic_x_coords(p))}"
     kwargs_unsplat = isempty(kwargs) ? Array{Pair{Symbol,Any}}(undef,0) : convert(Array{Pair{Symbol,Any}},collect(kwargs))
     i = findfirst(tup->tup[1] == :style, kwargs_unsplat)
-    if i != nothing
+    if i !== nothing
         kwargs_unsplat[i] = :style=>(style * ", " * kwargs_unsplat[i][2])
     else
         push!(kwargs_unsplat, :style=>style)
     end
     i = findfirst(tup->tup[1] == :ymin, kwargs_unsplat)
-    if i == nothing
+    if i === nothing
         push!(kwargs_unsplat, :ymin=>0)
     end
 
     return Axis(Plots.Plot[p]; kwargs_unsplat...)
-end
-
-plotLegend(o::IO, entry) = nothing
-plotLegend(o::IO, entry::AbstractString) = println(o, "\\addlegendentry{$entry}")
-function plotLegend(o::IO, entries::Vector{T}) where {T <: AbstractString}
-    for entry in entries
-        plotLegend(o, entry)
-    end
 end
 
 # todo: add error bars style
@@ -479,7 +470,7 @@ end
 
 function plotHelper(o::IO, p::Linear)
     print(o, "\\addplot+")
-    if p.errorBars == nothing
+    if p.errorBars === nothing
         optionHelper(o, linearMap, p)
         println(o, " coordinates {")
         for i in 1:size(p.data,2)
@@ -493,7 +484,6 @@ function plotHelper(o::IO, p::Linear)
     else
         plotHelperErrorBars(o, p)
     end
-    plotLegend(o, p.legendentry)
 end
 
 function plotHelper(o::IO, p::SmithData)
@@ -504,15 +494,12 @@ function plotHelper(o::IO, p::SmithData)
         println(o, "  ($(real(item)), $(imag(item)))")
     end
     println(o, "};")
-    plotLegend(o, p.legendentry)
 end
 
 function plotHelper(o::IO, p::SmithCircle)
-    if p.style != nothing
-        println(o, "\\draw[$(p.style)] ($(p.xc), $(p.yc)) circle ($(p.radius)cm);")
+    if p.style !== nothing
         println(o, "\\draw[$(p.style)] ($(p.xc), $(p.yc)) circle [radius=$(p.radius)cm];")
     else
-        println(o, "\\draw ($(p.xc), $(p.yc)) circle ($(p.radius)cm);")
         println(o, "\\draw ($(p.xc), $(p.yc)) circle [radius=$(p.radius)cm];")
     end
 end
@@ -523,7 +510,7 @@ function plotHelper(o::IO, p::Scatter)
     if size(p.data,1) == 2
         options = ["draw = none"]
         p.onlyMarks = nothing
-    elseif p.scatterClasses == nothing
+    elseif p.scatterClasses === nothing
         options = ["scatter", "scatter src = explicit"]
     end
     optionHelper(o, scatterMap, p; preOptions=options)
@@ -538,7 +525,6 @@ function plotHelper(o::IO, p::Scatter)
         end
     end
     println(o, "};")
-    plotLegend(o, p.legendentry)
 end
 
 # Specific version for Linear3 mutable struct
@@ -551,12 +537,11 @@ function plotHelper(o::IO, p::Linear3)
         println(o, "  ($(p.data[1,i]), $(p.data[2,i]), $(p.data[3,i]))")
     end
     println(o, "};")
-    plotLegend(o, p.legendentry)
 end
 
 function plotHelper(o::IO, p::Node)
-    axis = p.axis != nothing ? p.axis : "axis cs"
-    if p.style != nothing
+    axis = p.axis !== nothing ? p.axis : "axis cs"
+    if p.style !== nothing
         println(o, "\\node at ($(axis):$(p.x), $(p.y)) [$(p.style)] {$(p.data)};")
     else
         println(o, "\\node at ($(axis):$(p.x), $(p.y)) {$(p.data)};")
@@ -572,7 +557,6 @@ function plotHelper(o::IO, p::ErrorBars)
         println(o, "  ($(p.data[1,i]), $(p.data[2,i])) +=($(p.data[3,i]),$(p.data[4,i])) -=($(p.data[5,i]),$(p.data[6,i]))")
     end
     println(o, "};")
-    plotLegend(o, p.legendentry)
 end
 
 function plotHelper(o::IO, p::Quiver)
@@ -584,25 +568,24 @@ function plotHelper(o::IO, p::Quiver)
         println(o, "  $(p.data[1,i]) $(p.data[2,i]) $(p.data[3,i]) $(p.data[4,i])")
     end
     println(o, "};")
-    plotLegend(o, p.legendentry)
 end
 
 function plotHelper(o::IO, p::Contour)
     arg = 5
-    if p.number != nothing
+    if p.number !== nothing
         arg = p.number
-    elseif p.levels != nothing
+    elseif p.levels !== nothing
         arg = p.levels
     end
     C = contours(convert(Vector{Float64}, p.xbins), convert(Vector{Float64}, p.ybins), convert(Matrix{Float64}, p.data), arg)
 
     print(o, "\\addplot3[\n  contour prepared")
-    if p.contour_style != nothing
+    if p.contour_style !== nothing
         print(o, "={$(p.contour_style)}")
     elseif p.labels == false
         print(o, "={labels=false}")
     end
-    if p.style != nothing
+    if p.style !== nothing
         print(o, ",\n  $(p.style)")
     end
     println(o, "\n] table {")
@@ -620,7 +603,7 @@ function plotHelper(o::IO, p::Contour)
 end
 
 function plotHelper(o::IO, p::Circle)
-    if p.style != nothing
+    if p.style !== nothing
         println(o, "\\draw[$(p.style)] (axis cs:$(p.xc), $(p.yc)) circle[radius=$(p.radius)];")
     else
         println(o, "\\draw (axis cs:$(p.xc), $(p.yc)) circle[radius=$(p.radius)];")
@@ -628,7 +611,7 @@ function plotHelper(o::IO, p::Circle)
 end
 
 function plotHelper(o::IO, p::Ellipse)
-    if p.style != nothing
+    if p.style !== nothing
         println(o, "\\draw[$(p.style)] (axis cs:$(p.xc), $(p.yc)) ellipse[x radius=$(p.xradius), y radius=$(p.yradius)];")
     else
         println(o, "\\draw (axis cs:$(p.xc), $(p.yc)) ellipse[x radius=$(p.xradius), y radius=$(p.yradius)];")
@@ -642,7 +625,7 @@ function plotHelper(o::IO, p::Image)
         error("Your colorbar range limits must not be equal to each other.")
     end
     print(o, "\\addplot[\n  ")
-    if p.style != nothing
+    if p.style !== nothing
         println(o, join([p.style, "point meta min = $(p.zmin)", "point meta max = $(p.zmax)"], ",\n  "))
     else
         println(o, join(["point meta min = $(p.zmin)", "point meta max = $(p.zmax)"], ",\n  "))
@@ -680,7 +663,6 @@ function plotHelper(o::IO, p::Patch2D)
         end
     end
     println(o, "};")
-    plotLegend(o, p.legendentry)
 end
 
 function plotHelper(o::IO, p::MatrixPlot)
@@ -691,7 +673,7 @@ function plotHelper(o::IO, p::MatrixPlot)
     if !(p.raster)
         push!(plot_options, "point meta = explicit", "matrix plot*", "mesh/cols = $(p.cols)", "mesh/rows = $(p.rows)")
     end
-    if p.style != nothing
+    if p.style !== nothing
         push!(plot_options, p.style)
     end
     print(o, "\\addplot[\n  ")
@@ -720,6 +702,14 @@ function plotHelper(o::IO, axis::Axis)
         end
         println(o) # empty line between plots
     end
+    legendentries = map(p->hasproperty(p, :legendentry) ? p.legendentry : nothing, axis.plots)
+    legendentries = vcat(legendentries...) # flatten
+    # avoid adding \legend altogether if all entries are `nothing`
+    if !all(isnothing.(legendentries))
+        legendentries = replace(legendentries, nothing=>"") # for correct printing
+        legendcontent = join(legendentries, ',')
+        println(o, "\\legend{$legendcontent}") # add legend
+    end
 end
 
 function tikzCode(axis::Axis)
@@ -746,11 +736,11 @@ plot(ax::Union{Axis,Axes}) =
 function tikzCode(p::GroupPlot)
     o = IOBuffer()
     style = ""
-    if p.style != nothing
+    if p.style !== nothing
         style = p.style * ", "
     end
     groupStyle = ""
-    if p.groupStyle != nothing
+    if p.groupStyle !== nothing
         groupStyle = p.groupStyle * ", "
     end
     println(o, "\\begin{groupplot}[$(style)group style={$(groupStyle)group size=$(p.dimensions[1]) by $(p.dimensions[2])}]")
@@ -850,7 +840,7 @@ end
 function axisOptions(p::Image)
     if p.colorbar
         cmOpt = colormapOptions(p.colormap)
-        if p.colorbarStyle == nothing
+        if p.colorbarStyle === nothing
             return ["enlargelimits = false", "axis on top", cmOpt, "colorbar"]
         else
             return ["enlargelimits = false", "axis on top", cmOpt, "colorbar", "colorbar style = {$(p.colorbarStyle)}"]
@@ -864,7 +854,7 @@ function axisOptions(p::MatrixPlot)
     if p.colorbar
         cmOpt = colormapOptions(p.colormap)
         options = ["enlargelimits = false", "axis on top", cmOpt, "colorbar", "xmin = $(p.xmin)", "xmax = $(p.xmax)", "ymin = $(p.ymin)", "ymax = $(p.ymax)"]
-        if p.colorbarStyle != nothing
+        if p.colorbarStyle !== nothing
             push!(options, "style = {$(p.colorbarStyle)}")
         end
         return options
