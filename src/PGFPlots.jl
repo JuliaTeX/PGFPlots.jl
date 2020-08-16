@@ -510,8 +510,10 @@ end
 function plotHelper(o::IO, p::SmithCircle)
     if p.style != nothing
         println(o, "\\draw[$(p.style)] ($(p.xc), $(p.yc)) circle ($(p.radius)cm);")
+        println(o, "\\draw[$(p.style)] ($(p.xc), $(p.yc)) circle [radius=$(p.radius)cm];")
     else
         println(o, "\\draw ($(p.xc), $(p.yc)) circle ($(p.radius)cm);")
+        println(o, "\\draw ($(p.xc), $(p.yc)) circle [radius=$(p.radius)cm];")
     end
 end
 
