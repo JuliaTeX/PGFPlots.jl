@@ -699,7 +699,7 @@ function plotHelper(o::IO, axis::Axis)
         end
         println(o) # empty line between plots
     end
-    legendentries = map(p->hasproperty(p, :legendentry) ? p.legendentry : nothing, axis.plots)
+    legendentries = map(p->:legendentry in propertynames(p) ? p.legendentry : nothing, axis.plots)
     legendentries = vcat(legendentries...) # flatten
     # avoid adding \legend altogether if all entries are `nothing`
     if !all(legendentries .=== nothing)
