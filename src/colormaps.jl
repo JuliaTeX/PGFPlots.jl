@@ -5,7 +5,6 @@ export ColorMap, GrayMap, Brew, RGBArrayMap, Distinguishable, SparseDistinguisha
 import Images: colorview, save, Gray, ImageMeta, clamp01nan 
 import Colors: RGB, distinguishable_colors, colormap
 import ColorBrewer: palette
-import IndirectArrays: IndirectArray
 
 abstract type ColorMap end
 
@@ -87,18 +86,8 @@ function Base.write(colormap::RGBArrayMap, data, filename)
     colors = interpolate_RGBArrayMap(colormap)
     n = length(colors)
     data = clamp01nan.(data)
-    if n <= 2^8
-        img = ImageMeta(IndirectArray([round(UInt8, (n-1)*v + 1) for v in data], colors))
-        save(filename, img)
-    elseif n <= 2^16
-        img = ImageMeta(IndirectArray([round(UInt16, (n-1)*v + 1) for v in data], colors))
-        save(filename, img)
-    elseif n <= 2^32
-        img = ImageMeta(IndirectArray([round(UInt32, (n-1)*v + 1) for v in data], colors))
-        save(filename, img)
-    else
-        error("ColorMap has too many colors")
-    end
+    img = colors[round.(UInt, (n-1).*data .+ 1)]
+    save(filename, img)
 end
 
 end
