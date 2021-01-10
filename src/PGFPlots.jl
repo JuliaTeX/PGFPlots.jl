@@ -896,7 +896,16 @@ function save(filename::AbstractString, o::Plottable; include_preamble::Bool=tru
             save(TEX(filename, include_preamble=include_preamble), plot(o))
         end
     elseif ext == ".tikz"
-        save(TIKZ(filename), plot(o))
+        # limit_to and include_preamble require TikzPictures v3.3.2; only use if not default
+        if limit_to != :default
+            save(TIKZ(filename; limit_to=limit_to), plot(o))
+        else
+            if !include_preamble
+                save(TIKZ(filename; include_preamble=include_preamble), plot(o))
+            else
+                save(TIKZ(filename), plot(o))
+            end
+        end
     elseif ext == "." || ext == ""
         error("You must specify a file extension.")
     else
