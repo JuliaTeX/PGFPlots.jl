@@ -299,15 +299,15 @@ mutable struct Image <: Plot
         ) where {T <: Real}
 
         global _imgid
-        if filename == nothing
+        if isnothing(filename)
             id=myid()*10000000000000+_imgid
             filename = "tmp_$(id).png"
             _imgid += 1
         end
-        if zmin == nothing
+        if isnothing(zmin)
             zmin = minimum(A)
         end
-        if zmax == nothing
+        if isnothing(zmax)
             zmax = maximum(A)
         end
         if zmin == zmax
@@ -382,13 +382,13 @@ function Histogram2(
         M = M * scale
     end
     if zmode == "log"
-        if zmin == nothing
+        if isnothing(zmin)
             if minimum(M) == 0
                 nonzeromin = minimum(M[findall(x->x!=0, M)])
                 M = replace!(Float64.(M), 0. =>nonzeromin/2)
                 M = log10.(M)
             end
-        elseif zmin <= 0
+        elseif zmin ≤ 0
             error("zmin must be > 0 for a valid log10 output")
         else
             M = replace!(Float64.(M), 0. =>zmin)
@@ -490,33 +490,33 @@ mutable struct MatrixPlot <: Plot
         ) where {T <: Real}
 
         global _imgid
-        if filename == nothing
+        if isnothing(filename)
             id=myid()*10000000000000+_imgid
             filename = "tmp_$(id).dat"
             _imgid += 1
         end
 
         (rows,cols) = size(A)
-        if xrange == nothing
+        if isnothing(xrange)
             xrange = (0.5,cols+0.5)
         end
-        if yrange == nothing
+        if isnothing(yrange)
             yrange = (0.5,rows+0.5)
         end
-        if zmin == nothing
+        if isnothing(zmin)
             zmin = minimum(A[.!isnan.(A)])
         end
-        if zmax == nothing
+        if isnothing(zmax)
             zmax = maximum(A[.!isnan.(A)])
         end
-        if zmin == zmax
+        if isnothing(zmin)
             zmin -= 1.0
             zmax += 1.0
         end
 
-        if length(A) <= 1e4
+        if length(A) ≤ 1e4
             raster = false
-        elseif raster == nothing
+        elseif isnothing(raster)
             @warn "Matrix is too large for vector plotting, consider switching to raster mode."
             raster = true
         end
