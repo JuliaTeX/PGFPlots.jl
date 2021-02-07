@@ -428,6 +428,23 @@ function PGFPlots.Axis(p::BarChart; kwargs...)
     return Axis(Plots.Plot[p]; kwargs_unsplat...)
 end
 
+# PGFPlots allows one to define legends in (at least) three ways.
+# 1. With one \legend{} command at the end, listing each legend entry
+# 2. With one legend entries field in the axis header, listing each legend entry,
+# 3. With individual \addlegendentry commands after each plot.
+# We use (3) because sometimes we want to skip a legend entry with "forget plot".
+# We have found that "forget plot" does not play nicely with (1).
+
+# NOTE: We guard each entry with "{}{entry}". This is to ensure that entries with
+#       commas are properly parsed. Otherwise, an entry like $beta(1,2)$ will fail to compile.
+plotLegend(o::IO, entry) = nothing
+plotLegend(o::IO, entry::AbstractString) = println(o, "\\addlegendentry{{}{$entry}}")
+function plotLegend(o::IO, entries::Vector{T}) where {T <: AbstractString}
+    for entry in entries
+        plotLegend(o, entry)
+    end
+end
+
 # todo: add error bars style
 function plotHelperErrorBars(o::IO, p::Linear)
     print(o, "[\n  ")
@@ -481,6 +498,7 @@ function plotHelper(o::IO, p::Linear)
     else
         plotHelperErrorBars(o, p)
     end
+    plotLegend(o, p.legendentry)
 end
 
 function plotHelper(o::IO, p::SmithData)
@@ -491,6 +509,7 @@ function plotHelper(o::IO, p::SmithData)
         println(o, "  ($(real(item)), $(imag(item)))")
     end
     println(o, "};")
+    plotLegend(o, p.legendentry)
 end
 
 function plotHelper(o::IO, p::SmithCircle)
@@ -522,6 +541,7 @@ function plotHelper(o::IO, p::Scatter)
         end
     end
     println(o, "};")
+    plotLegend(o, p.legendentry)
 end
 
 # Specific version for Linear3 mutable struct
@@ -534,6 +554,7 @@ function plotHelper(o::IO, p::Linear3)
         println(o, "  ($(p.data[1,i]), $(p.data[2,i]), $(p.data[3,i]))")
     end
     println(o, "};")
+    plotLegend(o, p.legendentry)
 end
 
 function plotHelper(o::IO, p::Node)
@@ -554,6 +575,7 @@ function plotHelper(o::IO, p::ErrorBars)
         println(o, "  ($(p.data[1,i]), $(p.data[2,i])) +=($(p.data[3,i]),$(p.data[4,i])) -=($(p.data[5,i]),$(p.data[6,i]))")
     end
     println(o, "};")
+    plotLegend(o, p.legendentry)
 end
 
 function plotHelper(o::IO, p::Quiver)
@@ -565,6 +587,7 @@ function plotHelper(o::IO, p::Quiver)
         println(o, "  $(p.data[1,i]) $(p.data[2,i]) $(p.data[3,i]) $(p.data[4,i])")
     end
     println(o, "};")
+    plotLegend(o, p.legendentry)
 end
 
 function plotHelper(o::IO, p::Contour)
@@ -660,6 +683,7 @@ function plotHelper(o::IO, p::Patch2D)
         end
     end
     println(o, "};")
+    plotLegend(o, p.legendentry)
 end
 
 function plotHelper(o::IO, p::MatrixPlot)
@@ -698,13 +722,6 @@ function plotHelper(o::IO, axis::Axis)
         catch
         end
         println(o) # empty line between plots
-    end
-    legendentries = map(p->:legendentry in propertynames(p) ? p.legendentry : nothing, axis.plots)
-    legendentries = vcat(legendentries...) # flatten
-    # avoid adding \legend altogether if all entries are `nothing`
-    if !all(isnothing.(legendentries))
-        legendcontent = join(map(x->isnothing(x) ? "" : "{}{$x}", legendentries), ", ")
-        println(o, "\\legend{$legendcontent}") # add legend
     end
 end
 
