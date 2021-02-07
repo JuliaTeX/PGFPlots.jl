@@ -13,9 +13,14 @@ using Discretizers
 using Printf
 
 # Define isnothing
-if VERSION < v"1.1"
-    isnothing(x) = x === nothing
+macro define_isnothing_if_needed()
+    if VERSION < v"1.1"
+        return :( isnothing(x) = x === nothing )
+    else
+        return :()
+    end
 end
+@define_isnothing_if_needed
 
 # load dynamic dependencies
 function __init__()
