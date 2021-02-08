@@ -12,6 +12,11 @@ const RealRange = Tuple{Real,Real}
 
 include("ndgrid.jl")
 
+# Define isnothing
+if VERSION < v"1.1"
+    isnothing(x) = x === nothing
+end
+
 abstract type Plot end
 
 mutable struct Linear <: Plot

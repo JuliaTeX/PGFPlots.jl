@@ -13,14 +13,9 @@ using Discretizers
 using Printf
 
 # Define isnothing
-macro define_isnothing_if_needed()
-    if VERSION < v"1.1"
-        return :( isnothing(x) = x === nothing )
-    else
-        return :()
-    end
+if VERSION < v"1.1"
+    isnothing(x) = x === nothing
 end
-@define_isnothing_if_needed
 
 # load dynamic dependencies
 function __init__()
@@ -449,11 +444,6 @@ end
 #       commas are properly parsed. Otherwise, an entry like $beta(1,2)$ will fail to compile.
 plotLegend(o::IO, entry) = nothing
 plotLegend(o::IO, entry::AbstractString) = println(o, "\\addlegendentry{{}{$entry}}")
-function plotLegend(o::IO, entries::Vector{T}) where {T <: AbstractString}
-    for entry in entries
-        plotLegend(o, entry)
-    end
-end
 
 # todo: add error bars style
 function plotHelperErrorBars(o::IO, p::Linear)
