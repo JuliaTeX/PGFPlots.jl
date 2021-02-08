@@ -12,6 +12,11 @@ using Requires
 using Discretizers
 using Printf
 
+# Define isnothing
+if VERSION < v"1.1"
+    isnothing(x) = x === nothing
+end
+
 # load dynamic dependencies
 function __init__()
     @require DataFrames="a93c6f00-e57d-5684-b7b6-d8193f3e46c0" include("dataframes.jl")
@@ -24,7 +29,7 @@ mutable struct ErrorBars
     ErrorBars(data::AbstractMatrix{T}; style=nothing, mark=nothing) where {T <: Real} = new(data, style, mark)
 end
 
-mylength(x) = (x == nothing) ? 0 : length(x)
+mylength(x) = isnothing(x) ? 0 : length(x)
 
 function ErrorBars(; x=nothing, y=nothing, xplus=nothing, xminus=nothing, yplus=nothing, yminus=nothing, style=nothing, mark=nothing)
     if x != nothing
@@ -342,7 +347,7 @@ function optionHelper(o::IO, m, object; brackets::Bool=true, preOptions::Vector{
         isFirst = true # temporarily true inside brackets
     end
     for (sym, str) in m
-        if getfield(object, sym) !== nothing && getfield(object, sym) != ""
+        if !isnothing(getfield(object, sym)) && getfield(object, sym) != ""
             isFirst = nextOptionHelper(o, isFirst, length(wrapIn)==0 && brackets, length(wrapIn)==0)
             if length(str) > 0
                 print(o, "$str = {$(getfield(object, sym))}") # wrap with keyword
@@ -399,7 +404,7 @@ end
 
 function plotHelper(o::IO, p::BarChart)
     print(o, "\\addplot+")
-    if p.errorBars === nothing
+    if isnothing(p.errorBars)
         optionHelper(o, barMap, p)
         println(o, " coordinates {")
         for (k,v) in zip(p.keys, p.values)
@@ -415,18 +420,30 @@ function PGFPlots.Axis(p::BarChart; kwargs...)
     style = "ybar = 0pt,\n  bar width = 18pt,\n  xtick = data,\n  symbolic x coords = {$(Plots.symbolic_x_coords(p))}"
     kwargs_unsplat = isempty(kwargs) ? Array{Pair{Symbol,Any}}(undef,0) : convert(Array{Pair{Symbol,Any}},collect(kwargs))
     i = findfirst(tup->tup[1] == :style, kwargs_unsplat)
-    if i !== nothing
+    if !isnothing(i)
         kwargs_unsplat[i] = :style=>(style * ", " * kwargs_unsplat[i][2])
     else
         push!(kwargs_unsplat, :style=>style)
     end
     i = findfirst(tup->tup[1] == :ymin, kwargs_unsplat)
-    if i === nothing
+    if isnothing(i)
         push!(kwargs_unsplat, :ymin=>0)
     end
 
     return Axis(Plots.Plot[p]; kwargs_unsplat...)
 end
+
+# PGFPlots allows one to define legends in (at least) three ways.
+# 1. With one \legend{} command at the end, listing each legend entry
+# 2. With one legend entries field in the axis header, listing each legend entry,
+# 3. With individual \addlegendentry commands after each plot.
+# We use (3) because sometimes we want to skip a legend entry with "forget plot".
+# We have found that "forget plot" does not play nicely with (1).
+
+# NOTE: We guard each entry with "{}{entry}". This is to ensure that entries with
+#       commas are properly parsed. Otherwise, an entry like $beta(1,2)$ will fail to compile.
+plotLegend(o::IO, entry) = nothing
+plotLegend(o::IO, entry::AbstractString) = println(o, "\\addlegendentry{{}{$entry}}")
 
 # todo: add error bars style
 function plotHelperErrorBars(o::IO, p::Linear)
@@ -467,7 +484,7 @@ end
 
 function plotHelper(o::IO, p::Linear)
     print(o, "\\addplot+")
-    if p.errorBars === nothing
+    if isnothing(p.errorBars)
         optionHelper(o, linearMap, p)
         println(o, " coordinates {")
         for i in 1:size(p.data,2)
@@ -481,6 +498,7 @@ function plotHelper(o::IO, p::Linear)
     else
         plotHelperErrorBars(o, p)
     end
+    plotLegend(o, p.legendentry)
 end
 
 function plotHelper(o::IO, p::SmithData)
@@ -491,10 +509,11 @@ function plotHelper(o::IO, p::SmithData)
         println(o, "  ($(real(item)), $(imag(item)))")
     end
     println(o, "};")
+    plotLegend(o, p.legendentry)
 end
 
 function plotHelper(o::IO, p::SmithCircle)
-    if p.style !== nothing
+    if !isnothing(p.style)
         println(o, "\\draw[$(p.style)] ($(p.xc), $(p.yc)) circle [radius=$(p.radius)cm];")
     else
         println(o, "\\draw ($(p.xc), $(p.yc)) circle [radius=$(p.radius)cm];")
@@ -507,7 +526,7 @@ function plotHelper(o::IO, p::Scatter)
     if size(p.data,1) == 2
         options = ["draw = none"]
         p.onlyMarks = nothing
-    elseif p.scatterClasses === nothing
+    elseif isnothing(p.scatterClasses)
         options = ["scatter", "scatter src = explicit"]
     end
     optionHelper(o, scatterMap, p; preOptions=options)
@@ -522,6 +541,7 @@ function plotHelper(o::IO, p::Scatter)
         end
     end
     println(o, "};")
+    plotLegend(o, p.legendentry)
 end
 
 # Specific version for Linear3 mutable struct
@@ -534,11 +554,12 @@ function plotHelper(o::IO, p::Linear3)
         println(o, "  ($(p.data[1,i]), $(p.data[2,i]), $(p.data[3,i]))")
     end
     println(o, "};")
+    plotLegend(o, p.legendentry)
 end
 
 function plotHelper(o::IO, p::Node)
-    axis = p.axis !== nothing ? p.axis : "axis cs"
-    if p.style !== nothing
+    axis = !isnothing(p.axis) ? p.axis : "axis cs"
+    if !isnothing(p.style)
         println(o, "\\node at ($(axis):$(p.x), $(p.y)) [$(p.style)] {$(p.data)};")
     else
         println(o, "\\node at ($(axis):$(p.x), $(p.y)) {$(p.data)};")
@@ -554,6 +575,7 @@ function plotHelper(o::IO, p::ErrorBars)
         println(o, "  ($(p.data[1,i]), $(p.data[2,i])) +=($(p.data[3,i]),$(p.data[4,i])) -=($(p.data[5,i]),$(p.data[6,i]))")
     end
     println(o, "};")
+    plotLegend(o, p.legendentry)
 end
 
 function plotHelper(o::IO, p::Quiver)
@@ -565,24 +587,25 @@ function plotHelper(o::IO, p::Quiver)
         println(o, "  $(p.data[1,i]) $(p.data[2,i]) $(p.data[3,i]) $(p.data[4,i])")
     end
     println(o, "};")
+    plotLegend(o, p.legendentry)
 end
 
 function plotHelper(o::IO, p::Contour)
     arg = 5
-    if p.number !== nothing
+    if !isnothing(p.number)
         arg = p.number
-    elseif p.levels !== nothing
+    elseif !isnothing(p.levels)
         arg = p.levels
     end
     C = contours(convert(Vector{Float64}, p.xbins), convert(Vector{Float64}, p.ybins), convert(Matrix{Float64}, p.data), arg)
 
     print(o, "\\addplot3[\n  contour prepared")
-    if p.contour_style !== nothing
+    if !isnothing(p.contour_style)
         print(o, "={$(p.contour_style)}")
     elseif p.labels == false
         print(o, "={labels=false}")
     end
-    if p.style !== nothing
+    if !isnothing(p.style)
         print(o, ",\n  $(p.style)")
     end
     println(o, "\n] table {")
@@ -600,7 +623,7 @@ function plotHelper(o::IO, p::Contour)
 end
 
 function plotHelper(o::IO, p::Circle)
-    if p.style !== nothing
+    if !isnothing(p.style)
         println(o, "\\draw[$(p.style)] (axis cs:$(p.xc), $(p.yc)) circle[radius=$(p.radius)];")
     else
         println(o, "\\draw (axis cs:$(p.xc), $(p.yc)) circle[radius=$(p.radius)];")
@@ -608,7 +631,7 @@ function plotHelper(o::IO, p::Circle)
 end
 
 function plotHelper(o::IO, p::Ellipse)
-    if p.style !== nothing
+    if !isnothing(p.style)
         println(o, "\\draw[$(p.style)] (axis cs:$(p.xc), $(p.yc)) ellipse[x radius=$(p.xradius), y radius=$(p.yradius)];")
     else
         println(o, "\\draw (axis cs:$(p.xc), $(p.yc)) ellipse[x radius=$(p.xradius), y radius=$(p.yradius)];")
@@ -622,7 +645,7 @@ function plotHelper(o::IO, p::Image)
         error("Your colorbar range limits must not be equal to each other.")
     end
     print(o, "\\addplot[\n  ")
-    if p.style !== nothing
+    if !isnothing(p.style)
         println(o, join([p.style, "point meta min = $(p.zmin)", "point meta max = $(p.zmax)"], ",\n  "))
     else
         println(o, join(["point meta min = $(p.zmin)", "point meta max = $(p.zmax)"], ",\n  "))
@@ -660,6 +683,7 @@ function plotHelper(o::IO, p::Patch2D)
         end
     end
     println(o, "};")
+    plotLegend(o, p.legendentry)
 end
 
 function plotHelper(o::IO, p::MatrixPlot)
@@ -670,7 +694,7 @@ function plotHelper(o::IO, p::MatrixPlot)
     if !(p.raster)
         push!(plot_options, "point meta = explicit", "matrix plot*", "mesh/cols = $(p.cols)", "mesh/rows = $(p.rows)")
     end
-    if p.style !== nothing
+    if !isnothing(p.style)
         push!(plot_options, p.style)
     end
     print(o, "\\addplot[\n  ")
@@ -692,19 +716,12 @@ function plotHelper(o::IO, axis::Axis)
     for p in axis.plots
         plotHelper(o, p)
         try
-            if p.texlabel !== nothing
+            if !isnothing(p.texlabel)
                 println(o, "\\label{$(p.texlabel)}")
             end
         catch
         end
         println(o) # empty line between plots
-    end
-    legendentries = map(p->:legendentry in propertynames(p) ? p.legendentry : nothing, axis.plots)
-    legendentries = vcat(legendentries...) # flatten
-    # avoid adding \legend altogether if all entries are `nothing`
-    if !all(legendentries .=== nothing)
-        legendcontent = join(map(x->x === nothing ? "" : "{}{$x}", legendentries), ", ")
-        println(o, "\\legend{$legendcontent}") # add legend
     end
 end
 
@@ -732,11 +749,11 @@ plot(ax::Union{Axis,Axes}) =
 function tikzCode(p::GroupPlot)
     o = IOBuffer()
     style = ""
-    if p.style !== nothing
+    if !isnothing(p.style)
         style = p.style * ", "
     end
     groupStyle = ""
-    if p.groupStyle !== nothing
+    if !isnothing(p.groupStyle)
         groupStyle = p.groupStyle * ", "
     end
     println(o, "\\begin{groupplot}[$(style)group style={$(groupStyle)group size=$(p.dimensions[1]) by $(p.dimensions[2])}]")
@@ -836,7 +853,7 @@ end
 function axisOptions(p::Image)
     if p.colorbar
         cmOpt = colormapOptions(p.colormap)
-        if p.colorbarStyle === nothing
+        if isnothing(p.colorbarStyle)
             return ["enlargelimits = false", "axis on top", cmOpt, "colorbar"]
         else
             return ["enlargelimits = false", "axis on top", cmOpt, "colorbar", "colorbar style = {$(p.colorbarStyle)}"]
@@ -850,7 +867,7 @@ function axisOptions(p::MatrixPlot)
     if p.colorbar
         cmOpt = colormapOptions(p.colormap)
         options = ["enlargelimits = false", "axis on top", cmOpt, "colorbar", "xmin = $(p.xmin)", "xmax = $(p.xmax)", "ymin = $(p.ymin)", "ymax = $(p.ymax)"]
-        if p.colorbarStyle !== nothing
+        if !isnothing(p.colorbarStyle)
             push!(options, "style = {$(p.colorbarStyle)}")
         end
         return options
