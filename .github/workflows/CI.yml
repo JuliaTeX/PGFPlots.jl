@@ -56,8 +56,8 @@ jobs:
           git config --global user.email te@st.er
       - name: Run Tests
         uses: julia-actions/julia-runtest@latest
-      - name: Process Coverage
+      - uses: julia-actions/julia-processcoverage@v1
+      - name: Upload Coverage
         env:
           COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: julia-actions/julia-processcoverage@v1
-      - uses: julia-actions/julia-uploadcoveralls@v1
+        uses: julia-actions/julia-uploadcoveralls@v1
