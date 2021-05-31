@@ -356,6 +356,12 @@ mutable struct Patch2D <: Plots.Plot
 end
 Patch2D(data::AbstractMatrix; style="patch", patch_type=nothing, shader=nothing, legendentry=nothing, texlabel=nothing) = Patch2D(data, style, patch_type, shader, legendentry, texlabel)
 
+function DiscreteLinear(y; start=1, args...)
+    x = start:(start+length(y)-1)
+    xx = [([x x]')[:] .- 0.5; (start+length(y)-1) + 0.5][2:end]
+    yy = ([y y]')[:]
+    Plots.Linear(xx, yy; args...)
+end
 
 function Histogram2(
     x::Vector{A},
