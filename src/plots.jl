@@ -78,9 +78,10 @@ mutable struct Histogram <: Plot
     density::Bool
     cumulative::Bool
     style::AbstractString
+    legendentry
     discretization::Symbol
     texlabel::Union{Nothing,String}
-    Histogram(data; bins=10, discretization=:default, density=false, cumulative=false, style="fill=blue!10",texlabel=nothing) = new(data,bins,density,cumulative,style,discretization,texlabel)
+    Histogram(data; bins=10, discretization=:default, density=false, cumulative=false, style="fill=blue!10", legendentry=nothing, texlabel=nothing) = new(data,bins,density,cumulative,style,legendentry,discretization,texlabel)
 end
 
 mutable struct BarChart <: Plot

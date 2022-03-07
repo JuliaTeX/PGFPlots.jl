@@ -400,6 +400,7 @@ function plotHelper(o::IO, p::Plots.Histogram)
         end
         plotHelper(o, linear)
     end
+    plotLegend(o, p.legendentry)
 end
 
 function plotHelper(o::IO, p::BarChart)
