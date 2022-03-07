@@ -414,6 +414,7 @@ function plotHelper(o::IO, p::BarChart)
     else
         plotHelperErrorBars(o, p)
     end
+    plotLegend(o, p.legendentry)
 end
 function PGFPlots.Axis(p::BarChart; kwargs...)
     # TODO : What's a better way to do this?
@@ -444,6 +445,7 @@ end
 #       commas are properly parsed. Otherwise, an entry like $beta(1,2)$ will fail to compile.
 plotLegend(o::IO, entry) = nothing
 plotLegend(o::IO, entry::AbstractString) = println(o, "\\addlegendentry{{}{$entry}}")
+plotLegend(o::IO, entries::AbstractArray{<:AbstractString}) = map(entry->plotLegend(o, entry), entries)
 
 # todo: add error bars style
 function plotHelperErrorBars(o::IO, p::Linear)
