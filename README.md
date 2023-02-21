@@ -5,4 +5,4 @@
 
 This library uses the LaTeX package [pgfplots](http://ctan.org/pkg/pgfplots) to produce plots. It integrates with IJulia, outputting SVG images to the notebook.
 
-Please read the [documentation](http://nbviewer.ipython.org/github/JuliaTeX/PGFPlots.jl/blob/master/doc/PGFPlots.ipynb).
+Please read the [documentation](https://github.com/JuliaTeX/PGFPlots.jl/blob/master/doc/PGFPlots.ipynb).
