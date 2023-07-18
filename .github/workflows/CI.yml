@@ -45,10 +45,6 @@ jobs:
             ${{ runner.os }}-${{ matrix.arch }}-
             ${{ runner.os }}-
 
-      # TexLive installation
-      - name: Install TexLive
-        run: sudo apt-get install pdf2svg texlive-latex-base texlive-binaries texlive-pictures texlive-latex-extra texlive-luatex
-
       # build the depencies, run the tests, and upload coverage results
       - uses: julia-actions/julia-buildpkg@latest
       - run: |
