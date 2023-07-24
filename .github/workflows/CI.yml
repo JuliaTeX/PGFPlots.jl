@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - "1.0"  # LTS
+          - "1.6"  # Support by TikzPictures
           - "1"    # Latest Release
         os:
           - ubuntu-latest
