@@ -5,7 +5,7 @@ export plot, tikzCode, ErrorBars, Axis, Axes, PolarAxis, SmithAxis, TernaryAxis,
 export pushPGFPlotsOptions, popPGFPlotsOptions, resetPGFPlotsOptions, pgfplotsoptions
 export pushPGFPlotsPreamble, popPGFPlotsPreamble, resetPGFPlotsPreamble, pgfplotspreamble
 export pushPGFPlots, popPGFPlots
-import Colors: RGB
+import Colors: RGB, RGBA
 import Contour: contours, levels
 
 using Requires
@@ -93,6 +93,10 @@ function define_color(name::AbstractString, color::RGB)
     _pgfplotspreamble[end] = _pgfplotspreamble[end] * "\n\\definecolor{$name}{rgb}{$(color.r), $(color.g), $(color.b)}"
 end
 
+function define_color(name::AbstractString, color::RGBA)
+    _pgfplotspreamble[end] = _pgfplotspreamble[end] * "\n\\definecolor{$name}{rgba}{$(color.r), $(color.g), $(color.b), $(color.alpha)}"
+end
+
 define_color(name::AbstractString, color) = define_color(name, convert(RGB, color))
 
 function define_color(name::AbstractString, color::Vector{T}) where {T<:AbstractFloat}
@@ -108,9 +112,15 @@ function define_color(name::AbstractString, color::Vector{T}) where {T<:Abstract
 end
 
 function define_color(name::AbstractString, color::Vector{T}) where {T<:Integer}
-    @assert(length(color) == 3, "Color must have three components")
-    r, g, b = color[1], color[2], color[3]
-    _pgfplotspreamble[end] = _pgfplotspreamble[end] * "\n\\definecolor{$name}{RGB}{$r, $g, $b}"
+    if length(color) == 3
+        r, g, b = color
+        _pgfplotspreamble[end] = _pgfplotspreamble[end] * "\n\\definecolor{$name}{RGB}{$r, $g, $b}"
+    elseif length(color) == 4
+        r, g, b, alpha = color
+        _pgfplotspreamble[end] = _pgfplotspreamble[end] * "\n\\definecolor{$name}{RGBA}{$r, $g, $b, $alpha}"
+    else
+        error("The color vector should be either [r,g,b] or [r,g,b,alpha].")
+    end
 end
 
 function define_color(name::AbstractString, color::UInt32)
@@ -845,9 +855,14 @@ function colormapOptions(cm::ColorMaps.RGBArrayMap)
     o = IOBuffer()
     print(o, "colormap={mycolormap}{ ")
     n = length(cm.colors)
+    T = typeof(cm.colors)
     for i = 1:n
         c = cm.colors[i]
-        print(o, "rgb($(i-1)cm)=($(c.r),$(c.g),$(c.b)) ")
+        if T <: Vector{RGB}
+            print(o, "rgb($(i-1)cm)=($(c.r),$(c.g),$(c.b)) ")
+        elseif T <: Vector{RGBA}
+            print(o, "rgba($(i-1)cm)=($(c.r),$(c.g),$(c.b),$(c.alpha)) ")
+        end
     end
     print(o, "}")
     String(take!(o))
