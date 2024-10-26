@@ -858,9 +858,9 @@ function colormapOptions(cm::ColorMaps.RGBArrayMap)
     T = typeof(cm.colors)
     for i = 1:n
         c = cm.colors[i]
-        if T <: Vector{RGB}
+        if T <: Vector{<:RGB{<:Real}}
             print(o, "rgb($(i-1)cm)=($(c.r),$(c.g),$(c.b)) ")
-        elseif T <: Vector{RGBA}
+        elseif T <: Vector{<:RGBA{<:Real}}
             print(o, "rgba($(i-1)cm)=($(c.r),$(c.g),$(c.b),$(c.alpha)) ")
         end
     end
