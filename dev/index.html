@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>PGFPlots · PGFPlots Docs</title><meta name="title" content="PGFPlots · PGFPlots Docs"/><meta property="og:title" content="PGFPlots · PGFPlots Docs"/><meta property="twitter:title" content="PGFPlots · PGFPlots Docs"/><meta name="description" content="Documentation for PGFPlots Docs."/><meta property="og:description" content="Documentation for PGFPlots Docs."/><meta property="twitter:description" content="Documentation for PGFPlots Docs."/><script data-outdated-warner src="assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="assets/documenter.js"></script><script src="search_index.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href>PGFPlots Docs</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li class="is-active"><a class="tocitem" href>PGFPlots</a><ul class="internal"><li><a class="tocitem" href="#Installation"><span>Installation</span></a></li><li><a class="tocitem" href="#Examples"><span>Examples</span></a></li><li><a class="tocitem" href="#Future-Plans"><span>Future Plans</span></a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>PGFPlots</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>PGFPlots</a></li></ul></nav><div class="docs-right"><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="PGFPlots"><a class="docs-heading-anchor" href="#PGFPlots">PGFPlots</a><a id="PGFPlots-1"></a><a class="docs-heading-anchor-permalink" href="#PGFPlots" title="Permalink"></a></h1><p>This library uses the LaTeX package <a href="http://ctan.org/pkg/pgfplots">pgfplots</a> to produce plots. It integrates with IJulia, outputting SVG images to the notebook. This version of PGFPlots requires Julia 1.0 or later.</p><h2 id="Installation"><a class="docs-heading-anchor" href="#Installation">Installation</a><a id="Installation-1"></a><a class="docs-heading-anchor-permalink" href="#Installation" title="Permalink"></a></h2><pre><code class="nohighlight hljs">Pkg.add(&quot;PGFPlots&quot;)</code></pre><p>In addition, you will need to install the following dependencies if you do not already have them on your system.</p><ul><li>Pdf2svg. This is required by TikzPictures. On Ubuntu, you can get this by running <code>sudo apt-get install pdf2svg</code> and on RHEL/Fedora by running <code>sudo dnf install pdf2svg</code>. On Windows, you can download the binaries from http://www.cityinthesky.co.uk/opensource/pdf2svg/. Be sure to add pdf2svg to your path (and restart).</li><li>Pgfplots (version 1.10 or later). Install using your latex package manager (e.g., texlive or miktex).</li></ul><p>Once these things are installed, you should be able to run the following:</p><pre><code class="language-julia hljs">using PGFPlots</code></pre><h2 id="Examples"><a class="docs-heading-anchor" href="#Examples">Examples</a><a id="Examples-1"></a><a class="docs-heading-anchor-permalink" href="#Examples" title="Permalink"></a></h2><h3 id="Linear-Plots"><a class="docs-heading-anchor" href="#Linear-Plots">Linear Plots</a><a id="Linear-Plots-1"></a><a class="docs-heading-anchor-permalink" href="#Linear-Plots" title="Permalink"></a></h3><p>You can create a very basic plot by passing in vectors of <span>$x$</span> and <span>$y$</span> coordinates.</p><pre><code class="language-julia hljs">x = [1,2,3]
+y = [2,4,1]
+plot(x, y)</code></pre><img src="index-9e3a5538.svg" alt="Example block output"/><p>You can also inspect the tikz code that is generated for any plot.</p><p>Note that you can also store plots directly as <code>.tex</code> files instead of inspecting their code as Strings (see <a href="#Saving">Saving</a> below)</p><pre><code class="language-julia hljs">print(tikzCode(x, y))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">\begin{axis}
+
+\addplot+ coordinates {
+  (1, 2)
+  (2, 4)
+  (3, 1)
+};
+
+\end{axis}</code></pre><pre><code class="nohighlight hljs">\begin{axis}
+
+\addplot+ coordinates {
+  (1, 2)
+  (2, 4)
+  (3, 1)
+};
+
+\end{axis}</code></pre><p>The version of the plot function above actually just creates an empty Axis and inserts a Plots.Linear instance containing the data.</p><pre><code class="language-julia hljs">Axis(Plots.Linear(x, y))</code></pre><img src="index-eaafe21d.svg" alt="Example block output"/><p>If you create the Axis object explicitly, as done above, then you can set various properties of the axis.</p><pre><code class="language-julia hljs">pushPGFPlotsOptions(&quot;scale=1.5&quot;)
+a = Axis(Plots.Linear(x, y, legendentry=&quot;My Plot&quot;), xlabel=&quot;X&quot;, ylabel=&quot;Y&quot;, title=&quot;My Title&quot;)</code></pre><img src="index-15c5a255.svg" alt="Example block output"/><p>The options can be set after the plot <code>a</code>  is created. Here we rotate the y-label and move the legend by setting the <code>ylabelStyle</code> and <code>legendStyle</code>:</p><pre><code class="language-julia hljs">a.ylabelStyle = &quot;rotate = -90&quot;
+a.legendStyle = &quot;at={(1.05,1.0)}, anchor=north west&quot;
+a</code></pre><img src="index-b2ee732f.svg" alt="Example block output"/><pre><code class="language-julia hljs">print(tikzCode(a))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">\begin{axis}[
+  legend style = {at={(1.05,1.0)}, anchor=north west},
+  ylabel = {Y},
+  ylabel style = {rotate = -90},
+  title = {My Title},
+  xlabel = {X}
+]
+
+\addplot+ coordinates {
+  (1, 2)
+  (2, 4)
+  (3, 1)
+};
+\addlegendentry{{}{My Plot}}
+
+\end{axis}</code></pre><pre><code class="nohighlight hljs">\begin{axis}[
+  legend style = {at={(1.05,1.0)}, anchor=north west},
+  ylabel = {Y},
+  ylabel style = {rotate = -90},
+  title = {My Title},
+  xlabel = {X}
+]
+
+\addplot+ coordinates {
+  (1, 2)
+  (2, 4)
+  (3, 1)
+};
+\addlegendentry{{}{My Plot}}
+
+\end{axis}</code></pre><p>This will remove the latest added setting</p><pre><code class="language-julia hljs">popPGFPlotsOptions();</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">&quot;scale=1.5&quot;</code></pre><p>And to reset all options, use</p><pre><code class="language-julia hljs">resetPGFPlotsOptions();</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">1-element Vector{Any}:
+ &quot;&quot;</code></pre><p>You can set the width and height of the axis.</p><pre><code class="language-julia hljs">Axis(Plots.Linear(x, y), width=&quot;3cm&quot;, height=&quot;3cm&quot;)</code></pre><img src="index-58277298.svg" alt="Example block output"/><p>Since latex is used to typeset everything, you can use any latex math symbols you want. If you use L&quot;...&quot; (as below), you do not have to escape \ and $.</p><pre><code class="language-julia hljs">Axis(Plots.Linear(x, y), xlabel=L&quot;$X$&quot;, ylabel=L&quot;$Y$&quot;, title=L&quot;$\int_0^\infty e^{\pi x}dx$&quot;)</code></pre><img src="index-bcbce9a8.svg" alt="Example block output"/><p>It is possible to pass a dictionary with arbitrary options to the axis with the <code>customOptions</code> keyword:</p><p>You can pass in a function and its domain. It will automatically be evaluated based on the provided domain at<code>xbins</code> evenly-spaced points.</p><pre><code class="language-julia hljs">Plots.Linear(x-&gt;sqrt(2*x) + sin(x), (0,10), xbins=51)</code></pre><img src="index-bbe2eff4.svg" alt="Example block output"/><p>You can put multiple plots on the same axis and assign legend entries.</p><pre><code class="language-julia hljs">Axis([
+    Plots.Linear(sin, (0,10), legendentry=L&quot;\sin(x)&quot;),
+    Plots.Linear(x-&gt;sqrt(2*x), (0,10), legendentry=L&quot;\sqrt{2x}&quot;)
+])</code></pre><img src="index-5d9a4e8a.svg" alt="Example block output"/><p>You can change the legend position by setting the legendPos parameter in the axis.</p><pre><code class="language-julia hljs">Axis([
+    Plots.Linear(sin, (0,10), legendentry=L&quot;\sin(x)&quot;),
+    Plots.Linear(x-&gt;sqrt(2*x), (0,10), legendentry=L&quot;\sqrt{2x}&quot;)
+    ], legendPos=&quot;north west&quot;)</code></pre><img src="index-6cac10e6.svg" alt="Example block output"/><p>Not all entries need to have legends. The &quot;forget plot&quot; option can be used to skip a plot. Note that &quot;forget plot&quot; does not advance the cycle list color.</p><pre><code class="language-julia hljs">Axis([
+    Plots.Linear(sin, (0,10), style=&quot;red&quot;, legendentry=L&quot;\sin(x)&quot;),
+    Plots.Linear(x-&gt;sqrt(2*x), (0,10), style=&quot;blue, forget plot&quot;),
+    Plots.Linear(x-&gt;3exp(-x), (0,10), style=&quot;green&quot;, legendentry=L&quot;3 \exp{-x}&quot;)
+])</code></pre><img src="index-eb3d14ca.svg" alt="Example block output"/><p>You can do comb plots by setting the style. The style string gets passed directly into PGFPlots, giving you full control over the plots (see PGFPlots <a href="http://mirror.utexas.edu/ctan/graphics/pgf/contrib/pgfplots/doc/pgfplots.pdf">documentation</a>).</p><pre><code class="language-julia hljs">Plots.Linear(1:10, sin.(1:10), style=&quot;ycomb&quot;)</code></pre><img src="index-4b897e82.svg" alt="Example block output"/><p>You can also do horizontal comb plots.</p><pre><code class="language-julia hljs">Plots.Linear(abs.(sin.(1:10)), 1:10, style=&quot;xcomb&quot;)</code></pre><img src="index-4724f701.svg" alt="Example block output"/><p>You can also make it smooth.</p><pre><code class="language-julia hljs">Plots.Linear(1:10, sin.(1:10), style=&quot;smooth&quot;)</code></pre><img src="index-28bb5c40.svg" alt="Example block output"/><p>There is support for constant plots.</p><pre><code class="language-julia hljs">Plots.Linear(1:10, sin.(1:10), style=&quot;const plot&quot;)</code></pre><img src="index-f5ce4943.svg" alt="Example block output"/><pre><code class="language-julia hljs">Plots.Linear(1:10, sin.(1:10), style=&quot;ybar&quot;)</code></pre><img src="index-64458c41.svg" alt="Example block output"/><pre><code class="language-julia hljs">Plots.Linear(1:10, sin.(1:10), style=&quot;ybar,fill=green&quot;, mark=&quot;none&quot;)</code></pre><img src="index-52c1526d.svg" alt="Example block output"/><p>You can give an axis a log scale by specifying xmode or ymode parameters of Axis:</p><pre><code class="language-julia hljs">p = Plots.Linear(0.01:0.01:1, 10 .^(0.01:0.01:1), mark=&quot;none&quot;)
+Axis(p, ymode=&quot;log&quot;)</code></pre><img src="index-f525f985.svg" alt="Example block output"/><p>Fill and fill opacity can be handled through the style parameter.</p><pre><code class="language-julia hljs">p = Plots.Linear(0:10, (0:10).^2, style=&quot;red, fill=blue, fill opacity=0.3&quot;, mark=&quot;none&quot;)</code></pre><img src="index-3adbc267.svg" alt="Example block output"/><p>If you want the tick marks to be equal, you can set axisEqual to true (equivalent to axis equal in LaTeX). Note that this will also change the limit sizes, over riding xmax, xmin, ymin, and ymax.</p><pre><code class="language-julia hljs">p = Plots.Linear(0:10, 2*(0:10))
+Axis(p, axisEqual=true, xmin=0, xmax=10) # note xmin and xmax are disregarded...</code></pre><img src="index-5d0f3499.svg" alt="Example block output"/><p>If this flippant disregard of your axis limit authority displeases you, you can set axisEqualImage to true (equivalent to axis equal image). This will leave the limits alone, and let you modify them.</p><pre><code class="language-julia hljs">p = Plots.Linear(0:10, 2*(0:10))
+Axis(p, axisEqualImage=true)</code></pre><img src="index-d32cd298.svg" alt="Example block output"/><p>You can change the size of the markers with the <code>markSize</code> argument. The default marker size is 2.</p><pre><code class="language-julia hljs">Plots.Linear(0:10, 2*(0:10), markSize=10)</code></pre><img src="index-83035787.svg" alt="Example block output"/><p>To eliminate the line and only use marks, you can set the <code>onlyMarks</code> argument to true.</p><pre><code class="language-julia hljs">Plots.Linear(0:10, 2*(0:10), onlyMarks=true)</code></pre><img src="index-ea19e9b2.svg" alt="Example block output"/><h3 id="Discrete-Linear"><a class="docs-heading-anchor" href="#Discrete-Linear">Discrete Linear</a><a id="Discrete-Linear-1"></a><a class="docs-heading-anchor-permalink" href="#Discrete-Linear" title="Permalink"></a></h3><p>We can associate values with an integer range, which defaults to starting at 1, and produce a piecewise constant plot.</p><pre><code class="language-julia hljs">Plots.DiscreteLinear([3,1,4,1,5,9,2,6,5])</code></pre><img src="index-084fdbe2.svg" alt="Example block output"/><p>We can start at integer values other than 1 by using the <code>start</code> keyword. We can also adjust the style of the plot.</p><pre><code class="language-julia hljs">Plots.DiscreteLinear([3,1,4,1,5,9,2,6,5]; start=0, style=&quot;no marks&quot;)</code></pre><img src="index-239df706.svg" alt="Example block output"/><h3 id="Stacked-Plots"><a class="docs-heading-anchor" href="#Stacked-Plots">Stacked Plots</a><a id="Stacked-Plots-1"></a><a class="docs-heading-anchor-permalink" href="#Stacked-Plots" title="Permalink"></a></h3><p>Here are a couple plots before they are stacked.</p><pre><code class="language-julia hljs">Axis([
+    Plots.Linear(x-&gt;sin(x), (0,2)),
+    Plots.Linear(x-&gt;abs(1.5*sin(2x)^2), (0,2))
+])</code></pre><img src="index-654dd9d6.svg" alt="Example block output"/><p>We can stack plots by setting the appropriate style.</p><pre><code class="language-julia hljs">Axis([
+    Plots.Linear(x-&gt;sin(x), (0,2)),
+    Plots.Linear(x-&gt;abs(1.5*sin(2x)^2), (0,2))
+], style=&quot;stack plots=y&quot;)</code></pre><img src="index-ee9c7e1f.svg" alt="Example block output"/><p>We can create area plots like this.</p><pre><code class="language-julia hljs">Axis([
+    Plots.Linear(x-&gt;sin(x), (0,2), closedCycle=true),
+    Plots.Linear(x-&gt;abs(1.5*sin(2x)^2), (0,2), closedCycle=true)
+], style=&quot;stack plots=y, area style, enlarge x limits=false&quot;, ymin=0)</code></pre><img src="index-fa54a88d.svg" alt="Example block output"/><h3 id="Error-Bars"><a class="docs-heading-anchor" href="#Error-Bars">Error Bars</a><a id="Error-Bars-1"></a><a class="docs-heading-anchor-permalink" href="#Error-Bars" title="Permalink"></a></h3><p>You can plot error bars for Linear and Scatter plots. Here we specify an array for the y error.</p><pre><code class="language-julia hljs">x = [1,2,3]
+y = [2,4,1]
+plot(x, y, errorBars = ErrorBars(y=[1, 0.3, 0.5]))</code></pre><img src="index-bc0e6897.svg" alt="Example block output"/><p>The y error does not have to be symmetric.</p><pre><code class="language-julia hljs">plot(x, y, errorBars = ErrorBars(yplus=[1, 0.3, 0.5], yminus=[0.5, 0.1, 0.1]))</code></pre><img src="index-372a0e44.svg" alt="Example block output"/><p>You can also specify x error.</p><pre><code class="language-julia hljs">plot(x, y, errorBars = ErrorBars(y=[1, 0.3, 0.5], x=[0.1, 0.1, 0.05]))</code></pre><img src="index-bce27633.svg" alt="Example block output"/><p>You can change the style.</p><pre><code class="language-julia hljs">plot(x, y, errorBars = ErrorBars(y=[1, 0.3, 0.5], style=&quot;red,very thick&quot;))</code></pre><img src="index-50835867.svg" alt="Example block output"/><p>You can also specify the mark.</p><pre><code class="language-julia hljs">plot(x, y, errorBars = ErrorBars(y=[1, 0.3, 0.5], mark=&quot;diamond&quot;))</code></pre><img src="index-7c930532.svg" alt="Example block output"/><p>You can control the style of the plot line along with the error bars.</p><pre><code class="language-julia hljs">plot(x, y, style=&quot;red&quot;, errorBars = ErrorBars(y=[1, 0.3, 0.5], style=&quot;black,very thick&quot;, mark=&quot;diamond&quot;))</code></pre><img src="index-4a8eb9d1.svg" alt="Example block output"/><h3 id="Scatter-Plots"><a class="docs-heading-anchor" href="#Scatter-Plots">Scatter Plots</a><a id="Scatter-Plots-1"></a><a class="docs-heading-anchor-permalink" href="#Scatter-Plots" title="Permalink"></a></h3><p>A simple scatter plot is just a linear plot with &quot;only marks&quot;. The following code returns a Linear plot with &quot;only marks&quot; selected:</p><pre><code class="language-julia hljs">x = 1:10
+y = 2x
+Plots.Scatter(x, y)</code></pre><img src="index-64ee253c.svg" alt="Example block output"/><p>PGFPlots gives you the option of picking a color for each scatter point. You can provide a third vector with the desired color values. The following code returns a Scatter plot where points with smaller z-values are blue. Points redden as the z-values increase.</p><pre><code class="language-julia hljs">z = 3x
+Plots.Scatter(x, y, z)</code></pre><img src="index-5bb1f6e7.svg" alt="Example block output"/><p>To add a colorbar, you can set the <code>colorbar</code> argument to true.</p><pre><code class="language-julia hljs">p = Plots.Scatter(x, y, z)
+a = Axis(p, colorbar=true)</code></pre><img src="index-93e3d7fe.svg" alt="Example block output"/><pre><code class="language-julia hljs">print(tikzCode(a))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">\begin{axis}[
+  colorbar = {true}
+]
+
+\addplot+[
+  scatter,
+  scatter src = explicit,
+  only marks = {true}
+] coordinates {
+  (1, 2) [3]
+  (2, 4) [6]
+  (3, 6) [9]
+  (4, 8) [12]
+  (5, 10) [15]
+  (6, 12) [18]
+  (7, 14) [21]
+  (8, 16) [24]
+  (9, 18) [27]
+  (10, 20) [30]
+};
+
+\end{axis}</code></pre><pre><code class="nohighlight hljs">\begin{axis}[
+  colorbar = {true}
+]
+
+\addplot+[
+  scatter,
+  scatter src = explicit,
+  only marks = {true}
+] coordinates {
+  (1, 2) [3]
+  (2, 4) [6]
+  (3, 6) [9]
+  (4, 8) [12]
+  (5, 10) [15]
+  (6, 12) [18]
+  (7, 14) [21]
+  (8, 16) [24]
+  (9, 18) [27]
+  (10, 20) [30]
+};
+
+\end{axis}</code></pre><p>If you want non-numeric data to determine the coloration and marking of each scatter point, you must provide the scatterClasses argument and describe what each symbol means. This is the same string that would be passed into the tex file if you were writing it yourself. The following code colors points by their class (&quot;a&quot;, &quot;b&quot;, or &quot;c&quot;).</p><pre><code class="language-julia hljs">z = [&quot;a&quot;, &quot;a&quot;, &quot;a&quot;, &quot;b&quot;, &quot;b&quot;, &quot;b&quot;, &quot;b&quot;, &quot;c&quot;, &quot;c&quot;, &quot;c&quot;]
+sc = &quot;a={mark=square,blue}, b={mark=triangle,red}, c={mark=o,black}&quot;
+Plots.Scatter(x, y, z, scatterClasses=sc)</code></pre><img src="index-6c3cc1d4.svg" alt="Example block output"/><p>You can add a legend using the <code>legendentry</code> keyword.</p><pre><code class="language-julia hljs">Plots.Scatter(x, y, z, scatterClasses=sc, legendentry=[&quot;A&quot;, &quot;B&quot;, &quot;C&quot;])</code></pre><img src="index-8a16787e.svg" alt="Example block output"/><p>You can customize the legend using optionsto the <code>Axis</code> (since the legend style is a property of the <code>Axis</code>).</p><pre><code class="language-julia hljs">Axis(Plots.Scatter(x, y, z, scatterClasses=sc, legendentry=[&quot;A&quot;, &quot;B&quot;, &quot;C&quot;]), style=&quot;legend columns = -1&quot;, legendPos=&quot;north west&quot;)</code></pre><img src="index-31eb882b.svg" alt="Example block output"/><h3 id="Histograms"><a class="docs-heading-anchor" href="#Histograms">Histograms</a><a id="Histograms-1"></a><a class="docs-heading-anchor-permalink" href="#Histograms" title="Permalink"></a></h3><p>It is very easy to make histograms. It is just another type under the Plots module. You should be able to use autocompletion in your editor (e.g., IJulia) to see what Plots are supported.</p><pre><code class="language-julia hljs">d = randn(100)
+a = Axis(Plots.Histogram(d, bins=10), ymin=0)</code></pre><img src="index-a7af2948.svg" alt="Example block output"/><pre><code class="language-julia hljs">print(tikzCode(a))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">\begin{axis}[
+  ymin = {0}
+]
+
+\addplot+[
+  mark = none,
+  fill=blue!10,
+  hist = {density = {false}, cumulative = {false}, bins = {10}}
+] table[
+  row sep=\\,
+  y index = 0
+] { data \\
+  -1.1032008343680975 \\
+  1.1482090533974356 \\
+  0.3646906390286415 \\
+  0.16216354343848702 \\
+  0.17854175792486066 \\
+  -1.743322895780811 \\
+  0.9627069940817876 \\
+  -0.029755738851597408 \\
+  -0.5986510844656442 \\
+  -0.5467424175977273 \\
+  -1.7074000498765394 \\
+  -1.230562630184012 \\
+  -0.4447553650291485 \\
+  0.5189176785514954 \\
+  -0.3845098470341179 \\
+  -0.8997790113877334 \\
+  2.176753988887444 \\
+  0.249066112547409 \\
+  -1.4885884227090567 \\
+  -0.28714809055141666 \\
+  2.1892607322837385 \\
+  0.3132163883589239 \\
+  -1.5354052114560628 \\
+  -0.16084109225303067 \\
+  0.8968625636668146 \\
+  0.803828581223856 \\
+  -0.23889311206344852 \\
+  0.3853970362478102 \\
+  1.5244740786799265 \\
+  0.3627926568475211 \\
+  -0.24855657696471728 \\
+  -0.5186201938879967 \\
+  1.2888435973229568 \\
+  -2.2823158646601898 \\
+  -0.37520825902157406 \\
+  0.9085992987089353 \\
+  1.7969803796288086 \\
+  -0.07598899228699016 \\
+  -0.7352903106406364 \\
+  -0.7631119585250629 \\
+  -0.44596301119351683 \\
+  -1.067237599714191 \\
+  0.6266557061411894 \\
+  0.4769801520963567 \\
+  1.4039596008192847 \\
+  0.1848755894079783 \\
+  -0.13382110285915588 \\
+  0.005063190054995426 \\
+  -1.9838994657328104 \\
+  1.5822206193056692 \\
+  0.8037586228489914 \\
+  1.553229342052701 \\
+  -1.1270326436660392 \\
+  -0.3359955181326428 \\
+  1.3950543786055682 \\
+  0.3219654963146691 \\
+  0.38987252569802255 \\
+  0.866314509132328 \\
+  0.7332523019024965 \\
+  0.23504989958631226 \\
+  0.9852910073590544 \\
+  0.6694834760133969 \\
+  0.49236411792515294 \\
+  -1.0362929381697266 \\
+  1.0531791793610779 \\
+  -0.07281803945626772 \\
+  -1.8529009978098305 \\
+  0.3704984192078568 \\
+  -0.5790445709104555 \\
+  1.1001649817870784 \\
+  0.2550469765919508 \\
+  1.4940370785765344 \\
+  -0.2972989699953683 \\
+  0.9043485604527834 \\
+  -2.1102226482735964 \\
+  2.3963498685556015 \\
+  -0.2727431943369831 \\
+  1.3175494514760908 \\
+  1.2665553771651725 \\
+  -0.24011546413469603 \\
+  1.044886126125561 \\
+  0.028117940360965616 \\
+  -0.5831051691091791 \\
+  -0.47754594985099885 \\
+  -2.6459590498106054 \\
+  0.8660176747239803 \\
+  1.1443703322285101 \\
+  -0.2236630904849923 \\
+  -0.6513020649899836 \\
+  -0.22100556856751505 \\
+  -2.058429921548601 \\
+  -0.7083871887656962 \\
+  1.3416880358626324 \\
+  -0.7098513006540026 \\
+  0.34580852372695114 \\
+  -0.49723590746218344 \\
+  0.34398672720380935 \\
+  -0.4861403764194327 \\
+  0.8053259401102076 \\
+  2.345761975166346 \\
+};
+
+\end{axis}</code></pre><pre><code class="nohighlight hljs">\begin{axis}[
+  ymin = {0}
+]
+
+\addplot+[
+  mark = none,
+  fill=blue!10,
+  hist = {density = {false}, cumulative = {false}, bins = {10}}
+] table[
+  row sep=\\,
+  y index = 0
+] { data \\
+  -1.1412742480112263 \\ 
+  -0.9476625573402647 \\ 
+  -0.638841743074631 \\ 
+  0.591391257685496 \\ 
+  1.8700805223089032 \\ 
+  0.06976138254451614 \\ 
+  -0.5601575788556005 \\ 
+  0.22176923977675717 \\ 
+  -1.3279044942422746 \\ 
+  1.6013603717681384 \\ 
+  -0.18322216589060333 \\ 
+  -1.7604344847624003 \\ 
+  0.9409674656199954 \\ 
+  -0.15681486382679674 \\ 
+  0.40633641829901057 \\ 
+  1.0960892283707742 \\ 
+  1.448355759189747 \\ 
+  -0.6574469656556521 \\ 
+  1.0908402621331155 \\ 
+  0.6391819574270942 \\ 
+  0.18772541579169563 \\ 
+  -1.3284799117979886 \\ 
+  0.9954179079982424 \\ 
+  -1.8115795051640966 \\ 
+  -1.3777819286485817 \\ 
+  -1.2484334107473214 \\ 
+  1.8183165160922097 \\ 
+  0.4444817647949964 \\ 
+  2.1623357127257505 \\ 
+  0.6590239708928969 \\ 
+  -0.3986665043082441 \\ 
+  0.6903780166955428 \\ 
+  1.6587080258887743 \\ 
+  -0.9845669519473051 \\ 
+  -0.506482208428166 \\ 
+  -0.9762600892752834 \\ 
+  -0.290915632263733 \\ 
+  -0.18320197812075764 \\ 
+  0.19197584091904143 \\ 
+  -1.406052430091483 \\ 
+  -0.8253264308264319 \\ 
+  0.4192740033304801 \\ 
+  1.9316755259756522 \\ 
+  -0.4605926655627327 \\ 
+  1.010570290708947 \\ 
+  0.4738110182331757 \\ 
+  -2.5899821127294764 \\ 
+  -0.08535424880667342 \\ 
+  1.2484177242162475 \\ 
+  0.7401951173162818 \\ 
+  0.02393038679238556 \\ 
+  -1.4127146668992208 \\ 
+  -0.1478082240984941 \\ 
+  0.8508863823432342 \\ 
+  -0.8068006485648844 \\ 
+  -1.9419948135217548 \\ 
+  -2.2027594595047955 \\ 
+  0.4432023110284903 \\ 
+  0.6230794336454473 \\ 
+  -0.40901865512756874 \\ 
+  0.5324352281363782 \\ 
+  1.768803339762671 \\ 
+  0.057031041255158704 \\ 
+  -1.0413517888250567 \\ 
+  2.5934437537477035 \\ 
+  -0.7972314229118395 \\ 
+  -0.3181002973540833 \\ 
+  -0.5698317665547711 \\ 
+  -0.9801130924413973 \\ 
+  0.8742705632859097 \\ 
+  -0.7229038013737661 \\ 
+  1.1381296078240801 \\ 
+  -0.8090062975157662 \\ 
+  1.6048852654084758 \\ 
+  0.03376313733490642 \\ 
+  -1.363372363903438 \\ 
+  2.1055540101770363 \\ 
+  -0.21606029472142027 \\ 
+  -0.039472061417866106 \\ 
+  1.0252695184058374 \\ 
+  -0.7426900277631363 \\ 
+  -1.3357642044063018 \\ 
+  1.9809141932330152 \\ 
+  1.7076714244244342 \\ 
+  -0.5414726841460571 \\ 
+  -2.398081727729472 \\ 
+  1.1334312648103337 \\ 
+  0.8164736925650897 \\ 
+  -0.7380061702715072 \\ 
+  -0.6719238135713946 \\ 
+  -1.0857060501831435 \\ 
+  -0.8708714225935614 \\ 
+  0.44386776346621065 \\ 
+  -0.041671554012579964 \\ 
+  0.8479128602468798 \\ 
+  1.2363484134542724 \\ 
+  -0.616968672951349 \\ 
+  0.0007626318655342322 \\ 
+  -0.47631979363217364 \\ 
+  -0.25081739247579826 \\ 
+};
+
+\end{axis}</code></pre><p>You can even create a cumulative distribution function from the data.</p><pre><code class="language-julia hljs">Axis(Plots.Histogram(d, bins=20, cumulative=true, density=true), ymin=0)</code></pre><img src="index-ff70a60e.svg" alt="Example block output"/><p>As with the other plots, you can control the style. The documentation on tikz and pgfplots can give you more information about what styles are supported.</p><pre><code class="language-julia hljs">Axis(Plots.Histogram(d, bins=10, style=&quot;red, fill=red!10&quot;), ymin=0, ylabel=&quot;Counts&quot;)</code></pre><img src="index-278f191a.svg" alt="Example block output"/><p>Sometimes you do not want to store your raw dataset in a Tikz file, especially when the dataset is large. The <code>discretization</code> option lets you specify what discretization algorithm to use.</p><pre><code class="language-julia hljs">Axis(Plots.Histogram(d, discretization=:auto), ymin=0)</code></pre><img src="index-1d3fb965.svg" alt="Example block output"/><p>Several discretization algorithms are provided by <a href="http://nbviewer.jupyter.org/github/sisl/Discretizers.jl/blob/master/doc/Discretizers.ipynb">Discretizers.jl</a>.</p><pre><code class="language-julia hljs">using Random
+discretizations =
+           [:default, # use PGFPlots for small data sizes and :auto for large
+            :pgfplots, # use the PGFPlots histogram function (uses nbins, which defaults to 10)
+            :specified, # use Discretizers.jl but with the specified number of bins (which defaults to 10)
+            :auto, # max between :fd and :sturges. Good all-round performance
+            :fd, # Freedman Diaconis Estimator, robust
+            :sturges, # R&#39;s default method, only good for near-Gaussian data
+            :sqrt, # used by Excel and others for its simplicity and speed
+            :doane, # improves Sturges’ for non-normal datasets.
+            :scott, # less robust estimator that that takes into account data variability and data size.
+            ]
+
+Random.seed!(0)
+data = [randn(500).*1.8 .+ -5;
+        randn(2000).*0.8 .+ -4;
+        randn(500).*0.3 .+ -1;
+        randn(1000).*0.8 .+ 2;
+        randn(500).*1.5 .+ 4;
+       ]
+data = filter!(x-&gt;-15.0 &lt;= x &lt;= 15.0, data)
+
+g = GroupPlot(3, 3, groupStyle = &quot;horizontal sep = 1.75cm, vertical sep = 1.5cm&quot;)
+for discretization in discretizations
+    push!(g, Axis(Plots.Histogram(data, discretization=discretization), ymin=0, title=string(discretization)))
+end
+g</code></pre><img src="index-69c14deb.svg" alt="Example block output"/><h3 id="Bar-Charts"><a class="docs-heading-anchor" href="#Bar-Charts">Bar Charts</a><a id="Bar-Charts-1"></a><a class="docs-heading-anchor-permalink" href="#Bar-Charts" title="Permalink"></a></h3><p>Bar charts differ from histograms in that they represent values assigned to distinct items. A <code>BarChart</code> has keys and values.</p><pre><code class="language-julia hljs">p = Plots.BarChart([&quot;a&quot;, &quot;b&quot;], [1,2])</code></pre><img src="index-8fb3bc13.svg" alt="Example block output"/><pre><code class="language-julia hljs">print(tikzCode(p))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">\begin{axis}[
+  ymin = {0},
+  ybar = 0pt,
+  bar width = 18pt,
+  xtick = data,
+  symbolic x coords = {a, b}
+]
+
+\addplot+ coordinates {
+  (a, 1)
+  (b, 2)
+};
+
+\end{axis}</code></pre><pre><code class="nohighlight hljs">\begin{axis}[
+  ybar = 0pt,
+  bar width = 18pt,
+  xtick = data,
+  symbolic x coords = {a, b},
+  ymin = {0}
+]
+
+\addplot+ coordinates {
+  (a, 1)
+  (b, 2)
+};
+
+\end{axis}</code></pre><p>If only values are passed in, the keys will be set to the first <span>$n$</span> integers.</p><pre><code class="language-julia hljs">Plots.BarChart([3,4,5,2,10])</code></pre><img src="index-ed10903f.svg" alt="Example block output"/><p>Vectors of <code>AbstractString</code>s will be counted and the strings used as keys.</p><pre><code class="language-julia hljs">Plots.BarChart([&quot;cat&quot;, &quot;dog&quot;, &quot;cat&quot;, &quot;cat&quot;, &quot;dog&quot;, &quot;mouse&quot;])</code></pre><img src="index-fb59134e.svg" alt="Example block output"/><pre><code class="language-julia hljs">Plots.BarChart([L&quot;x&quot;, L&quot;x^2&quot;, L&quot;x^2&quot;, L&quot;sin(x)&quot;, &quot;hello world&quot;])</code></pre><img src="index-d806812c.svg" alt="Example block output"/><pre><code class="language-julia hljs">Axis(Plots.BarChart([&quot;potayto&quot;, &quot;potahto&quot;, &quot;tomayto&quot;, &quot;tomahto&quot;], [1,2,3,4], style=&quot;cyan&quot;),
+     xlabel=&quot;vegetables&quot;, ylabel=&quot;counts&quot;, style=&quot;bar width=25pt&quot;)</code></pre><img src="index-2930dd24.svg" alt="Example block output"/><p>Error bars on the value can be added using the <code>errorBars</code> keyword.</p><pre><code class="language-julia hljs">Plots.BarChart([&quot;a&quot;, &quot;b&quot;, &quot;c&quot;], [2, 3, 5], errorBars=ErrorBars(y=[0.5, 0.7, 1.5]))</code></pre><img src="index-bfc71cf0.svg" alt="Example block output"/><h3 id="Images"><a class="docs-heading-anchor" href="#Images">Images</a><a id="Images-1"></a><a class="docs-heading-anchor-permalink" href="#Images" title="Permalink"></a></h3><p>Image plots create a PNG bitmap and can be used to visualize functions. The second and third arguments below are tuples specifying the x and y ranges.</p><pre><code class="language-julia hljs">f = (x,y)-&gt;x*exp(-x^2-y^2)
+p = Plots.Image(f, (-2,2), (-2,2))</code></pre><pre><code class="language-julia hljs">print(tikzCode(p))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">\begin{axis}[
+  enlargelimits = false,
+  axis on top,
+  colormap={wb}{gray(0cm)=(0); gray(1cm)=(1)},
+  colorbar
+]
+
+\addplot[
+  point meta min = -0.42870694108441587,
+  point meta max = 0.42870694108441587
+] graphics[
+  xmin = -2,
+  xmax = 2,
+  ymin = -2,
+  ymax = 2
+] {tmp_10000000000001.png};
+
+\end{axis}</code></pre><pre><code class="nohighlight hljs">\begin{axis}[
+  enlargelimits = false,
+  axis on top,
+  colormap={wb}{gray(0cm)=(0); gray(1cm)=(1)},
+  colorbar
+]
+
+\addplot[
+  point meta min = -0.42870694108441587,
+  point meta max = 0.42870694108441587
+] graphics[
+  xmin = -2,
+  xmax = 2,
+  ymin = -2,
+  ymax = 2
+] {tmp_10000000000001.png};
+
+\end{axis}</code></pre><p>You can set the zmin and zmax. By default, it uses the minimum and maximum values of the data.</p><pre><code class="language-julia hljs">Plots.Image(f, (-2,2), (-2,2), zmin=-1, zmax=1)</code></pre><p>You can invert the Gray colormap.</p><pre><code class="language-julia hljs">Plots.Image(f, (-2,2), (-2,2), colormap = ColorMaps.GrayMap(invert = true))</code></pre><p>You can turn off the colorbar.</p><pre><code class="language-julia hljs">Plots.Image(f, (-2,2), (-2,2), colorbar = false)</code></pre><p>You can change the colormap.</p><pre><code class="language-julia hljs">Plots.Image(f, (-2,2), (-2,2), colormap = ColorMaps.Distinguishable(3))</code></pre><pre><code class="language-julia hljs">Plots.Image(f, (-2,2), (-2,2), colormap = ColorMaps.Distinguishable(4))</code></pre><pre><code class="language-julia hljs">Plots.Image(f, (-2,2), (-2,2), colormap = ColorMaps.Distinguishable(4, invert=true))</code></pre><p>You can use colormap names from the Color.jl package.</p><pre><code class="language-julia hljs">Plots.Image(f, (-2,2), (-2,2), colormap = ColorMaps.Named(&quot;Blues&quot;))</code></pre><p>You can make a colormap out of any RGB array, such as those created from the Color.jl package.</p><pre><code class="language-julia hljs">using Colors
+cm = colormap(&quot;RdBu&quot;)</code></pre><img src='data:image/svg+xml;utf-8,<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1"
+     width="180mm" height="25mm"
+     viewBox="0 0 100 1" preserveAspectRatio="none"
+     shape-rendering="crispEdges" stroke="none">
+<rect width="1" height=".96" x="0" y="0" fill="%23610102" />
+<rect width="1" height=".96" x="1" y="0" fill="%236C0303" />
+<rect width="1" height=".96" x="2" y="0" fill="%23770706" />
+<rect width="1" height=".96" x="3" y="0" fill="%23810B0A" />
+<rect width="1" height=".96" x="4" y="0" fill="%238B100E" />
+<rect width="1" height=".96" x="5" y="0" fill="%23951612" />
+<rect width="1" height=".96" x="6" y="0" fill="%239E1B17" />
+<rect width="1" height=".96" x="7" y="0" fill="%23A7211B" />
+<rect width="1" height=".96" x="8" y="0" fill="%23B02620" />
+<rect width="1" height=".96" x="9" y="0" fill="%23B82C25" />
+<rect width="1" height=".96" x="10" y="0" fill="%23C03229" />
+<rect width="1" height=".96" x="11" y="0" fill="%23C7382E" />
+<rect width="1" height=".96" x="12" y="0" fill="%23CE3E33" />
+<rect width="1" height=".96" x="13" y="0" fill="%23D54438" />
+<rect width="1" height=".96" x="14" y="0" fill="%23DB4A3E" />
+<rect width="1" height=".96" x="15" y="0" fill="%23E05143" />
+<rect width="1" height=".96" x="16" y="0" fill="%23E55749" />
+<rect width="1" height=".96" x="17" y="0" fill="%23EA5D4E" />
+<rect width="1" height=".96" x="18" y="0" fill="%23EE6354" />
+<rect width="1" height=".96" x="19" y="0" fill="%23F26A59" />
+<rect width="1" height=".96" x="20" y="0" fill="%23F5705F" />
+<rect width="1" height=".96" x="21" y="0" fill="%23F87665" />
+<rect width="1" height=".96" x="22" y="0" fill="%23FB7C6A" />
+<rect width="1" height=".96" x="23" y="0" fill="%23FE8270" />
+<rect width="1" height=".96" x="24" y="0" fill="%23FF8776" />
+<rect width="1" height=".96" x="25" y="0" fill="%23FF8D7B" />
+<rect width="1" height=".96" x="26" y="0" fill="%23FF9381" />
+<rect width="1" height=".96" x="27" y="0" fill="%23FF9886" />
+<rect width="1" height=".96" x="28" y="0" fill="%23FF9D8C" />
+<rect width="1" height=".96" x="29" y="0" fill="%23FFA291" />
+<rect width="1" height=".96" x="30" y="0" fill="%23FFA797" />
+<rect width="1" height=".96" x="31" y="0" fill="%23FFAC9C" />
+<rect width="1" height=".96" x="32" y="0" fill="%23FFB1A1" />
+<rect width="1" height=".96" x="33" y="0" fill="%23FFB6A6" />
+<rect width="1" height=".96" x="34" y="0" fill="%23FFBAAB" />
+<rect width="1" height=".96" x="35" y="0" fill="%23FFBFB0" />
+<rect width="1" height=".96" x="36" y="0" fill="%23FFC3B5" />
+<rect width="1" height=".96" x="37" y="0" fill="%23FFC8BA" />
+<rect width="1" height=".96" x="38" y="0" fill="%23FFCCBF" />
+<rect width="1" height=".96" x="39" y="0" fill="%23FFD0C4" />
+<rect width="1" height=".96" x="40" y="0" fill="%23FFD4C9" />
+<rect width="1" height=".96" x="41" y="0" fill="%23FFD8CD" />
+<rect width="1" height=".96" x="42" y="0" fill="%23FFDBD2" />
+<rect width="1" height=".96" x="43" y="0" fill="%23FFDFD6" />
+<rect width="1" height=".96" x="44" y="0" fill="%23FFE3DB" />
+<rect width="1" height=".96" x="45" y="0" fill="%23FFE6DF" />
+<rect width="1" height=".96" x="46" y="0" fill="%23FFEAE3" />
+<rect width="1" height=".96" x="47" y="0" fill="%23FFEDE8" />
+<rect width="1" height=".96" x="48" y="0" fill="%23FFF0EC" />
+<rect width="1" height=".96" x="49" y="0" fill="%23FFF3F0" />
+<rect width="1" height=".96" x="50" y="0" fill="%23EEF8FE" />
+<rect width="1" height=".96" x="51" y="0" fill="%23EAF6FD" />
+<rect width="1" height=".96" x="52" y="0" fill="%23E6F4FD" />
+<rect width="1" height=".96" x="53" y="0" fill="%23E1F2FC" />
+<rect width="1" height=".96" x="54" y="0" fill="%23DDF0FC" />
+<rect width="1" height=".96" x="55" y="0" fill="%23D8EEFB" />
+<rect width="1" height=".96" x="56" y="0" fill="%23D3ECFA" />
+<rect width="1" height=".96" x="57" y="0" fill="%23CFEAFA" />
+<rect width="1" height=".96" x="58" y="0" fill="%23CAE7F9" />
+<rect width="1" height=".96" x="59" y="0" fill="%23C5E5F9" />
+<rect width="1" height=".96" x="60" y="0" fill="%23C0E2F8" />
+<rect width="1" height=".96" x="61" y="0" fill="%23BBE0F7" />
+<rect width="1" height=".96" x="62" y="0" fill="%23B6DDF7" />
+<rect width="1" height=".96" x="63" y="0" fill="%23B1DAF6" />
+<rect width="1" height=".96" x="64" y="0" fill="%23ACD7F5" />
+<rect width="1" height=".96" x="65" y="0" fill="%23A7D4F4" />
+<rect width="1" height=".96" x="66" y="0" fill="%23A1D1F3" />
+<rect width="1" height=".96" x="67" y="0" fill="%239CCEF2" />
+<rect width="1" height=".96" x="68" y="0" fill="%2397CBF1" />
+<rect width="1" height=".96" x="69" y="0" fill="%2391C7F0" />
+<rect width="1" height=".96" x="70" y="0" fill="%238CC3EE" />
+<rect width="1" height=".96" x="71" y="0" fill="%2386C0ED" />
+<rect width="1" height=".96" x="72" y="0" fill="%2381BCEB" />
+<rect width="1" height=".96" x="73" y="0" fill="%237CB8E9" />
+<rect width="1" height=".96" x="74" y="0" fill="%2376B4E8" />
+<rect width="1" height=".96" x="75" y="0" fill="%2371B0E6" />
+<rect width="1" height=".96" x="76" y="0" fill="%236BACE3" />
+<rect width="1" height=".96" x="77" y="0" fill="%2366A7E1" />
+<rect width="1" height=".96" x="78" y="0" fill="%2361A3DE" />
+<rect width="1" height=".96" x="79" y="0" fill="%235B9EDC" />
+<rect width="1" height=".96" x="80" y="0" fill="%235699D8" />
+<rect width="1" height=".96" x="81" y="0" fill="%235194D5" />
+<rect width="1" height=".96" x="82" y="0" fill="%234C8FD1" />
+<rect width="1" height=".96" x="83" y="0" fill="%23478ACE" />
+<rect width="1" height=".96" x="84" y="0" fill="%234285C9" />
+<rect width="1" height=".96" x="85" y="0" fill="%233E7FC4" />
+<rect width="1" height=".96" x="86" y="0" fill="%233A7ABF" />
+<rect width="1" height=".96" x="87" y="0" fill="%233574BA" />
+<rect width="1" height=".96" x="88" y="0" fill="%23316FB4" />
+<rect width="1" height=".96" x="89" y="0" fill="%232D69AD" />
+<rect width="1" height=".96" x="90" y="0" fill="%232963A6" />
+<rect width="1" height=".96" x="91" y="0" fill="%23265D9F" />
+<rect width="1" height=".96" x="92" y="0" fill="%23225798" />
+<rect width="1" height=".96" x="93" y="0" fill="%231E5190" />
+<rect width="1" height=".96" x="94" y="0" fill="%231A4B87" />
+<rect width="1" height=".96" x="95" y="0" fill="%2317457F" />
+<rect width="1" height=".96" x="96" y="0" fill="%23133F76" />
+<rect width="1" height=".96" x="97" y="0" fill="%230F386C" />
+<rect width="1" height=".96" x="98" y="0" fill="%230C3263" />
+<rect width="1" height=".96" x="99" y="0" fill="%23082C59" />
+</svg>'/><pre><code class="language-julia hljs">Plots.Image(f, (-2,2), (-2,2), colormap = ColorMaps.RGBArrayMap(cm))</code></pre><p>You can also choose the Jet colormap (not currently part of Colors.jl).</p><pre><code class="language-julia hljs">Plots.Image(f, (-2,2), (-2,2), colormap = ColorMaps.Named(&quot;Jet&quot;))</code></pre><p>You can also use colors from <a href="https://github.com/timothyrenner/ColorBrewer.jl">ColorBrewer.jl</a>.</p><pre><code class="language-julia hljs">Plots.Image(f, (-2,2), (-2,2), colormap = ColorMaps.Brew(&quot;Set1&quot;, 3))</code></pre><p>And you can invert them.</p><pre><code class="language-julia hljs">Plots.Image(f, (-2,2), (-2,2), colormap = ColorMaps.Brew(&quot;Set1&quot;, 3, invert=true))</code></pre><p>You can specify colors manually.</p><pre><code class="language-julia hljs">Plots.Image(f, (-2,2), (-2,2), colormap = ColorMaps.RGBArrayMap([RGB(1.,0.,0.),RGB(0.,1.,0.), RGB(0.,0.,1.)]))</code></pre><p>You can specify the number of interpolation levels. Here, we specify 500.</p><pre><code class="language-julia hljs">Plots.Image(f, (-2,2), (-2,2), colormap = ColorMaps.RGBArrayMap([RGB(1.,0.,0.),RGB(0.,1.,0.), RGB(0.,0.,1.)], interpolation_levels=500))</code></pre><p>Instead of a function, you can pass in a matrix.</p><pre><code class="language-julia hljs">A = [1 3; 2 10]
+Plots.Image(A, (-2,2), (-2,2))</code></pre><h3 id="Patch2D"><a class="docs-heading-anchor" href="#Patch2D">Patch2D</a><a id="Patch2D-1"></a><a class="docs-heading-anchor-permalink" href="#Patch2D" title="Permalink"></a></h3><p>The <code>Patch2D</code> type produces patch plots consisting of colored triangles or rectangles.</p><p>Here we see three triangles, each defined by three (x,y) coordinates.</p><pre><code class="language-julia hljs">p = Plots.Patch2D([0 1 2     1 2 3     2 3 4;  # x
+                   0 1 0     1 0 1     0 1 0]) # y</code></pre><img src="index-f4e65351.svg" alt="Example block output"/><p>Color can also be added as a third row.</p><pre><code class="language-julia hljs">p = Plots.Patch2D([0   1 2     1 2 3     2 3 4;    # x
+                   0   1 0     1 0 1     0 1 0;    # y
+                   0.2 0 1     0 1 0     1 0 0.5]) # color</code></pre><img src="index-b9757f44.svg" alt="Example block output"/><pre><code class="language-julia hljs">p = Plots.Patch2D([0   1 2     1 2 3     2 3 4;    # x
+                   0   1 0     1 0 1     0 1 0;    # y
+                   0.2 0 1     0 1 0     1 0 0.5], # color
+                  shader = &quot;interp&quot;)</code></pre><img src="index-8fb185b1.svg" alt="Example block output"/><pre><code class="language-julia hljs">p = Plots.Patch2D([0   1 2     1  2 3     2   3 4;    # x
+                   0   1 0     1  0 1     0   1 0;    # y
+                   0.2 0 1     0 -1 0     0.5 1 0.5], # color
+                  shader = &quot;interp&quot;)</code></pre><img src="index-7eadd04a.svg" alt="Example block output"/><p>Rectangular patches can be used as well:</p><pre><code class="language-julia hljs">p = Plots.Patch2D([0   1 1 0     1  2 2 1    1   2 2   1;  # x
+                   0   0 1 1     0  0 1 1    1   1 2   2;  # y
+                   0.2 0 1 1     0 -1 0 1    0.5 1 0.5 0], # color
+                  shader = &quot;interp&quot;, patch_type=&quot;rectangle&quot;)</code></pre><img src="index-60fb0092.svg" alt="Example block output"/><pre><code class="language-julia hljs">print(tikzCode(p))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">\begin{axis}
+
+\addplot[
+  shader = {interp},
+  patch type = {rectangle},
+  patch
+] table[
+  point meta = \thisrow{c}
+] {
+  x y c
+  0 0 0.2
+  1 0 0
+  1 1 1
+  0 1 1
+
+  1 0 0
+  2 0 -1
+  2 1 0
+  1 1 1
+
+  1 1 0.5
+  2 1 1
+  2 2 0.5
+  1 2 0
+
+};
+
+\end{axis}</code></pre><pre><code class="nohighlight hljs">\begin{axis}
+
+\addplot[
+  patch type = {rectangle},
+  shader = {interp},
+  patch
+] table[
+  point meta = \thisrow{c}
+] {
+  x y c
+  0 0 0.2
+  1 0 0
+  1 1 1
+  0 1 1
+
+  1 0 0
+  2 0 -1
+  2 1 0
+  1 1 1
+
+  1 1 0.5
+  2 1 1
+  2 2 0.5
+  1 2 0
+
+};
+
+\end{axis}</code></pre><p>Colormaps can be added by the axis.</p><h3 id="Histogram2"><a class="docs-heading-anchor" href="#Histogram2">Histogram2</a><a id="Histogram2-1"></a><a class="docs-heading-anchor-permalink" href="#Histogram2" title="Permalink"></a></h3><p>You may produce 2-dimensional histograms from a set of (x,y) datapoints. Uniform spacing will be assumed if bin edges are not provided. In this case an <code>Image</code> will be returned.</p><pre><code class="language-julia hljs">x = randn(10000)*2 .+ 1
+y = randn(10000) .- 2
+Plots.Histogram2(x, y)</code></pre><p>You can customize the limits and the colormap.</p><pre><code class="language-julia hljs">Plots.Histogram2(x, y, xmin=-3, xmax=3, ymin=-3, ymax=3, zmin=-1, colormap=ColorMaps.Named(&quot;Jet&quot;))</code></pre><p>You can also customize the bounds of the colormap.</p><pre><code class="language-julia hljs">Plots.Histogram2(x, y, xmin=-3, xmax=3, ymin=-3, ymax=3, zmin=5, zmax=15, colormap=ColorMaps.Named(&quot;Jet&quot;))</code></pre><p>The axis image can be made equal.</p><pre><code class="language-julia hljs">Axis(Plots.Histogram2(x, y, density=true, xmin=-3, xmax=3, ymin=-3, ymax=3), axisEqualImage=true)</code></pre><p>Instead of counts, you can transform the scale to reflect a probability density.</p><pre><code class="language-julia hljs">Plots.Histogram2(x, y, density=true)</code></pre><p>Instead of counts, you can transform the scale to reflect the log of the counts. Counts are often 0 and log(0) = -Inf, so by default, the minimum is set to half of the minimum count value greater than 0.</p><pre><code class="language-julia hljs">Plots.Histogram2(x, y, zmode=&quot;log&quot;)</code></pre><p>The minimum can also be input.</p><pre><code class="language-julia hljs">p = Plots.Histogram2(x, y, zmode=&quot;log&quot;, zmin=1.)</code></pre><pre><code class="language-julia hljs">print(tikzCode(p))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">\begin{axis}[
+  enlargelimits = false,
+  axis on top,
+  colormap={wb}{gray(0cm)=(0); gray(1cm)=(1)},
+  colorbar,
+  colorbar style = {ymode = log, scaled ticks = false}
+]
+
+\addplot[
+  point meta min = 1.0,
+  point meta max = 44.0
+] graphics[
+  xmin = -6.564662688561218,
+  xmax = 8.269642637488749,
+  ymin = -5.816835592811515,
+  ymax = 1.7421055258131708
+] {tmp_10000000000022.png};
+
+\end{axis}</code></pre><pre><code class="nohighlight hljs">\begin{axis}[
+  enlargelimits = false,
+  axis on top,
+  colormap={wb}{gray(0cm)=(0); gray(1cm)=(1)},
+  colorbar,
+  colorbar style = {ymode = log, scaled ticks = false}
+]
+
+\addplot[
+  point meta min = 1.0,
+  point meta max = 44.0
+] graphics[
+  xmin = -6.564662688561218,
+  xmax = 8.269642637488749,
+  ymin = -5.816835592811515,
+  ymax = 1.7421055258131708
+] {tmp_10000000000022.png};
+
+\end{axis}</code></pre><h4 id="Uneven-Bins"><a class="docs-heading-anchor" href="#Uneven-Bins">Uneven Bins</a><a id="Uneven-Bins-1"></a><a class="docs-heading-anchor-permalink" href="#Uneven-Bins" title="Permalink"></a></h4><p>Bin edges can be provided, in which case a <code>Patch2D</code> is created.</p><pre><code class="language-julia hljs">x = randn(10000).+1.0
+y = randn(10000)
+edges_x = [-3.0,-1.0,0.0,0.5,0.75,1.0,1.25,1.5,2.0,3.0]
+edges_y = range(-3.0,stop=3.0,length=11)
+p = Plots.Histogram2(x, y, edges_x, edges_y, density=true, style=&quot;colormap/blackwhite&quot;)
+Axis(p, enlargelimits=0)</code></pre><img src="index-cd8bf96e.svg" alt="Example block output"/><h3 id="Contour"><a class="docs-heading-anchor" href="#Contour">Contour</a><a id="Contour-1"></a><a class="docs-heading-anchor-permalink" href="#Contour" title="Permalink"></a></h3><p>The syntax for contours is similar to that of image.</p><pre><code class="language-julia hljs">Plots.Contour(f, (-2,2), (-2,2))</code></pre><img src="index-d575076a.svg" alt="Example block output"/><p>You can specify the levels explicitly.</p><pre><code class="language-julia hljs">Plots.Contour(f, (-2,2), (-2,2), levels=-0.4:0.1:4)</code></pre><img src="index-782c344c.svg" alt="Example block output"/><p>You can also just specify the number of contours you want.</p><pre><code class="language-julia hljs">Plots.Contour(f, (-2,2), (-2,2), number=20)</code></pre><img src="index-569185e5.svg" alt="Example block output"/><p>You can specify styles.</p><pre><code class="language-julia hljs">Plots.Contour(f, (-2,2), (-2,2), style=&quot;very thick&quot;)</code></pre><img src="index-bc06d5fc.svg" alt="Example block output"/><p>You can pass in a matrix instead of a function.</p><pre><code class="language-julia hljs">x = range(-2,stop=2)
+y = range(-2,stop=2)
+A = Float64[f(xi, yi) for xi in x, yi in y]
+Plots.Contour(A, x, y)</code></pre><img src="index-fd22f9a3.svg" alt="Example block output"/><p>Here is another example.</p><pre><code class="language-julia hljs">Plots.Contour(randn(11,11), 0:10, 0:10)</code></pre><img src="index-16f20757.svg" alt="Example block output"/><p>In LaTeX, a Contour plot has two style fields - one for the plot3 and one for the contour itself.</p><pre><code class="nohighlight hljs">\addplot3[contour prepared={...}, ...] table {...};</code></pre><p>To set properties of the contour lines one needs to insert them inside the <code>countour prepared={}</code>. These styles are set in <code>contour_style</code>. Remaining properties can still be set in <code>style</code>.</p><pre><code class="language-julia hljs">Plots.Contour(f, (-2,2), (-2,2), contour_style=&quot;draw color=cyan&quot;, style=&quot;dashed&quot;)</code></pre><img src="index-29088908.svg" alt="Example block output"/><h3 id="Quiver"><a class="docs-heading-anchor" href="#Quiver">Quiver</a><a id="Quiver-1"></a><a class="docs-heading-anchor-permalink" href="#Quiver" title="Permalink"></a></h3><pre><code class="language-julia hljs">h(x,y) = [exp(-x^2-y^2)*(1-2*x^2), exp(-x^2-y^2)*(-2*x*y)]
+Plots.Quiver(h,(-2,2),(-2,2))</code></pre><img src="index-5e34be10.svg" alt="Example block output"/><pre><code class="language-julia hljs">h2(x,y) = [exp(-x^2-y^2)*(1-2*x^2), exp(-x^2-y^2)*(-2*x*y)]
+Plots.Quiver(h2,(-2,2),(-2,2), style=&quot;-stealth&#39;&quot;)</code></pre><img src="index-fca17386.svg" alt="Example block output"/><p>By default, the length of the arrows are normalized so that they do not overlap each other. This can be turned off.</p><pre><code class="language-julia hljs">Plots.Quiver(h,(-2,2),(-2,2), normalize=false)</code></pre><img src="index-39d1538c.svg" alt="Example block output"/><h3 id="MatrixPlot"><a class="docs-heading-anchor" href="#MatrixPlot">MatrixPlot</a><a id="MatrixPlot-1"></a><a class="docs-heading-anchor-permalink" href="#MatrixPlot" title="Permalink"></a></h3><p>Similar to Image, MatrixPlot is a new function in PGFPlots specifically for plotting matrices as arrays of colors. This can be used to quickly make heatmaps as well.</p><pre><code class="language-julia hljs">A = [1 3; 2 10]
+p = Plots.MatrixPlot(A)</code></pre><pre><code class="language-julia hljs">print(tikzCode(p))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">\begin{axis}[
+  enlargelimits = false,
+  axis on top,
+  colormap={wb}{gray(0cm)=(0); gray(1cm)=(1)},
+  colorbar,
+  xmin = 0.5,
+  xmax = 2.5,
+  ymin = 0.5,
+  ymax = 2.5
+]
+
+\addplot[
+  point meta min = 1,
+  point meta max = 10,
+  point meta = explicit,
+  matrix plot*,
+  mesh/cols = 2,
+  mesh/rows = 2
+] table[
+  meta = data
+] {tmp_10000000000023.dat};
+
+\end{axis}</code></pre><pre><code class="nohighlight hljs">\begin{axis}[
+  enlargelimits = false,
+  axis on top,
+  colormap={wb}{gray(0cm)=(0); gray(1cm)=(1)},
+  colorbar,
+  xmin = 0.5,
+  xmax = 2.5,
+  ymin = 0.5,
+  ymax = 2.5
+]
+
+\addplot[
+  point meta min = 1,
+  point meta max = 10,
+  point meta = explicit,
+  matrix plot*,
+  mesh/cols = 2,
+  mesh/rows = 2
+] table[
+  meta = data
+] {tmp_10000000000023.dat};
+
+\end{axis}</code></pre><p>Here is a larger matrix.</p><pre><code class="language-julia hljs">A = rand(50,50)
+Plots.MatrixPlot(A)</code></pre><p>As with Image you can specify axis limits as tuples, but this is not required in the case of matrices.</p><pre><code class="language-julia hljs">Plots.MatrixPlot(A,(-2,2),(-2,2))</code></pre><p>All the same colorbar arguements as Image still apply, including loading other colormaps.</p><pre><code class="language-julia hljs">Plots.MatrixPlot(A,(-2,2),(-2,2),colormap = ColorMaps.Named(&quot;Jet&quot;))</code></pre><p>Similarly you can specify your own colors to make custom colormaps.</p><pre><code class="language-julia hljs">cm = ColorMaps.RGBArrayMap([RGB(1.,0.,0.),RGB(1.,1.,1.), RGB(0.,0.,1.)], interpolation_levels=500)
+Plots.MatrixPlot(A,(-2,2),(-2,2),colormap = cm)</code></pre><p>However one advantage of using MatrixPlot is the abilty to handle NaN values, resulting in blank spots.</p><pre><code class="language-julia hljs">A[20:30,20:30] .= NaN
+Plots.MatrixPlot(A,(-2,2),(-2,2),colormap = cm)</code></pre><p>This comes with an unfortunate tradeoff, since the plotting time purely through PGFPlots for large arrays is untenable to regular use. When an input matrix has a total length greater than 10000, PGFPlots.jl will fallback to rendering a PNG bitmap instead.</p><pre><code class="language-julia hljs">A = rand(120,120)
+Plots.MatrixPlot(A,(-2,2),(-2,2),colormap = cm)</code></pre><pre><code class="nohighlight hljs">[33m[1m┌ [22m[39m[33m[1mWarning: [22m[39mMatrix is too large for vector plotting, consider switching to raster mode.
+[33m[1m└ [22m[39m[90m@ PGFPlots.Plots ~/Downloads/PGFPlots.jl-1/src/plots.jl:532[39m</code></pre><p>This fallback can be disabled by setting the key <code>raster=false</code>, forcing PGFPlots to render the matrix.</p><h3 id="Group-plots"><a class="docs-heading-anchor" href="#Group-plots">Group plots</a><a id="Group-plots-1"></a><a class="docs-heading-anchor-permalink" href="#Group-plots" title="Permalink"></a></h3><p>A GroupPlot is just a container for plots. You can specify the number or columns and rows to use.</p><pre><code class="language-julia hljs"># generate 1000 samples
+d = randn(1000)
+# try out histograms with a variety of different number of bins
+bins = [3 10 50 1000]
+g = GroupPlot(2,2) # create a 2 x 2 group plot
+for i = 1:length(bins)
+    push!(g, Axis(Plots.Histogram(d, bins=bins[i]), ymin=0))
+end
+g</code></pre><img src="index-b928ecd1.svg" alt="Example block output"/><p>You can set the group style.</p><pre><code class="language-julia hljs">g = GroupPlot(2, 2, groupStyle = &quot;horizontal sep = 3cm&quot;) # create a 2 x 2 group plot
+for i = 1:length(bins)
+    push!(g, Axis(Plots.Histogram(d, bins=bins[i]), ymin=0))
+end
+g</code></pre><img src="index-5dffdb62.svg" alt="Example block output"/><h4 id="Multiple-Axes"><a class="docs-heading-anchor" href="#Multiple-Axes">Multiple Axes</a><a id="Multiple-Axes-1"></a><a class="docs-heading-anchor-permalink" href="#Multiple-Axes" title="Permalink"></a></h4><p>An alternative to group plots is to use multiple axes. This is not as user friendly as group plots, but it allows for more flexibility. For example, it is possible to embed one axis inside another to create insets as follows:</p><pre><code class="language-julia hljs">#Create the first axis and add to it two lines
+a1 = PGFPlots.Axis(style=&quot;width=10cm, height=10cm, grid=both&quot;);
+push!(a1, PGFPlots.Linear([1,2],[10, 10], style=&quot;blue&quot;))
+push!(a1, PGFPlots.Linear([1,2],[10, 3],  style=&quot;red&quot;))
+
+#Create another axis with smaller width.
+#xshift and yshift are used to position the axis.
+a2 = PGFPlots.Axis(style=&quot;width=4cm, xshift=1cm, yshift=1cm&quot;, title=&quot;xy reflection&quot;);
+push!(a2, PGFPlots.Linear([10, 10], [1,2], style=&quot;no marks, blue, thick&quot;))
+push!(a2, PGFPlots.Linear([10, 3] , [1,2], style=&quot;no marks, red, thick&quot;));
+
+#Group the two axes together as a list
+[a1, a2]</code></pre><img src="index-7717ac22.svg" alt="Example block output"/><h3 id="Text-Nodes"><a class="docs-heading-anchor" href="#Text-Nodes">Text Nodes</a><a id="Text-Nodes-1"></a><a class="docs-heading-anchor-permalink" href="#Text-Nodes" title="Permalink"></a></h3><pre><code class="language-julia hljs">Axis([
+    Plots.Image(f, (-2,2), (-2,2)),
+    Plots.Node(L&quot;\sqrt{2}&quot;,1,0)
+])</code></pre><pre><code class="language-julia hljs">Axis([
+    Plots.Image(f, (-2,2), (-2,2)),
+    Plots.Node(L&quot;\sqrt{2}&quot;,-1,0,style=&quot;yellow&quot;),
+    Plots.Node(&quot;Hi there!&quot;,1,0,style=&quot;right&quot;)
+])</code></pre><p>The coordinate system defaults to the axis coordinate system, axis cs. You can specify other coordinate systems as well.</p><pre><code class="language-julia hljs">Axis([
+    Plots.Image(f, (-2,2), (-2,2)),
+    Plots.Node(L&quot;\sqrt{2}&quot;,0.9,0.9,axis=&quot;axis description cs&quot;)
+])</code></pre><h3 id="Circles-and-Ellipses"><a class="docs-heading-anchor" href="#Circles-and-Ellipses">Circles and Ellipses</a><a id="Circles-and-Ellipses-1"></a><a class="docs-heading-anchor-permalink" href="#Circles-and-Ellipses" title="Permalink"></a></h3><p>You can add circles and ellipses to your plots. To add a circle, you must specify the center x-coordinate, the center y-coordinate, and the radius, in that order. To add an ellipse, you must specify the center x-coordinate, the center y-coordinate, the x-radius, and the y-radius.</p><pre><code class="language-julia hljs">p1 = Plots.Circle(5,5,5)
+p2 = Plots.Ellipse(5,5,3,5)
+Axis([p1,p2], xmin=0,ymin=0,xmax=10,ymax=10)</code></pre><img src="index-9f8b7c83.svg" alt="Example block output"/><p>You can remove axes if you want to. Remove the axes (hide the axes) by setting <code>hideAxis</code> to true for the axis.</p><pre><code class="language-julia hljs">a = Axis([p1,p2], xmin=0,ymin=0,xmax=10,ymax=10, hideAxis=true)</code></pre><img src='data:image/svg+xml;utf-8,<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="194.271" height="161.394" viewBox="0 0 194.271 161.394">
+<defs>
+<clipPath id="clip-1749865474452160--0">
+<path clip-rule="nonzero" d="M 0 0 L 193.542969 0 L 193.542969 160.789062 L 0 160.789062 Z M 0 0 "/>
+</clipPath>
+<clipPath id="clip-1749865474452160--1">
+<path clip-rule="nonzero" d="M 33 0 L 161 0 L 161 160.789062 L 33 160.789062 Z M 33 0 "/>
+</clipPath>
+</defs>
+<g clip-path="url(%23clip-1749865474452160--0)">
+<path fill="none" stroke-width="0.3985" stroke-linecap="butt" stroke-linejoin="miter" stroke="rgb(0%25, 0%25, 0%25)" stroke-opacity="1" stroke-miterlimit="10" d="M 194.273379 80.697604 C 194.273379 125.26667 150.786487 161.397921 97.136578 161.397921 C 43.49059 161.397921 -0.000223057 125.26667 -0.000223057 80.697604 C -0.000223057 36.128539 43.49059 0.00120891 97.136578 0.00120891 C 150.786487 0.00120891 194.273379 36.128539 194.273379 80.697604 Z M 194.273379 80.697604 " transform="matrix(0.996259, 0, 0, -0.996259, 0.000222222, 160.790267)"/>
+</g>
+<g clip-path="url(%23clip-1749865474452160--1)">
+<path fill="none" stroke-width="0.3985" stroke-linecap="butt" stroke-linejoin="miter" stroke="rgb(0%25, 0%25, 0%25)" stroke-opacity="1" stroke-miterlimit="10" d="M 155.41709 80.697604 C 155.41709 125.26667 129.327308 161.397921 97.136578 161.397921 C 64.949769 161.397921 38.856066 125.26667 38.856066 80.697604 C 38.856066 36.128539 64.949769 0.00120891 97.136578 0.00120891 C 129.327308 0.00120891 155.41709 36.128539 155.41709 80.697604 Z M 155.41709 80.697604 " transform="matrix(0.996259, 0, 0, -0.996259, 0.000222222, 160.790267)"/>
+</g>
+</svg>
+
+'/><pre><code class="language-julia hljs">print(tikzCode(a))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">\begin{axis}[
+  xmin = {0},
+  xmax = {10},
+  ymax = {10},
+  hide axis = {true},
+  ymin = {0}
+]
+
+\draw (axis cs:5, 5) circle[radius=5];
+
+\draw (axis cs:5, 5) ellipse[x radius=3, y radius=5];
+
+\end{axis}</code></pre><pre><code class="nohighlight hljs">\begin{axis}[
+  xmin = {0},
+  xmax = {10},
+  ymax = {10},
+  hide axis = {true},
+  ymin = {0}
+]
+
+\draw (axis cs:5, 5) circle[radius=5];
+
+\draw (axis cs:5, 5) ellipse[x radius=3, y radius=5];
+
+\end{axis}</code></pre><h3 id="3d-Plots"><a class="docs-heading-anchor" href="#3d-Plots">3d Plots</a><a id="3d-Plots-1"></a><a class="docs-heading-anchor-permalink" href="#3d-Plots" title="Permalink"></a></h3><p>You can add 3d plots. To make a 3d plot with a linear scale, use the Linear3 type (equivalent to \addplot3 in PGF).</p><pre><code class="language-julia hljs">t = rad2deg.(range(0,stop=5pi,length=60))
+x = sind.(t)
+y = cosd.(t)
+z = 2t/(5pi)
+p = Plots.Linear3(x, y, z, mark=&quot;none&quot;)
+Axis(p, xlabel=&quot;x&quot;, ylabel=&quot;y&quot;, zlabel=&quot;z&quot;)</code></pre><img src="index-06edae6c.svg" alt="Example block output"/><p>You can change the view by specifying the view parameter of the Axis type. This is a string representing what you would feed to PGF. The first parameter is the rotation about the azimuth (z-axis). This rotation is applied first. The second argument is the elevation, or the angle rotated about the (rotated) x-axis.</p><pre><code class="language-julia hljs">Axis(p, view=&quot;{60}{30}&quot;, xlabel=&quot;x&quot;, ylabel=&quot;y&quot;, zlabel=&quot;z&quot;)</code></pre><img src="index-41d5bb16.svg" alt="Example block output"/><h3 id="Polar-Axes"><a class="docs-heading-anchor" href="#Polar-Axes">Polar Axes</a><a id="Polar-Axes-1"></a><a class="docs-heading-anchor-permalink" href="#Polar-Axes" title="Permalink"></a></h3><p>You can specify a polar axis. In this case, the &quot;x&quot; coordinate corresponds to the angle (in degrees), and the &quot;y&quot; coordinate corresponds to the radius.</p><pre><code class="language-julia hljs">angles = [0,90,180,270]
+radii = ones(4)
+p = Plots.Linear(angles, radii)
+PolarAxis(p)</code></pre><img src="index-8c45717a.svg" alt="Example block output"/><h3 id="Smith-Charts"><a class="docs-heading-anchor" href="#Smith-Charts">Smith Charts</a><a id="Smith-Charts-1"></a><a class="docs-heading-anchor-permalink" href="#Smith-Charts" title="Permalink"></a></h3><p>You can create Smith charts. These are often used in RF engineering. The <code>SmithAxis</code> type produces the axis, whereas the <code>SmithCircle</code> type is a convenient way to render circles.</p><pre><code class="language-julia hljs">SmithAxis([
+    PGFPlots.SmithCircle(1.0, 1.0, 2.0, style=&quot;blue&quot;),
+    PGFPlots.SmithCircle(0.5, -1.0, 1.0, style=&quot;red&quot;),
+])</code></pre><img src="index-3909338c.svg" alt="Example block output"/><p>The <code>SmithData</code> type allows for more complicated plots. Support is provided for several types of arrays, including complex numbers and 2d arrays.</p><pre><code class="language-julia hljs">SmithAxis(PGFPlots.SmithData([0+0im, 0.5+0.5im, 1.0+0.5im, 1.0+1.0im],
+          style=&quot;thick, blue&quot;))</code></pre><img src="index-a1489343.svg" alt="Example block output"/><h3 id="Ternary-Axis"><a class="docs-heading-anchor" href="#Ternary-Axis">Ternary Axis</a><a id="Ternary-Axis-1"></a><a class="docs-heading-anchor-permalink" href="#Ternary-Axis" title="Permalink"></a></h3><p>You can specify a ternary axis. These are special three-dimensional plots often used to show the space of 3D categorical distributions. One thus commonly uses 3D plots such as <code>Linear3</code> within a ternary axis.</p><pre><code class="language-julia hljs">TernaryAxis(
+    Plots.Linear3([0.1,0.4],[0.3,0.2],[0.6,0.4],style=&quot;solid, blue, thick&quot;),
+    style=&quot;ternary limits relative=false&quot;,
+    xlabel=L&quot;b_1&quot;,
+    ylabel=L&quot;b_2&quot;,
+    zlabel=L&quot;b_3&quot;
+)</code></pre><img src="index-585b48dc.svg" alt="Example block output"/><h3 id="Color"><a class="docs-heading-anchor" href="#Color">Color</a><a id="Color-1"></a><a class="docs-heading-anchor-permalink" href="#Color" title="Permalink"></a></h3><p>You can define your own custom named colors using a variety of methods. You can pass it an array of <code>FloatingPoint</code> values in the range <span>$[0,1]$</span>; it uses RGB if there are three values, and it uses CMYK if there are four values.</p><pre><code class="language-julia hljs">define_color(&quot;myrgbcolor1&quot;, [1,0.2,0.3])
+Plots.Linear(x, y, style=&quot;myrgbcolor1&quot;)</code></pre><img src="index-7b8d73eb.svg" alt="Example block output"/><pre><code class="language-julia hljs">define_color(&quot;mycmykcolor1&quot;, [1,0.2,0.3,0])
+Plots.Linear(x, y, style=&quot;mycmykcolor1&quot;)</code></pre><img src="index-4cf29710.svg" alt="Example block output"/><p>If you pass in an array of integers (between 0 and 255), then it will use the integer-based RGB color space.</p><pre><code class="language-julia hljs">define_color(&quot;myRGBcolor&quot;, [82,227,246])
+Plots.Linear(x, y, style=&quot;myRGBcolor&quot;)</code></pre><img src="index-06af21d5.svg" alt="Example block output"/><p>If you pass in a single scalar value between 0 and 1, it will interpret as a shade of gray. In this scale, 0 is black and 1 is white.</p><pre><code class="language-julia hljs">define_color(&quot;mylightgray&quot;, 0.9)
+Plots.Linear(x, y, style=&quot;mylightgray&quot;)</code></pre><img src="index-b4858bf9.svg" alt="Example block output"/><p>If you pass in a <code>UInt32</code>, you will get an HTML color.</p><pre><code class="language-julia hljs">define_color(&quot;myhtmlcolor&quot;, 0xff7f00)
+Plots.Linear(x, y, style=&quot;myhtmlcolor&quot;)</code></pre><img src="index-a6a423f8.svg" alt="Example block output"/><p>You can also pass in any color type from the <a href="https://github.com/JuliaGraphics/Colors.jl">Colors.jl</a> and <a href="https://github.com/JuliaGraphics/ColorTypes.jl">ColorTypes.jl</a> packages.</p><pre><code class="language-julia hljs">define_color(&quot;mycolor&quot;, HSV(300, 0.2, 0.9))
+Plots.Linear(x, y, style=&quot;mycolor, very thick&quot;)</code></pre><img src="index-bc83bfbc.svg" alt="Example block output"/><h3 id="DataFrames"><a class="docs-heading-anchor" href="#DataFrames">DataFrames</a><a id="DataFrames-1"></a><a class="docs-heading-anchor-permalink" href="#DataFrames" title="Permalink"></a></h3><p>PGFPlots provides support for plotting from <code>DataFrame</code>s.</p><pre><code class="language-julia hljs">using DataFrames
+df = DataFrame(x=[1,2,3], y=[2,4,1], z=[0.0,0.5,1.0])
+df_big = DataFrame(x=randn(1000), y=randn(1000))
+df_quiver = DataFrame(x=[0,0,1,1], y=[0,1,0,1], u=[0.25,0.25,-0.25,-0.25], v=[0.25,-0.25,0.25,-0.25])
+
+g = GroupPlot(3, 3, groupStyle = &quot;horizontal sep = 1.75cm, vertical sep = 1.5cm&quot;)
+push!(g, Axis(Plots.Linear(df), title=&quot;Linear&quot;))
+push!(g, Axis(Plots.Linear(df, x=:y, y=:z, style=&quot;red&quot;, mark=&quot;none&quot;), title=&quot;Linear with Options&quot;))
+push!(g, Axis(Plots.Linear3(df), title=&quot;Linear3&quot;))
+push!(g, Axis(Plots.Scatter(df), title=&quot;Scatter&quot;))
+push!(g, Axis(Plots.Histogram(df_big), title=&quot;Histogram&quot;))
+push!(g, Axis(Plots.Quiver(df_quiver), title=&quot;Quiver&quot;))
+push!(g, Axis(Plots.Histogram2(df_big), title=&quot;Histogram2 - Image&quot;))
+push!(g, Axis(Plots.Histogram2(df_big, Float64[-3,-1,1,3], Float64[-3,-2,-1,0,1,2,3], style=&quot;colormap/blackwhite&quot;), enlargelimits=0, title=&quot;Histogram2 = Patch2D&quot;))
+g</code></pre><p>The constructors default to symbol names such as <code>x</code>, <code>y</code>, <code>z</code>, and <code>u</code> and <code>v</code> for quiver plots. These can be assigned as normal.</p><pre><code class="language-julia hljs">df = DataFrame(position=[0.0,0.5,1.5,4.0], time=[0.0,1.0,2.0,3.0])
+Axis(Plots.Linear(df, x=:time, y=:position), xlabel=&quot;time [s]&quot;, ylabel=&quot;position [m]&quot;)</code></pre><img src="index-100ef70c.svg" alt="Example block output"/><h3 id="Commands"><a class="docs-heading-anchor" href="#Commands">Commands</a><a id="Commands-1"></a><a class="docs-heading-anchor-permalink" href="#Commands" title="Permalink"></a></h3><p>You can inject arbitrary latex commands within an axis using <code>Plots.Command</code>. Below is an example. Of course, in this particular example, it is easier to use the <code>legendentry</code> keyword.</p><pre><code class="language-julia hljs">Axis([
+    Plots.Linear(x, y, style=&quot;mycolor, very thick&quot;),
+    Plots.Command(&quot;\\legend{Test}&quot;)
+])</code></pre><img src="index-9ffbeab7.svg" alt="Example block output"/><h3 id="Customizing-Preamble"><a class="docs-heading-anchor" href="#Customizing-Preamble">Customizing Preamble</a><a id="Customizing-Preamble-1"></a><a class="docs-heading-anchor-permalink" href="#Customizing-Preamble" title="Permalink"></a></h3><p>In order to customize the <span>$\LaTeX$</span> preamble in the current context, you can call <code>pushPGFPlotsPreamble</code>. For example, suppose you want to use the &quot;xfrac&quot; package:</p><pre><code class="language-julia hljs">pushPGFPlotsPreamble(&quot;\\usepackage{xfrac}&quot;)
+Plots.Linear(x, y, legendentry = L&quot;\sfrac{1}{x}&quot;)</code></pre><img src="index-22e6d077.svg" alt="Example block output"/><p>To remove the latest option, just call <code>popPGFPlotsPreamble()</code>. All options can be reset with <code>resetPGFPlotsPreamble()</code></p><pre><code class="language-julia hljs">popPGFPlotsPreamble()
+Plots.Linear(x, y, legendentry = &quot;Test&quot;)</code></pre><img src="index-b40500ff.svg" alt="Example block output"/><p>Another common application is to obtain the <code>\text</code> macro from the amsmath package:</p><pre><code class="language-julia hljs">pushPGFPlotsPreamble(&quot;\\usepackage{amsmath}&quot;)
+Axis(Plots.Linear([1,2], [1,2]), xlabel=L&quot;x_\text{awesome}&quot;, ylabel=&quot;\$\\text{mathOperation}(x)\$&quot;)</code></pre><img src="index-bdc26f9d.svg" alt="Example block output"/><h3 id="Saving"><a class="docs-heading-anchor" href="#Saving">Saving</a><a id="Saving-1"></a><a class="docs-heading-anchor-permalink" href="#Saving" title="Permalink"></a></h3><p>All of the images above can be saved in tex, pdf, or svg format.</p><pre><code class="language-julia hljs">p = Plots.Histogram(rand(10))
+save(&quot;myfile.tex&quot;, p)
+save(&quot;myfile.pdf&quot;, p)
+save(&quot;myfile.svg&quot;, p)</code></pre><pre><code class="nohighlight hljs">[33m[1m┌ [22m[39m[33m[1mWarning: [22m[39mmyfile.pdf already exists, overwriting!
+[33m[1m└ [22m[39m[90m@ TikzPictures ~/.julia/packages/TikzPictures/9WzZq/src/TikzPictures.jl:347[39m
+[33m[1m┌ [22m[39m[33m[1mWarning: [22m[39mmyfile.svg already exists, overwriting!
+[33m[1m└ [22m[39m[90m@ TikzPictures ~/.julia/packages/TikzPictures/9WzZq/src/TikzPictures.jl:432[39m</code></pre><p>The preamble around <code>tikzpicture</code> can be ignored. This is useful if the plot will be <code>\input{}</code> in another document.</p><pre><code class="language-julia hljs">p = Plots.Histogram(rand(10))
+save(&quot;myfile.tex&quot;, p, include_preamble=false)</code></pre><h3 id="Reel"><a class="docs-heading-anchor" href="#Reel">Reel</a><a id="Reel-1"></a><a class="docs-heading-anchor-permalink" href="#Reel" title="Permalink"></a></h3><p>PGFPlots.jl provides a <code>image/svg+xml</code> MIME for Reel. This allows one to create movies and GIFs. Here is an example:</p><pre><code class="language-julia hljs">using Reel
+Reel.extension(m::MIME&quot;image/svg+xml&quot;) = &quot;svg&quot;
+Reel.set_output_type(&quot;gif&quot;) # may be necessary for use in IJulia
+
+frames = Frames(MIME(&quot;image/svg+xml&quot;), fps=10)
+for frame in 1:10
+    t = frame/5
+    ax = Axis(Plots.Linear(x -&gt; sin(x+t*π), (0,6)), xlabel=&quot;x&quot;, ylabel=&quot;y&quot;)
+    push!(frames, ax)
+end 
+frames;</code></pre><p><img src="reel-9866296540542003168.gif" alt="animation"/></p><h2 id="Future-Plans"><a class="docs-heading-anchor" href="#Future-Plans">Future Plans</a><a id="Future-Plans-1"></a><a class="docs-heading-anchor-permalink" href="#Future-Plans" title="Permalink"></a></h2><p>Gradually, more and more functionality from pgfplots will be migrated into this package.</p></article><nav class="docs-footer"><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.12.0 on <span class="colophon-date" title="Saturday 14 June 2025 01:48">Saturday 14 June 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

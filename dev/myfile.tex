@@ -1,0 +1,25 @@
+\begin{tikzpicture}[]
+\begin{axis}
+
+\addplot+[
+  mark = none,
+  fill=blue!10,
+  hist = {density = {false}, cumulative = {false}, bins = {10}}
+] table[
+  row sep=\\,
+  y index = 0
+] { data \\
+  0.48004162031320785 \\ 
+  0.1358661473721 \\ 
+  0.6259372937046531 \\ 
+  0.9650060243768642 \\ 
+  0.7413201343438987 \\ 
+  0.7375645259785144 \\ 
+  0.6017732713107189 \\ 
+  0.5684511045512207 \\ 
+  0.8331359092288192 \\ 
+  0.8252198248819438 \\ 
+};
+
+\end{axis}
+\end{tikzpicture}
