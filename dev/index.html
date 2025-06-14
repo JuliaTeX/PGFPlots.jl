@@ -124,7 +124,7 @@ a = Axis(p, colorbar=true)</code></pre><img src="index-93e3d7fe.svg" alt="Exampl
 \end{axis}</code></pre><p>If you want non-numeric data to determine the coloration and marking of each scatter point, you must provide the scatterClasses argument and describe what each symbol means. This is the same string that would be passed into the tex file if you were writing it yourself. The following code colors points by their class (&quot;a&quot;, &quot;b&quot;, or &quot;c&quot;).</p><pre><code class="language-julia hljs">z = [&quot;a&quot;, &quot;a&quot;, &quot;a&quot;, &quot;b&quot;, &quot;b&quot;, &quot;b&quot;, &quot;b&quot;, &quot;c&quot;, &quot;c&quot;, &quot;c&quot;]
 sc = &quot;a={mark=square,blue}, b={mark=triangle,red}, c={mark=o,black}&quot;
 Plots.Scatter(x, y, z, scatterClasses=sc)</code></pre><img src="index-6c3cc1d4.svg" alt="Example block output"/><p>You can add a legend using the <code>legendentry</code> keyword.</p><pre><code class="language-julia hljs">Plots.Scatter(x, y, z, scatterClasses=sc, legendentry=[&quot;A&quot;, &quot;B&quot;, &quot;C&quot;])</code></pre><img src="index-8a16787e.svg" alt="Example block output"/><p>You can customize the legend using optionsto the <code>Axis</code> (since the legend style is a property of the <code>Axis</code>).</p><pre><code class="language-julia hljs">Axis(Plots.Scatter(x, y, z, scatterClasses=sc, legendentry=[&quot;A&quot;, &quot;B&quot;, &quot;C&quot;]), style=&quot;legend columns = -1&quot;, legendPos=&quot;north west&quot;)</code></pre><img src="index-31eb882b.svg" alt="Example block output"/><h3 id="Histograms"><a class="docs-heading-anchor" href="#Histograms">Histograms</a><a id="Histograms-1"></a><a class="docs-heading-anchor-permalink" href="#Histograms" title="Permalink"></a></h3><p>It is very easy to make histograms. It is just another type under the Plots module. You should be able to use autocompletion in your editor (e.g., IJulia) to see what Plots are supported.</p><pre><code class="language-julia hljs">d = randn(100)
-a = Axis(Plots.Histogram(d, bins=10), ymin=0)</code></pre><img src="index-a7af2948.svg" alt="Example block output"/><pre><code class="language-julia hljs">print(tikzCode(a))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">\begin{axis}[
+a = Axis(Plots.Histogram(d, bins=10), ymin=0)</code></pre><img src="index-7ecc3a83.svg" alt="Example block output"/><pre><code class="language-julia hljs">print(tikzCode(a))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">\begin{axis}[
   ymin = {0}
 ]
 
@@ -136,106 +136,106 @@ a = Axis(Plots.Histogram(d, bins=10), ymin=0)</code></pre><img src="index-a7af29
   row sep=\\,
   y index = 0
 ] { data \\
-  -1.1032008343680975 \\
-  1.1482090533974356 \\
-  0.3646906390286415 \\
-  0.16216354343848702 \\
-  0.17854175792486066 \\
-  -1.743322895780811 \\
-  0.9627069940817876 \\
-  -0.029755738851597408 \\
-  -0.5986510844656442 \\
-  -0.5467424175977273 \\
-  -1.7074000498765394 \\
-  -1.230562630184012 \\
-  -0.4447553650291485 \\
-  0.5189176785514954 \\
-  -0.3845098470341179 \\
-  -0.8997790113877334 \\
-  2.176753988887444 \\
-  0.249066112547409 \\
-  -1.4885884227090567 \\
-  -0.28714809055141666 \\
-  2.1892607322837385 \\
-  0.3132163883589239 \\
-  -1.5354052114560628 \\
-  -0.16084109225303067 \\
-  0.8968625636668146 \\
-  0.803828581223856 \\
-  -0.23889311206344852 \\
-  0.3853970362478102 \\
-  1.5244740786799265 \\
-  0.3627926568475211 \\
-  -0.24855657696471728 \\
-  -0.5186201938879967 \\
-  1.2888435973229568 \\
-  -2.2823158646601898 \\
-  -0.37520825902157406 \\
-  0.9085992987089353 \\
-  1.7969803796288086 \\
-  -0.07598899228699016 \\
-  -0.7352903106406364 \\
-  -0.7631119585250629 \\
-  -0.44596301119351683 \\
-  -1.067237599714191 \\
-  0.6266557061411894 \\
-  0.4769801520963567 \\
-  1.4039596008192847 \\
-  0.1848755894079783 \\
-  -0.13382110285915588 \\
-  0.005063190054995426 \\
-  -1.9838994657328104 \\
-  1.5822206193056692 \\
-  0.8037586228489914 \\
-  1.553229342052701 \\
-  -1.1270326436660392 \\
-  -0.3359955181326428 \\
-  1.3950543786055682 \\
-  0.3219654963146691 \\
-  0.38987252569802255 \\
-  0.866314509132328 \\
-  0.7332523019024965 \\
-  0.23504989958631226 \\
-  0.9852910073590544 \\
-  0.6694834760133969 \\
-  0.49236411792515294 \\
-  -1.0362929381697266 \\
-  1.0531791793610779 \\
-  -0.07281803945626772 \\
-  -1.8529009978098305 \\
-  0.3704984192078568 \\
-  -0.5790445709104555 \\
-  1.1001649817870784 \\
-  0.2550469765919508 \\
-  1.4940370785765344 \\
-  -0.2972989699953683 \\
-  0.9043485604527834 \\
-  -2.1102226482735964 \\
-  2.3963498685556015 \\
-  -0.2727431943369831 \\
-  1.3175494514760908 \\
-  1.2665553771651725 \\
-  -0.24011546413469603 \\
-  1.044886126125561 \\
-  0.028117940360965616 \\
-  -0.5831051691091791 \\
-  -0.47754594985099885 \\
-  -2.6459590498106054 \\
-  0.8660176747239803 \\
-  1.1443703322285101 \\
-  -0.2236630904849923 \\
-  -0.6513020649899836 \\
-  -0.22100556856751505 \\
-  -2.058429921548601 \\
-  -0.7083871887656962 \\
-  1.3416880358626324 \\
-  -0.7098513006540026 \\
-  0.34580852372695114 \\
-  -0.49723590746218344 \\
-  0.34398672720380935 \\
-  -0.4861403764194327 \\
-  0.8053259401102076 \\
-  2.345761975166346 \\
+  -0.1477302423761949 \\
+  0.6186912322575948 \\
+  0.7382452462831083 \\
+  0.751954175328906 \\
+  -0.6203462821293608 \\
+  2.4131971783118127 \\
+  -0.7902521044259001 \\
+  -0.9606321941016428 \\
+  0.24568522721168004 \\
+  0.07011674436578604 \\
+  -0.287761594301566 \\
+  0.5501811473824718 \\
+  0.006974293666557585 \\
+  1.959837784179202 \\
+  -1.1441829011581428 \\
+  -0.09251322411601935 \\
+  -0.009832951414289555 \\
+  0.2954033842450271 \\
+  -0.39632585700922524 \\
+  -1.5213822384092544 \\
+  -0.2316204507924282 \\
+  0.37276284373521346 \\
+  -0.7837410554814537 \\
+  0.4572755920940799 \\
+  -0.546314372304204 \\
+  1.8933365202596026 \\
+  -1.7490056193567636 \\
+  0.4674713673068683 \\
+  -1.1734050206500564 \\
+  -0.8183577206848683 \\
+  1.4312046632156474 \\
+  0.7277885887958557 \\
+  1.134841336842758 \\
+  2.905703598273203 \\
+  -0.6506656585157922 \\
+  2.0034595787214866 \\
+  0.4620630553602752 \\
+  -0.4721965671075149 \\
+  0.7118270625593013 \\
+  -0.6770442205027538 \\
+  0.6614903141936815 \\
+  -0.42526651114872893 \\
+  -0.10440763720944173 \\
+  -0.4119409530334019 \\
+  0.23311273369623153 \\
+  0.38141752936368706 \\
+  -2.4511300088566306 \\
+  1.1671355732095896 \\
+  -1.102761857132793 \\
+  -0.1454854367408013 \\
+  0.12401179276082283 \\
+  -0.22854307758434633 \\
+  -0.5213259868807041 \\
+  -0.7180362626119664 \\
+  0.9109177368425855 \\
+  -0.6887442513288629 \\
+  1.51049393551004 \\
+  -0.7192390336047999 \\
+  0.5237999358962916 \\
+  0.653887285454982 \\
+  0.1745398828845959 \\
+  0.8255700189290153 \\
+  -1.1443628848711402 \\
+  -0.4875293952041429 \\
+  -0.565181432450702 \\
+  0.6472101480655781 \\
+  1.70564780674981 \\
+  -0.8843629358108103 \\
+  0.7659993099796607 \\
+  0.28830957770288435 \\
+  0.9021872659100594 \\
+  0.662315830045181 \\
+  -0.3419709482834937 \\
+  -0.5421527545731245 \\
+  -0.04143540885989993 \\
+  -0.26803630618816854 \\
+  0.33498619363893656 \\
+  0.8098198386175087 \\
+  0.36248249637092445 \\
+  -0.6941667928009239 \\
+  0.09368668635717887 \\
+  -0.13350289572752946 \\
+  -1.1636005859036427 \\
+  0.8545616763916539 \\
+  1.7996297211661767 \\
+  0.07772237153733443 \\
+  -1.819998588051813 \\
+  1.3084582267309837 \\
+  0.42696310397640874 \\
+  -1.5410725300211214 \\
+  -0.7185570607890526 \\
+  0.1027815633305572 \\
+  -0.4144154017237084 \\
+  0.8089567487631822 \\
+  -0.18630837627249344 \\
+  -0.08937220435868536 \\
+  1.6281599964723406 \\
+  0.9387581885400534 \\
+  -1.7615428316007198 \\
+  -0.9404387347367767 \\
 };
 
 \end{axis}</code></pre><pre><code class="nohighlight hljs">\begin{axis}[
@@ -352,7 +352,7 @@ a = Axis(Plots.Histogram(d, bins=10), ymin=0)</code></pre><img src="index-a7af29
   -0.25081739247579826 \\ 
 };
 
-\end{axis}</code></pre><p>You can even create a cumulative distribution function from the data.</p><pre><code class="language-julia hljs">Axis(Plots.Histogram(d, bins=20, cumulative=true, density=true), ymin=0)</code></pre><img src="index-ff70a60e.svg" alt="Example block output"/><p>As with the other plots, you can control the style. The documentation on tikz and pgfplots can give you more information about what styles are supported.</p><pre><code class="language-julia hljs">Axis(Plots.Histogram(d, bins=10, style=&quot;red, fill=red!10&quot;), ymin=0, ylabel=&quot;Counts&quot;)</code></pre><img src="index-278f191a.svg" alt="Example block output"/><p>Sometimes you do not want to store your raw dataset in a Tikz file, especially when the dataset is large. The <code>discretization</code> option lets you specify what discretization algorithm to use.</p><pre><code class="language-julia hljs">Axis(Plots.Histogram(d, discretization=:auto), ymin=0)</code></pre><img src="index-1d3fb965.svg" alt="Example block output"/><p>Several discretization algorithms are provided by <a href="http://nbviewer.jupyter.org/github/sisl/Discretizers.jl/blob/master/doc/Discretizers.ipynb">Discretizers.jl</a>.</p><pre><code class="language-julia hljs">using Random
+\end{axis}</code></pre><p>You can even create a cumulative distribution function from the data.</p><pre><code class="language-julia hljs">Axis(Plots.Histogram(d, bins=20, cumulative=true, density=true), ymin=0)</code></pre><img src="index-28ae26f2.svg" alt="Example block output"/><p>As with the other plots, you can control the style. The documentation on tikz and pgfplots can give you more information about what styles are supported.</p><pre><code class="language-julia hljs">Axis(Plots.Histogram(d, bins=10, style=&quot;red, fill=red!10&quot;), ymin=0, ylabel=&quot;Counts&quot;)</code></pre><img src="index-b0e6b133.svg" alt="Example block output"/><p>Sometimes you do not want to store your raw dataset in a Tikz file, especially when the dataset is large. The <code>discretization</code> option lets you specify what discretization algorithm to use.</p><pre><code class="language-julia hljs">Axis(Plots.Histogram(d, discretization=:auto), ymin=0)</code></pre><img src="index-241dc299.svg" alt="Example block output"/><p>Several discretization algorithms are provided by <a href="http://nbviewer.jupyter.org/github/sisl/Discretizers.jl/blob/master/doc/Discretizers.ipynb">Discretizers.jl</a>.</p><pre><code class="language-julia hljs">using Random
 discretizations =
            [:default, # use PGFPlots for small data sizes and :auto for large
             :pgfplots, # use the PGFPlots histogram function (uses nbins, which defaults to 10)
@@ -853,4 +853,4 @@ for frame in 1:10
     ax = Axis(Plots.Linear(x -&gt; sin(x+t*π), (0,6)), xlabel=&quot;x&quot;, ylabel=&quot;y&quot;)
     push!(frames, ax)
 end 
-frames;</code></pre><p><img src="reel-9866296540542003168.gif" alt="animation"/></p><h2 id="Future-Plans"><a class="docs-heading-anchor" href="#Future-Plans">Future Plans</a><a id="Future-Plans-1"></a><a class="docs-heading-anchor-permalink" href="#Future-Plans" title="Permalink"></a></h2><p>Gradually, more and more functionality from pgfplots will be migrated into this package.</p></article><nav class="docs-footer"><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.12.0 on <span class="colophon-date" title="Saturday 14 June 2025 01:48">Saturday 14 June 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+frames;</code></pre><p><img src="reel-9866296540542003168.gif" alt="animation"/></p><h2 id="Future-Plans"><a class="docs-heading-anchor" href="#Future-Plans">Future Plans</a><a id="Future-Plans-1"></a><a class="docs-heading-anchor-permalink" href="#Future-Plans" title="Permalink"></a></h2><p>Gradually, more and more functionality from pgfplots will be migrated into this package.</p></article><nav class="docs-footer"><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.12.0 on <span class="colophon-date" title="Saturday 14 June 2025 05:50">Saturday 14 June 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
