@@ -1,6 +1,7 @@
 # PGFPlots
 
 [![Build Status](https://github.com/JuliaTeX/PGFPlots.jl/workflows/CI/badge.svg)](https://github.com/JuliaTeX/PGFPlots.jl/actions)
+
 [![codecov](https://codecov.io/gh/JuliaTeX/PGFPlots.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaTeX/PGFPlots.jl)
 [![Documentation URL](https://img.shields.io/badge/docs-dev-blue.svg)](https://juliatex.github.io/PGFPlots.jl/dev/)
 
